@@ -143,6 +143,26 @@ class Property extends Model
         return $this->hasMany(OperationalTask::class);
     }
 
+    public function bookingCheckIns(): HasMany
+    {
+        return $this->hasMany(BookingCheckIn::class);
+    }
+
+    public function bookingCheckOuts(): HasMany
+    {
+        return $this->hasMany(BookingCheckOut::class);
+    }
+
+    public function guestServiceRequests(): HasMany
+    {
+        return $this->hasMany(GuestServiceRequest::class);
+    }
+
+    public function bookingIncidents(): HasMany
+    {
+        return $this->hasMany(BookingIncident::class);
+    }
+
     public function assets(): HasMany
     {
         return $this->hasMany(Asset::class);

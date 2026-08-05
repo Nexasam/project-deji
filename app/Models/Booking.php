@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use LogicException;
 
@@ -86,6 +87,31 @@ class Booking extends Model
     public function operationalTasks(): HasMany
     {
         return $this->hasMany(OperationalTask::class);
+    }
+
+    public function checkIn(): HasOne
+    {
+        return $this->hasOne(BookingCheckIn::class);
+    }
+
+    public function checkOut(): HasOne
+    {
+        return $this->hasOne(BookingCheckOut::class);
+    }
+
+    public function interactions(): HasMany
+    {
+        return $this->hasMany(BookingInteraction::class);
+    }
+
+    public function serviceRequests(): HasMany
+    {
+        return $this->hasMany(GuestServiceRequest::class);
+    }
+
+    public function incidents(): HasMany
+    {
+        return $this->hasMany(BookingIncident::class);
     }
 
     public function availabilityBlocks(): HasMany
