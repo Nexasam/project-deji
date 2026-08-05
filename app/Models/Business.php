@@ -75,6 +75,21 @@ class Business extends Model
         return $this->hasMany(Property::class);
     }
 
+    public function onboardingSteps(): HasMany
+    {
+        return $this->hasMany(BusinessOnboardingStep::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(BusinessSubscription::class);
+    }
+
+    public function propertyLifecycleEvents(): HasMany
+    {
+        return $this->hasMany(PropertyLifecycleEvent::class);
+    }
+
     public function guests(): HasMany
     {
         return $this->hasMany(Guest::class);

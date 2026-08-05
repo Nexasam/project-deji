@@ -123,6 +123,11 @@ class Property extends Model
         return $this->hasMany(PropertyMedia::class);
     }
 
+    public function lifecycleEvents(): HasMany
+    {
+        return $this->hasMany(PropertyLifecycleEvent::class);
+    }
+
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
