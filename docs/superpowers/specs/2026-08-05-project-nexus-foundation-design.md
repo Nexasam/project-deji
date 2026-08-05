@@ -554,6 +554,8 @@ No cache key may omit the business context for tenant-owned data.
 
 ## 16. Migration sequence
 
+The field-level companion specification is maintained in [Project Nexus Detailed Migration Blueprint](2026-08-05-project-nexus-migration-blueprint.md). It defines the planned migration files, columns, keys, indexes, deletion behavior, transaction boundaries and Laravel-only relationship rules. This section remains the architectural summary.
+
 Migrations are small, dependency-ordered, reversible where data safety permits, and never combine unrelated domains. Production migrations use expand/migrate/contract for destructive schema evolution.
 
 Recommended order:
