@@ -105,6 +105,26 @@ class Business extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function availabilityBlocks(): HasMany
+    {
+        return $this->hasMany(PropertyAvailabilityBlock::class);
+    }
+
+    public function bookingChannelLinks(): HasMany
+    {
+        return $this->hasMany(BookingChannelLink::class);
+    }
+
+    public function bookingStatusHistory(): HasMany
+    {
+        return $this->hasMany(BookingStatusHistory::class);
+    }
+
+    public function bookingDateChanges(): HasMany
+    {
+        return $this->hasMany(BookingDateChange::class);
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

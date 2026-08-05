@@ -133,6 +133,11 @@ class Property extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function availabilityBlocks(): HasMany
+    {
+        return $this->hasMany(PropertyAvailabilityBlock::class);
+    }
+
     public function operationalTasks(): HasMany
     {
         return $this->hasMany(OperationalTask::class);
