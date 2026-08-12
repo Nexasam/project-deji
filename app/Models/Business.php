@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessOnboardingStatus;
+use App\Enums\BusinessStatus;
+use App\Enums\BusinessVerificationStatus;
 use Database\Factories\BusinessFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -22,7 +24,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'registration_number',
     'country_code',
     'address',
-    'primary_contact_user_id',
     'primary_contact_name',
     'email',
     'phone_number',
@@ -31,13 +32,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'timezone',
     'currency',
     'subscription_plan',
-    'verification_status',
     'onboarding_status',
     'onboarding_started_at',
     'onboarding_completed_at',
+    'verification_status',
     'status',
-    'created_by',
-    'updated_by',
 ])]
 class Business extends Model
 {
@@ -50,24 +49,12 @@ class Business extends Model
             'address' => 'array',
             'social_links' => 'array',
             'tax_information' => 'encrypted:array',
+            'verification_status' => BusinessVerificationStatus::class,
+            'status' => BusinessStatus::class,
+            'onboarding_status' => BusinessOnboardingStatus::class,
             'onboarding_started_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
         ];
-    }
-
-    public function primaryContact(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'primary_contact_user_id');
-    }
-
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function properties(): HasMany
@@ -75,29 +62,9 @@ class Business extends Model
         return $this->hasMany(Property::class);
     }
 
-    public function onboardingSteps(): HasMany
+    public function memberships(): HasMany
     {
-        return $this->hasMany(BusinessOnboardingStep::class);
-    }
-
-    public function subscriptions(): HasMany
-    {
-        return $this->hasMany(BusinessSubscription::class);
-    }
-
-    public function propertyLifecycleEvents(): HasMany
-    {
-        return $this->hasMany(PropertyLifecycleEvent::class);
-    }
-
-    public function guests(): HasMany
-    {
-        return $this->hasMany(Guest::class);
-    }
-
-    public function employees(): HasMany
-    {
-        return $this->hasMany(Employee::class);
+        return $this->hasMany(BusinessMembership::class);
     }
 
     public function bookings(): HasMany
@@ -105,34 +72,79 @@ class Business extends Model
         return $this->hasMany(Booking::class);
     }
 
-    public function availabilityBlocks(): HasMany
-    {
-        return $this->hasMany(PropertyAvailabilityBlock::class);
-    }
-
-    public function bookingChannelLinks(): HasMany
-    {
-        return $this->hasMany(BookingChannelLink::class);
-    }
-
-    public function bookingStatusHistory(): HasMany
-    {
-        return $this->hasMany(BookingStatusHistory::class);
-    }
-
-    public function bookingDateChanges(): HasMany
-    {
-        return $this->hasMany(BookingDateChange::class);
-    }
-
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    public function departments(): HasMany
+    {
+        return $this->hasMany(Department::class);
+    }
+
+    public function employees(): HasMany
+    {
+        return $this->hasMany(Employee::class);
+    }
+
     public function operationalTasks(): HasMany
     {
         return $this->hasMany(OperationalTask::class);
+    }
+
+    public function workflowTemplates(): HasMany
+    {
+        return $this->hasMany(WorkflowTemplate::class);
+    }
+
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
+
+    public function inventoryLocations(): HasMany
+    {
+        return $this->hasMany(InventoryLocation::class);
+    }
+
+    public function approvalWorkflows(): HasMany
+    {
+        return $this->hasMany(ApprovalWorkflow::class);
+    }
+
+    public function approvalRequests(): HasMany
+    {
+        return $this->hasMany(ApprovalRequest::class);
+    }
+
+    public function retentionPolicies(): HasMany
+    {
+        return $this->hasMany(DataRetentionPolicy::class);
+    }
+
+    public function dataSubjectRequests(): HasMany
+    {
+        return $this->hasMany(DataSubjectRequest::class);
+    }
+
+    public function aiSettings(): HasOne
+    {
+        return $this->hasOne(AiBusinessSetting::class);
+    }
+
+    public function aiConversations(): HasMany
+    {
+        return $this->hasMany(AiConversation::class);
+    }
+
+    public function aiPredictions(): HasMany
+    {
+        return $this->hasMany(AiPredictionSnapshot::class);
+    }
+
+    public function aiKnowledgeSources(): HasMany
+    {
+        return $this->hasMany(AiKnowledgeSource::class);
     }
 
     public function suppliers(): HasMany
@@ -145,19 +157,19 @@ class Business extends Model
         return $this->hasMany(Asset::class);
     }
 
-    public function documents(): MorphMany
+    public function documents(): HasMany
     {
-        return $this->morphMany(Document::class, 'owner');
+        return $this->hasMany(Document::class);
     }
 
-    public function auditEvents(): MorphMany
+    public function notifications(): HasMany
     {
-        return $this->morphMany(AuditEvent::class, 'auditable');
+        return $this->hasMany(Notification::class);
     }
 
-    public function memberships(): HasMany
+    public function auditEvents(): HasMany
     {
-        return $this->hasMany(BusinessMembership::class);
+        return $this->hasMany(AuditEvent::class);
     }
 
     public function customRoles(): HasMany
@@ -165,13 +177,118 @@ class Business extends Model
         return $this->hasMany(Role::class);
     }
 
-    public function membershipRoleAssignments(): HasMany
-    {
-        return $this->hasMany(MembershipRoleAssignment::class);
-    }
-
     public function passwordPolicies(): HasMany
     {
         return $this->hasMany(PasswordPolicy::class);
+    }
+
+    public function impersonationSessions(): HasMany
+    {
+        return $this->hasMany(ImpersonationSession::class);
+    }
+
+    public function onboardingSteps(): HasMany
+    {
+        return $this->hasMany(BusinessOnboardingStep::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(BusinessSubscription::class);
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    public function domainEvents(): HasMany
+    {
+        return $this->hasMany(DomainEvent::class);
+    }
+
+    public function workspacePreferences(): HasMany
+    {
+        return $this->hasMany(UserWorkspacePreference::class);
+    }
+
+    public function dashboardBriefings(): HasMany
+    {
+        return $this->hasMany(DashboardBriefing::class);
+    }
+
+    public function healthSnapshots(): HasMany
+    {
+        return $this->hasMany(BusinessHealthSnapshot::class);
+    }
+
+    public function aiRecommendations(): HasMany
+    {
+        return $this->hasMany(AiRecommendation::class);
+    }
+
+    public function propertyStaffAssignments(): HasMany
+    {
+        return $this->hasMany(PropertyStaffAssignment::class);
+    }
+
+    public function propertyMarketplaceListings(): HasMany
+    {
+        return $this->hasMany(PropertyMarketplaceListing::class);
+    }
+
+    public function propertyPricingRules(): HasMany
+    {
+        return $this->hasMany(PropertyPricingRule::class);
+    }
+
+    public function propertyPromotions(): HasMany
+    {
+        return $this->hasMany(PropertyPromotion::class);
+    }
+
+    public function propertyHealthSnapshots(): HasMany
+    {
+        return $this->hasMany(PropertyHealthSnapshot::class);
+    }
+
+    public function automationSettings(): HasMany
+    {
+        return $this->hasMany(BusinessAutomationSetting::class);
+    }
+
+    public function availabilityDays(): HasMany
+    {
+        return $this->hasMany(PropertyAvailabilityDay::class);
+    }
+
+    public function externalCalendarSyncRuns(): HasMany
+    {
+        return $this->hasMany(ExternalCalendarSyncRun::class);
+    }
+
+    public function financialAccounts(): HasMany
+    {
+        return $this->hasMany(FinancialAccount::class);
+    }
+
+    public function financialTransactions(): HasMany
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
+
+    public function revenueEntries(): HasMany
+    {
+        return $this->hasMany(RevenueEntry::class);
+    }
+
+    public function refundRequests(): HasMany
+    {
+        return $this->hasMany(RefundRequest::class);
+    }
+
+    public function financialForecasts(): HasMany
+    {
+        return $this->hasMany(FinancialForecastSnapshot::class);
     }
 }

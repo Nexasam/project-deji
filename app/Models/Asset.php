@@ -2,29 +2,28 @@
 
 namespace App\Models;
 
+use App\Enums\AssetCondition;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use LogicException;
 
 #[Fillable([
-    'business_id', 'property_id', 'supplier_id', 'name', 'category',
-    'serial_number', 'purchase_date', 'warranty', 'condition',
-    'replacement_value', 'replacement_currency', 'maintenance_schedule',
-    'status', 'created_by', 'updated_by',
+    'business_id', 'property_id', 'supplier_id', 'asset_code', 'name', 'category',
+    'serial_number', 'qr_identifier', 'qr_token_hash', 'qr_token_rotated_at',
+    'purchase_date', 'warranty_expires_on', 'condition',
+    'replacement_value', 'currency', 'notes', 'status',
 ])]
 class Asset extends Model
 {
-    use HasFactory, HasUuids;
+    use HasUuids;
 
     protected static function booted(): void
     {
         static::deleting(function (): never {
-            throw new LogicException('Purchased assets cannot be deleted; retire or archive them instead.');
+            throw new LogicException('Purchased assets are historical records and cannot be deleted.');
         });
     }
 
@@ -32,9 +31,10 @@ class Asset extends Model
     {
         return [
             'purchase_date' => 'date',
-            'warranty' => 'array',
+            'warranty_expires_on' => 'date',
+            'qr_token_rotated_at' => 'datetime',
+            'condition' => AssetCondition::class,
             'replacement_value' => 'decimal:4',
-            'maintenance_schedule' => 'array',
         ];
     }
 
@@ -53,13 +53,28 @@ class Asset extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function maintenanceSchedules(): HasMany
+    {
+        return $this->hasMany(AssetMaintenanceSchedule::class);
+    }
+
     public function maintenanceRecords(): HasMany
     {
         return $this->hasMany(AssetMaintenanceRecord::class);
     }
 
-    public function documents(): MorphMany
+    public function maintenanceIssues(): HasMany
     {
-        return $this->morphMany(Document::class, 'owner');
+        return $this->hasMany(MaintenanceIssue::class);
+    }
+
+    public function media(): HasMany
+    {
+        return $this->hasMany(AssetMedia::class);
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(AssetAssignment::class);
     }
 }

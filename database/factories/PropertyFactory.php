@@ -2,6 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Enums\PropertyMaintenanceStatus;
+use App\Enums\PropertyPublicationStatus;
+use App\Enums\PropertyReadinessStatus;
+use App\Enums\PropertyStatus;
+use App\Enums\PropertyVerificationStatus;
 use App\Models\Business;
 use App\Models\Property;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -44,28 +49,29 @@ class PropertyFactory extends Factory
             'bedrooms' => fake()->numberBetween(0, 10),
             'bathrooms' => fake()->randomElement([1, 1.5, 2, 2.5, 3, 4]),
             'description' => fake()->paragraph(),
-            'verification_status' => 'unverified',
-            'cleaning_schedule' => null,
-            'maintenance_status' => 'not_required',
-            'owner_user_id' => null,
-            'manager_user_id' => null,
-            'status' => 'active',
-            'created_by' => null,
-            'updated_by' => null,
+            'default_nightly_price' => fake()->randomFloat(4, 50, 1000),
+            'pricing_currency' => 'USD',
+            'verification_status' => PropertyVerificationStatus::Unverified,
+            'maintenance_status' => PropertyMaintenanceStatus::NotRequired,
+            'publication_status' => PropertyPublicationStatus::Draft,
+            'readiness_status' => PropertyReadinessStatus::NotReady,
+            'owner_name' => fake()->name(),
+            'manager_name' => null,
+            'status' => PropertyStatus::Active,
         ];
     }
 
     public function verified(): static
     {
         return $this->state(fn (): array => [
-            'verification_status' => 'verified',
+            'verification_status' => PropertyVerificationStatus::Verified,
         ]);
     }
 
     public function inactive(): static
     {
         return $this->state(fn (): array => [
-            'status' => 'inactive',
+            'status' => PropertyStatus::Inactive,
         ]);
     }
 }

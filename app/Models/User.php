@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\IdentityVerificationStatus;
+use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -10,16 +11,30 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable([
-    'name', 'email', 'phone_number', 'password', 'preferred_locale', 'timezone',
-    'status', 'failed_login_attempts', 'locked_until', 'password_changed_at',
-    'last_login_at', 'last_seen_at', 'created_by', 'updated_by',
+    'name',
+    'email',
+    'phone_number',
+    'password',
+    'nationality',
+    'identity_verification_status',
+    'preferred_language',
+    'emergency_contact',
+    'marketing_preferences',
+    'guest_notes',
+    'timezone',
+    'status',
+    'failed_login_attempts',
+    'locked_until',
+    'password_changed_at',
+    'last_login_at',
+    'last_seen_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -27,58 +42,52 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUuids, Notifiable, SoftDeletes;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'identity_verification_status' => IdentityVerificationStatus::class,
+            'emergency_contact' => 'array',
+            'marketing_preferences' => 'array',
+            'status' => UserStatus::class,
             'failed_login_attempts' => 'integer',
             'locked_until' => 'datetime',
             'password_changed_at' => 'datetime',
             'last_login_at' => 'datetime',
             'last_seen_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
 
-    public function primaryContactForBusinesses(): HasMany
+    public function roleAssignments(): HasMany
     {
-        return $this->hasMany(Business::class, 'primary_contact_user_id');
+        return $this->hasMany(UserRole::class);
     }
 
-    public function ownedProperties(): HasMany
+    public function roles(): BelongsToMany
     {
-        return $this->hasMany(Property::class, 'owner_user_id');
+        return $this->belongsToMany(Role::class, 'user_roles')
+            ->withPivot([
+                'id', 'business_membership_id', 'scope_key', 'status', 'assigned_by',
+                'assigned_at', 'expires_at', 'revoked_at',
+            ])
+            ->withTimestamps();
     }
 
-    public function managedProperties(): HasMany
+    public function businessMemberships(): HasMany
     {
-        return $this->hasMany(Property::class, 'manager_user_id');
+        return $this->hasMany(BusinessMembership::class);
     }
 
-    public function completedOnboardingSteps(): HasMany
+    public function bookings(): HasMany
     {
-        return $this->hasMany(BusinessOnboardingStep::class, 'completed_by');
+        return $this->hasMany(Booking::class, 'guest_user_id');
     }
 
-    public function propertyLifecycleEvents(): HasMany
+    public function createdBookings(): HasMany
     {
-        return $this->hasMany(PropertyLifecycleEvent::class, 'actor_user_id');
-    }
-
-    public function guestProfiles(): HasMany
-    {
-        return $this->hasMany(Guest::class);
-    }
-
-    public function employeeProfiles(): HasMany
-    {
-        return $this->hasMany(Employee::class);
+        return $this->hasMany(Booking::class, 'created_by');
     }
 
     public function verifiedPayments(): HasMany
@@ -86,9 +95,24 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class, 'verified_by');
     }
 
-    public function platformNotifications(): MorphMany
+    public function createdPayments(): HasMany
     {
-        return $this->morphMany(PlatformNotification::class, 'recipient');
+        return $this->hasMany(Payment::class, 'created_by');
+    }
+
+    public function employeeProfiles(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Employee::class,
+            BusinessMembership::class,
+            'user_id',
+            'business_membership_id'
+        );
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
     }
 
     public function identities(): HasMany
@@ -106,40 +130,43 @@ class User extends Authenticatable
         return $this->hasMany(UserRefreshToken::class);
     }
 
-    public function passwordHistories(): HasMany
-    {
-        return $this->hasMany(UserPasswordHistory::class);
-    }
-
-    public function businessMemberships(): HasMany
-    {
-        return $this->hasMany(BusinessMembership::class);
-    }
-
-    public function directRoleAssignments(): HasMany
-    {
-        return $this->hasMany(UserRoleAssignment::class);
-    }
-
-    public function directRoles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class, 'user_role_assignments')
-            ->withPivot(['id', 'assigned_by', 'expires_at', 'revoked_at', 'status'])
-            ->withTimestamps();
-    }
-
     public function activeBusinessContext(): HasOne
     {
         return $this->hasOne(UserBusinessContext::class);
     }
 
-    public function impersonationSessionsStarted(): HasMany
+    public function workspacePreferences(): HasMany
     {
-        return $this->hasMany(ImpersonationSession::class, 'platform_user_id');
+        return $this->hasMany(UserWorkspacePreference::class);
     }
 
-    public function impersonationSessionsReceived(): HasMany
+    public function bookingGuestEntries(): HasMany
     {
-        return $this->hasMany(ImpersonationSession::class, 'target_user_id');
+        return $this->hasMany(BookingGuest::class);
+    }
+
+    public function requestedApprovals(): HasMany
+    {
+        return $this->hasMany(ApprovalRequest::class, 'requested_by');
+    }
+
+    public function approvalActions(): HasMany
+    {
+        return $this->hasMany(ApprovalAction::class, 'actor_user_id');
+    }
+
+    public function dataSubjectRequests(): HasMany
+    {
+        return $this->hasMany(DataSubjectRequest::class);
+    }
+
+    public function aiConversations(): HasMany
+    {
+        return $this->hasMany(AiConversation::class);
+    }
+
+    public function aiRecommendationFeedback(): HasMany
+    {
+        return $this->hasMany(AiRecommendationFeedback::class);
     }
 }

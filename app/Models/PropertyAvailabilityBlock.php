@@ -6,36 +6,16 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use LogicException;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable([
-    'business_id', 'property_id', 'booking_id', 'block_type', 'starts_on',
-    'ends_on', 'state', 'source_provider', 'source_reference', 'reason',
-    'released_at', 'released_by', 'release_reason', 'status', 'created_by', 'updated_by',
-])]
+#[Fillable(['business_id', 'property_id', 'booking_id', 'external_calendar_connection_id', 'source_type', 'source_reference', 'blocks_booking', 'starts_on', 'ends_on', 'validation_status', 'validated_by', 'validated_at', 'block_state', 'reason', 'released_at', 'status'])]
 class PropertyAvailabilityBlock extends Model
 {
     use HasUuids;
 
-    protected static function booted(): void
-    {
-        static::deleting(function (): never {
-            throw new LogicException('Property availability blocks are historical records and cannot be deleted.');
-        });
-    }
-
     protected function casts(): array
     {
-        return [
-            'starts_on' => 'date',
-            'ends_on' => 'date',
-            'released_at' => 'datetime',
-        ];
-    }
-
-    public function business(): BelongsTo
-    {
-        return $this->belongsTo(Business::class);
+        return ['blocks_booking' => 'boolean', 'starts_on' => 'date', 'ends_on' => 'date', 'validated_at' => 'datetime', 'released_at' => 'datetime'];
     }
 
     public function property(): BelongsTo
@@ -48,18 +28,18 @@ class PropertyAvailabilityBlock extends Model
         return $this->belongsTo(Booking::class);
     }
 
-    public function releasedBy(): BelongsTo
+    public function connection(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'released_by');
+        return $this->belongsTo(ExternalCalendarConnection::class, 'external_calendar_connection_id');
     }
 
-    public function creator(): BelongsTo
+    public function validator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'validated_by');
     }
 
-    public function updater(): BelongsTo
+    public function availabilityDays(): HasMany
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->hasMany(PropertyAvailabilityDay::class, 'availability_block_id');
     }
 }

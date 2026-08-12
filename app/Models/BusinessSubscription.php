@@ -8,10 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'business_id', 'plan_key', 'state', 'provider', 'provider_subscription_id',
-    'provider_customer_id', 'trial_ends_at', 'started_at',
-    'current_period_starts_at', 'current_period_ends_at', 'cancelled_at',
-    'ended_at', 'metadata', 'status', 'created_by', 'updated_by',
+    'business_id', 'plan_key', 'provider', 'provider_subscription_id', 'subscription_status',
+    'trial_ends_at', 'current_period_starts_at', 'current_period_ends_at', 'cancelled_at', 'ended_at', 'status',
 ])]
 class BusinessSubscription extends Model
 {
@@ -20,28 +18,13 @@ class BusinessSubscription extends Model
     protected function casts(): array
     {
         return [
-            'trial_ends_at' => 'datetime',
-            'started_at' => 'datetime',
-            'current_period_starts_at' => 'datetime',
-            'current_period_ends_at' => 'datetime',
-            'cancelled_at' => 'datetime',
-            'ended_at' => 'datetime',
-            'metadata' => 'array',
+            'trial_ends_at' => 'datetime', 'current_period_starts_at' => 'datetime',
+            'current_period_ends_at' => 'datetime', 'cancelled_at' => 'datetime', 'ended_at' => 'datetime',
         ];
     }
 
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
-    }
-
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by');
     }
 }

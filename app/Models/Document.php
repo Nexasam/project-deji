@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,19 +11,25 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'business_id', 'owner_type', 'owner_id', 'document_type', 'title',
-    'description', 'searchable_text', 'current_version_number', 'access_level',
-    'expires_on', 'status', 'created_by', 'updated_by',
+    'business_id', 'owner_type', 'owner_id', 'title', 'category', 'document_number',
+    'issuer', 'description', 'searchable_text', 'issued_on', 'effective_on', 'expires_on',
+    'reminder_days_before_expiry', 'last_expiry_reminder_at', 'confidentiality',
+    'verification_status', 'verified_by', 'verified_at', 'current_version_number', 'status',
 ])]
 class Document extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasUuids, SoftDeletes;
 
     protected function casts(): array
     {
         return [
-            'current_version_number' => 'integer',
+            'issued_on' => 'date',
+            'effective_on' => 'date',
             'expires_on' => 'date',
+            'reminder_days_before_expiry' => 'integer',
+            'last_expiry_reminder_at' => 'datetime',
+            'verified_at' => 'datetime',
+            'current_version_number' => 'integer',
         ];
     }
 
@@ -40,11 +45,21 @@ class Document extends Model
 
     public function versions(): HasMany
     {
-        return $this->hasMany(DocumentVersion::class)->orderByDesc('version_number');
+        return $this->hasMany(DocumentVersion::class);
     }
 
     public function permissions(): HasMany
     {
         return $this->hasMany(DocumentPermission::class);
+    }
+
+    public function verifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function aiKnowledgeSources(): HasMany
+    {
+        return $this->hasMany(AiKnowledgeSource::class);
     }
 }

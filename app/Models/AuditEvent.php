@@ -10,24 +10,22 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use LogicException;
 
 #[Fillable([
-    'business_id', 'actor_user_id', 'action', 'auditable_type', 'auditable_id',
-    'before_values', 'after_values', 'metadata', 'source', 'ip_address',
-    'user_agent', 'correlation_id', 'status', 'occurred_at',
+    'business_id', 'auditable_type', 'auditable_id', 'event_type', 'description',
+    'before_values', 'after_values', 'metadata', 'source_channel', 'actor_type',
+    'correlation_id', 'request_id', 'device_identifier', 'ip_address', 'user_agent',
+    'occurred_at', 'status', 'created_by',
 ])]
 class AuditEvent extends Model
 {
     use HasUuids;
 
-    public const UPDATED_AT = null;
-
     protected static function booted(): void
     {
         static::updating(function (): never {
-            throw new LogicException('Audit events are immutable and cannot be updated.');
+            throw new LogicException('Audit events are immutable.');
         });
-
         static::deleting(function (): never {
-            throw new LogicException('Audit events are immutable and cannot be deleted.');
+            throw new LogicException('Audit events cannot be deleted.');
         });
     }
 
@@ -46,13 +44,13 @@ class AuditEvent extends Model
         return $this->belongsTo(Business::class);
     }
 
-    public function actor(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'actor_user_id');
-    }
-
     public function auditable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

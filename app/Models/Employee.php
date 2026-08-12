@@ -2,41 +2,37 @@
 
 namespace App\Models;
 
+use App\Enums\EmploymentStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'business_id',
-    'user_id',
     'business_membership_id',
-    'employee_number',
-    'name',
-    'email',
-    'phone_number',
-    'department',
+    'department_id',
+    'employee_code',
     'employment_status',
     'availability',
     'emergency_contact',
     'started_on',
     'ended_on',
-    'created_by',
-    'updated_by',
+    'notes',
+    'status',
 ])]
 class Employee extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasUuids, SoftDeletes;
 
     protected function casts(): array
     {
         return [
+            'employment_status' => EmploymentStatus::class,
             'availability' => 'array',
-            'emergency_contact' => 'encrypted:array',
+            'emergency_contact' => 'array',
             'started_on' => 'date',
             'ended_on' => 'date',
         ];
@@ -47,53 +43,58 @@ class Employee extends Model
         return $this->belongsTo(Business::class);
     }
 
-    public function user(): BelongsTo
+    public function businessMembership(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(BusinessMembership::class);
     }
 
-    public function membership(): BelongsTo
+    public function department(): BelongsTo
     {
-        return $this->belongsTo(BusinessMembership::class, 'business_membership_id');
+        return $this->belongsTo(Department::class);
     }
 
-    public function assignedTasks(): HasMany
+    public function tasks(): HasMany
     {
         return $this->hasMany(OperationalTask::class, 'assigned_employee_id');
     }
 
-    public function completedCheckIns(): HasMany
+    public function inspections(): HasMany
     {
-        return $this->hasMany(BookingCheckIn::class, 'completed_by_employee_id');
+        return $this->hasMany(Inspection::class, 'inspector_employee_id');
     }
 
-    public function completedCheckOuts(): HasMany
+    public function maintenanceIssues(): HasMany
     {
-        return $this->hasMany(BookingCheckOut::class, 'completed_by_employee_id');
+        return $this->hasMany(MaintenanceIssue::class, 'assigned_employee_id');
     }
 
-    public function bookingInteractions(): HasMany
+    public function propertyAssignments(): HasMany
     {
-        return $this->hasMany(BookingInteraction::class);
+        return $this->hasMany(PropertyStaffAssignment::class);
     }
 
-    public function assignedServiceRequests(): HasMany
+    public function bookingAssignments(): HasMany
     {
-        return $this->hasMany(GuestServiceRequest::class, 'assigned_employee_id');
+        return $this->hasMany(BookingStaffAssignment::class);
     }
 
-    public function reportedBookingIncidents(): HasMany
+    public function taskAssignments(): HasMany
     {
-        return $this->hasMany(BookingIncident::class, 'reporter_employee_id');
+        return $this->hasMany(OperationalTaskAssignment::class);
     }
 
-    public function documents(): MorphMany
+    public function skills(): HasMany
     {
-        return $this->morphMany(Document::class, 'owner');
+        return $this->hasMany(EmployeeSkill::class);
     }
 
-    public function receivedNotifications(): MorphMany
+    public function certifications(): HasMany
     {
-        return $this->morphMany(PlatformNotification::class, 'recipient');
+        return $this->hasMany(EmployeeCertification::class);
+    }
+
+    public function assetAssignments(): HasMany
+    {
+        return $this->hasMany(AssetAssignment::class);
     }
 }

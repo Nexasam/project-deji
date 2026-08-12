@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'business_id', 'platform_user_id', 'target_user_id', 'authorized_by',
+    'business_id', 'platform_user_id', 'authorized_by',
     'reason', 'ip_address', 'user_agent', 'started_at', 'authorized_at',
-    'expires_at', 'ended_at', 'notification_acknowledged_at',
+    'expires_at', 'ended_at',
     'termination_reason', 'status', 'created_by', 'updated_by',
 ])]
 class ImpersonationSession extends Model
@@ -24,7 +24,6 @@ class ImpersonationSession extends Model
             'authorized_at' => 'datetime',
             'expires_at' => 'datetime',
             'ended_at' => 'datetime',
-            'notification_acknowledged_at' => 'datetime',
         ];
     }
 
@@ -36,11 +35,6 @@ class ImpersonationSession extends Model
     public function platformUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'platform_user_id');
-    }
-
-    public function targetUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'target_user_id');
     }
 
     public function authorizer(): BelongsTo

@@ -2,48 +2,40 @@
 
 namespace App\Models;
 
+use App\Enums\MaintenanceRecordStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use LogicException;
 
 #[Fillable([
-    'business_id', 'asset_id', 'operational_task_id', 'supplier_id',
-    'maintenance_type', 'description', 'scheduled_at', 'started_at',
-    'completed_at', 'condition_before', 'condition_after', 'cost',
-    'currency', 'status', 'created_by', 'updated_by',
+    'business_id', 'asset_id', 'maintenance_schedule_id', 'operational_task_id',
+    'supplier_id', 'status', 'scheduled_for', 'started_at', 'completed_at',
+    'work_performed', 'cost_amount', 'currency', 'notes',
 ])]
 class AssetMaintenanceRecord extends Model
 {
-    use HasFactory, HasUuids;
-
-    protected static function booted(): void
-    {
-        static::deleting(function (): never {
-            throw new LogicException('Asset maintenance history cannot be deleted.');
-        });
-    }
+    use HasUuids;
 
     protected function casts(): array
     {
         return [
-            'scheduled_at' => 'datetime',
+            'status' => MaintenanceRecordStatus::class,
+            'scheduled_for' => 'date',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
-            'cost' => 'decimal:4',
+            'cost_amount' => 'decimal:4',
         ];
-    }
-
-    public function business(): BelongsTo
-    {
-        return $this->belongsTo(Business::class);
     }
 
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function schedule(): BelongsTo
+    {
+        return $this->belongsTo(AssetMaintenanceSchedule::class, 'maintenance_schedule_id');
     }
 
     public function operationalTask(): BelongsTo

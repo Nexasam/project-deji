@@ -2,19 +2,23 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessMembershipStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'business_id', 'user_id', 'membership_type', 'job_title', 'status',
-    'invited_by', 'invited_at', 'accepted_at', 'joined_at', 'ended_at',
-    'created_by', 'updated_by',
+    'business_id',
+    'user_id',
+    'job_title',
+    'status',
+    'invited_at',
+    'joined_at',
+    'ended_at',
 ])]
 class BusinessMembership extends Model
 {
@@ -23,8 +27,8 @@ class BusinessMembership extends Model
     protected function casts(): array
     {
         return [
+            'status' => BusinessMembershipStatus::class,
             'invited_at' => 'datetime',
-            'accepted_at' => 'datetime',
             'joined_at' => 'datetime',
             'ended_at' => 'datetime',
         ];
@@ -40,25 +44,13 @@ class BusinessMembership extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function roles(): HasMany
+    {
+        return $this->hasMany(UserRole::class);
+    }
+
     public function employee(): HasOne
     {
         return $this->hasOne(Employee::class);
-    }
-
-    public function roleAssignments(): HasMany
-    {
-        return $this->hasMany(MembershipRoleAssignment::class);
-    }
-
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class, 'membership_role_assignments')
-            ->withPivot(['id', 'business_id', 'property_id', 'assigned_by', 'expires_at', 'revoked_at', 'status'])
-            ->withTimestamps();
-    }
-
-    public function permissionOverrides(): HasMany
-    {
-        return $this->hasMany(MembershipPermissionOverride::class);
     }
 }

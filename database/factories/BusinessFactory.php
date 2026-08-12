@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\BusinessOnboardingStatus;
+use App\Enums\BusinessStatus;
+use App\Enums\BusinessVerificationStatus;
 use App\Models\Business;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,6 +24,7 @@ class BusinessFactory extends Factory
 
         return [
             'name' => fake()->company(),
+            'description' => fake()->sentence(),
             'registration_number' => strtoupper(fake()->bothify('REG-####-????')),
             'country_code' => $countryCode,
             'address' => [
@@ -31,7 +35,6 @@ class BusinessFactory extends Factory
                 'postal_code' => fake()->postcode(),
                 'country_code' => $countryCode,
             ],
-            'primary_contact_user_id' => null,
             'primary_contact_name' => fake()->name(),
             'email' => fake()->unique()->companyEmail(),
             'phone_number' => fake()->e164PhoneNumber(),
@@ -48,24 +51,23 @@ class BusinessFactory extends Factory
             'timezone' => fake()->timezone(),
             'currency' => fake()->currencyCode(),
             'subscription_plan' => null,
-            'verification_status' => 'unverified',
-            'status' => 'active',
-            'created_by' => null,
-            'updated_by' => null,
+            'onboarding_status' => BusinessOnboardingStatus::Registered,
+            'verification_status' => BusinessVerificationStatus::Unverified,
+            'status' => BusinessStatus::Active,
         ];
     }
 
     public function verified(): static
     {
         return $this->state(fn (): array => [
-            'verification_status' => 'verified',
+            'verification_status' => BusinessVerificationStatus::Verified,
         ]);
     }
 
     public function inactive(): static
     {
         return $this->state(fn (): array => [
-            'status' => 'inactive',
+            'status' => BusinessStatus::Inactive,
         ]);
     }
 }

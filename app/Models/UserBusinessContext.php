@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'user_id', 'business_id', 'business_membership_id', 'switched_at',
+    'user_id', 'business_id', 'business_membership_id', 'active_user_role_id', 'switched_at',
     'status', 'created_by', 'updated_by',
 ])]
 class UserBusinessContext extends Model
@@ -33,5 +33,10 @@ class UserBusinessContext extends Model
     public function membership(): BelongsTo
     {
         return $this->belongsTo(BusinessMembership::class, 'business_membership_id');
+    }
+
+    public function activeRoleAssignment(): BelongsTo
+    {
+        return $this->belongsTo(UserRole::class, 'active_user_role_id');
     }
 }

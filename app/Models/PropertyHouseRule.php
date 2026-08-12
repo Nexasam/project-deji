@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'business_id',
@@ -16,12 +17,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'is_mandatory',
     'sort_order',
     'status',
-    'created_by',
-    'updated_by',
 ])]
 class PropertyHouseRule extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, SoftDeletes;
 
     protected function casts(): array
     {

@@ -2,6 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\PropertyMaintenanceStatus;
+use App\Enums\PropertyOperationalStatus;
+use App\Enums\PropertyPublicationStatus;
+use App\Enums\PropertyReadinessStatus;
+use App\Enums\PropertyStatus;
+use App\Enums\PropertyVerificationStatus;
 use Database\Factories\PropertyFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -10,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -28,23 +34,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'default_nightly_price',
     'pricing_currency',
     'verification_status',
+    'maintenance_status',
     'publication_status',
     'readiness_status',
+    'operational_status',
+    'operational_status_updated_at',
     'information_completed_at',
     'media_completed_at',
     'verification_submitted_at',
     'verified_at',
-    'published_at',
-    'archived_at',
     'verified_by',
+    'published_at',
     'published_by',
-    'cleaning_schedule',
-    'maintenance_status',
-    'owner_user_id',
-    'manager_user_id',
+    'archived_at',
+    'owner_name',
+    'manager_name',
     'status',
-    'created_by',
-    'updated_by',
 ])]
 class Property extends Model
 {
@@ -61,13 +66,19 @@ class Property extends Model
             'bedrooms' => 'integer',
             'bathrooms' => 'decimal:1',
             'default_nightly_price' => 'decimal:4',
-            'cleaning_schedule' => 'array',
+            'verification_status' => PropertyVerificationStatus::class,
+            'maintenance_status' => PropertyMaintenanceStatus::class,
+            'publication_status' => PropertyPublicationStatus::class,
+            'readiness_status' => PropertyReadinessStatus::class,
+            'operational_status' => PropertyOperationalStatus::class,
+            'operational_status_updated_at' => 'datetime',
             'information_completed_at' => 'datetime',
             'media_completed_at' => 'datetime',
             'verification_submitted_at' => 'datetime',
             'verified_at' => 'datetime',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
+            'status' => PropertyStatus::class,
         ];
     }
 
@@ -76,41 +87,16 @@ class Property extends Model
         return $this->belongsTo(Business::class);
     }
 
-    public function owner(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'owner_user_id');
-    }
-
-    public function manager(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'manager_user_id');
-    }
-
-    public function verifier(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'verified_by');
-    }
-
-    public function publisher(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'published_by');
-    }
-
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by');
-    }
-
     public function amenities(): BelongsToMany
     {
-        return $this->belongsToMany(Amenity::class)
-            ->withPivot(['business_id', 'details'])
+        return $this->belongsToMany(Amenity::class, 'property_amenities')
+            ->withPivot(['id', 'business_id', 'details', 'sort_order', 'status'])
             ->withTimestamps();
+    }
+
+    public function amenityAssignments(): HasMany
+    {
+        return $this->hasMany(PropertyAmenity::class);
     }
 
     public function houseRules(): HasMany
@@ -123,9 +109,9 @@ class Property extends Model
         return $this->hasMany(PropertyMedia::class);
     }
 
-    public function lifecycleEvents(): HasMany
+    public function cleaningSchedules(): HasMany
     {
-        return $this->hasMany(PropertyLifecycleEvent::class);
+        return $this->hasMany(PropertyCleaningSchedule::class);
     }
 
     public function bookings(): HasMany
@@ -133,34 +119,9 @@ class Property extends Model
         return $this->hasMany(Booking::class);
     }
 
-    public function availabilityBlocks(): HasMany
-    {
-        return $this->hasMany(PropertyAvailabilityBlock::class);
-    }
-
     public function operationalTasks(): HasMany
     {
         return $this->hasMany(OperationalTask::class);
-    }
-
-    public function bookingCheckIns(): HasMany
-    {
-        return $this->hasMany(BookingCheckIn::class);
-    }
-
-    public function bookingCheckOuts(): HasMany
-    {
-        return $this->hasMany(BookingCheckOut::class);
-    }
-
-    public function guestServiceRequests(): HasMany
-    {
-        return $this->hasMany(GuestServiceRequest::class);
-    }
-
-    public function bookingIncidents(): HasMany
-    {
-        return $this->hasMany(BookingIncident::class);
     }
 
     public function assets(): HasMany
@@ -168,23 +129,103 @@ class Property extends Model
         return $this->hasMany(Asset::class);
     }
 
-    public function documents(): MorphMany
+    public function lifecycleEvents(): HasMany
     {
-        return $this->morphMany(Document::class, 'owner');
+        return $this->hasMany(PropertyLifecycleEvent::class);
     }
 
-    public function auditEvents(): MorphMany
+    public function availabilityBlocks(): HasMany
     {
-        return $this->morphMany(AuditEvent::class, 'auditable');
+        return $this->hasMany(PropertyAvailabilityBlock::class);
     }
 
-    public function roleAssignments(): HasMany
+    public function inspections(): HasMany
     {
-        return $this->hasMany(MembershipRoleAssignment::class);
+        return $this->hasMany(Inspection::class);
     }
 
-    public function permissionOverrides(): HasMany
+    public function maintenanceIssues(): HasMany
     {
-        return $this->hasMany(MembershipPermissionOverride::class);
+        return $this->hasMany(MaintenanceIssue::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function staffAssignments(): HasMany
+    {
+        return $this->hasMany(PropertyStaffAssignment::class);
+    }
+
+    public function marketplaceListing(): HasOne
+    {
+        return $this->hasOne(PropertyMarketplaceListing::class);
+    }
+
+    public function pricingRules(): HasMany
+    {
+        return $this->hasMany(PropertyPricingRule::class);
+    }
+
+    public function promotions(): HasMany
+    {
+        return $this->hasMany(PropertyPromotion::class);
+    }
+
+    public function healthSnapshots(): HasMany
+    {
+        return $this->hasMany(PropertyHealthSnapshot::class);
+    }
+
+    public function assetMedia(): HasMany
+    {
+        return $this->hasMany(AssetMedia::class);
+    }
+
+    public function reviewAnalyses(): HasMany
+    {
+        return $this->hasMany(ReviewAnalysis::class);
+    }
+
+    public function accessInstructions(): HasMany
+    {
+        return $this->hasMany(PropertyAccessInstruction::class);
+    }
+
+    public function bookingDisputes(): HasMany
+    {
+        return $this->hasMany(BookingDispute::class);
+    }
+
+    public function automationSettings(): HasMany
+    {
+        return $this->hasMany(BusinessAutomationSetting::class);
+    }
+
+    public function availabilityDays(): HasMany
+    {
+        return $this->hasMany(PropertyAvailabilityDay::class);
+    }
+
+    public function externalCalendarConnections(): HasMany
+    {
+        return $this->hasMany(ExternalCalendarConnection::class);
+    }
+
+    public function revenueEntries(): HasMany
+    {
+        return $this->hasMany(RevenueEntry::class);
+    }
+
+    public function financialTransactions(): HasMany
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
+
+    public function financialForecasts(): HasMany
+    {
+        return $this->hasMany(FinancialForecastSnapshot::class);
     }
 }

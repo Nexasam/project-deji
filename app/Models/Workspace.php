@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['key', 'name', 'description', 'sort_order', 'status', 'created_by', 'updated_by'])]
+#[Fillable(['key', 'name', 'description', 'sort_order', 'status'])]
 class Workspace extends Model
 {
     use HasUuids;
@@ -26,7 +26,7 @@ class Workspace extends Model
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_workspaces')
-            ->withPivot(['access_level', 'granted_by'])
+            ->withPivot(['id', 'access_level', 'status'])
             ->withTimestamps();
     }
 }
