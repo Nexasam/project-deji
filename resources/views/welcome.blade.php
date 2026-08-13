@@ -18,15 +18,84 @@
         .btn-pill { transition: background .15s, color .15s, border-color .15s, transform .1s; }
         .btn-pill:active { transform: scale(.96); }
 
-        /* ── Navbar mobile menu ── */
-        .mobile-menu { display:none; flex-direction:column; background:#fff; border-top:1px solid #f3f4f6; }
-        .mobile-menu.open { display:flex; }
+        /* ── Navbar ── */
+        #site-header { transition: box-shadow .25s; }
+        #site-header.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
 
-        /* ── Hamburger animation ── */
-        #nav-toggle span { transition: transform .25s, opacity .25s; }
-        #nav-toggle.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-        #nav-toggle.open span:nth-child(2) { opacity: 0; }
-        #nav-toggle.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+        .nav-link {
+            position: relative;
+            font-size: 15px;
+            font-weight: 400;
+            color: #374151;
+            text-decoration: none;
+            transition: color .18s;
+            padding: 4px 0;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 2px;
+            background: #f97316;
+            border-radius: 2px;
+            transition: width .22s ease;
+        }
+        .nav-link:hover         { color: #111; }
+        .nav-link:hover::after  { width: 100%; }
+        .nav-link.active        { color: #111; font-weight: 500; }
+        .nav-link.active::after { width: 100%; }
+
+        /* ── Hamburger ── */
+        #nav-toggle { display:flex; flex-direction:column; justify-content:center;
+                      gap:5px; width:40px; height:40px; background:none; border:none;
+                      cursor:pointer; padding:8px; border-radius:8px;
+                      transition: background .15s; }
+        #nav-toggle:hover { background: #f3f4f6; }
+        #nav-toggle span { display:block; width:22px; height:2px; background:#374151;
+                           border-radius:2px; transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .2s, width .2s; }
+        #nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        #nav-toggle.open span:nth-child(2) { opacity:0; width:0; }
+        #nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* Hide hamburger + mobile menu on desktop; hide desktop nav on mobile */
+        @media (min-width: 1024px) {
+            #nav-toggle   { display: none !important; }
+            #mobile-menu  { display: none !important; }
+            .nav-desktop  { display: flex !important; }
+        }
+        @media (max-width: 1023px) {
+            .nav-desktop  { display: none !important; }
+        }
+
+        /* ── Mobile menu ── */
+        .mobile-menu {
+            display: grid;
+            grid-template-rows: 0fr;
+            background: #fff;
+            border-top: 1px solid #f3f4f6;
+            transition: grid-template-rows .3s ease, box-shadow .3s;
+            overflow: hidden;
+        }
+        .mobile-menu.open {
+            grid-template-rows: 1fr;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+        .mobile-menu-inner { overflow: hidden; }
+        .mobile-menu a {
+            display: flex; align-items: center;
+            padding: 14px 24px;
+            font-size: 15px; font-weight: 500; color: #374151;
+            text-decoration: none;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background .15s, color .15s;
+        }
+        .mobile-menu a:hover { background: #fff7ed; color: #f97316; }
+        .mobile-menu a.cta-mobile {
+            margin: 16px; border-radius: 10px; border-bottom: none;
+            background: #f97316; color: #fff; justify-content: center;
+            font-weight: 600;
+        }
+        .mobile-menu a.cta-mobile:hover { background: #ea6c0a; }
 
         /* ── Hero ── */
         .hero-inner    { display:flex; align-items:center; gap:20px; }
@@ -34,7 +103,7 @@
         .hero-img-col  { flex:0 0 64%; max-width:64%; height:310px; gap:10px; overflow:hidden; display:flex; }
 
         /* ── Search bar ── */
-        .search-bar-wrap { transform:translateY(-50%); position:relative; z-index:30; }
+        .search-bar-wrap { transform:translateY(-50%); position:relative; z-index:40; }
         .search-bar      { background:#fff; border-radius:999px; box-shadow:0 4px 32px rgba(0,0,0,0.15);
                            display:flex; align-items:center; padding:14px 14px 14px 28px; }
         .search-field       { min-width:0; }
@@ -103,8 +172,11 @@
         .reveal-ready { opacity:0; transform:translateY(24px); transition: opacity .55s ease, transform .55s ease; }
         .reveal-ready.visible { opacity:1; transform:translateY(0); }
 
+        /* ── Section spacing ── */
+        .section-gap { margin-top: 0; }  /* handled via padding on sections */
+
         /* ── Footer ── */
-        .footer-grid { display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr 1fr; gap:40px; padding-bottom:48px; }
+        .footer-grid { display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr 1fr; gap:40px; padding-bottom:56px; }
 
         /* ── Responsive ── */
         @media (max-width:1023px) {
@@ -152,46 +224,74 @@
 </div>
 
 {{-- ===== NAVBAR ===== --}}
-<header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between h-[68px]">
+<header id="site-header" class="sticky top-0 z-50 bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between" style="height:68px;">
+
+        {{-- Logo — image already contains the wordmark, no extra text needed --}}
         <a href="/" class="flex items-center shrink-0">
-            <img src="/logo.png" alt="Verified Shortlet" style="height:48px;width:auto;"/>
+            <img src="/logo.png" alt="Verified Shortlet" style="height:58px;width:auto;"/>
         </a>
-        <nav class="hidden md:flex items-center gap-8 lg:gap-10">
-            <a href="#" class="text-[15px] text-gray-700 hover:text-orange-500 font-normal transition-colors">Explore stays</a>
-            <a href="#" class="text-[15px] text-gray-700 hover:text-orange-500 font-normal transition-colors">Why verified?</a>
-            <a href="#" class="text-[15px] text-gray-700 hover:text-orange-500 font-normal transition-colors">Become a host</a>
-            <a href="#" class="text-[15px] text-gray-700 hover:text-orange-500 font-normal transition-colors">Help</a>
+
+        {{-- Desktop nav — controlled by .nav-desktop CSS class --}}
+        <nav class="nav-desktop items-center gap-10">
+            <a href="#" class="nav-link active">Explore stays</a>
+            <a href="#" class="nav-link">Why verified?</a>
+            <a href="#" class="nav-link">Become a host</a>
+            <a href="#" class="nav-link">Help</a>
         </nav>
-        <div class="hidden md:flex items-center gap-5">
-            <a href="#" class="text-[15px] text-gray-700 hover:text-orange-500 font-normal transition-colors">Log In</a>
-            <a href="#" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-5 py-2.5 rounded-lg text-[15px] transition-all whitespace-nowrap">
+
+        {{-- Desktop auth --}}
+        <div class="nav-desktop items-center gap-6">
+            <a href="#" class="text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors">Log In</a>
+            <a href="#" class="inline-flex items-center bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap">
                 List your property
             </a>
         </div>
-        <button id="nav-toggle" class="md:hidden flex flex-col gap-[5px] p-2 -mr-2" aria-label="Toggle menu" aria-expanded="false">
-            <span class="block w-6 h-0.5 bg-gray-700 origin-center"></span>
-            <span class="block w-6 h-0.5 bg-gray-700 origin-center"></span>
-            <span class="block w-6 h-0.5 bg-gray-700 origin-center"></span>
+
+        {{-- Hamburger — hidden on desktop via CSS --}}
+        <button id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
     </div>
+
+    {{-- Mobile / tablet menu --}}
     <nav id="mobile-menu" class="mobile-menu" aria-hidden="true">
-        <a href="#" class="px-6 py-3.5 text-[15px] text-gray-700 border-b border-gray-100 hover:text-orange-500 transition-colors">Explore stays</a>
-        <a href="#" class="px-6 py-3.5 text-[15px] text-gray-700 border-b border-gray-100 hover:text-orange-500 transition-colors">Why verified?</a>
-        <a href="#" class="px-6 py-3.5 text-[15px] text-gray-700 border-b border-gray-100 hover:text-orange-500 transition-colors">Become a host</a>
-        <a href="#" class="px-6 py-3.5 text-[15px] text-gray-700 border-b border-gray-100 hover:text-orange-500 transition-colors">Help</a>
-        <a href="#" class="px-6 py-3.5 text-[15px] text-gray-700 border-b border-gray-100 hover:text-orange-500 transition-colors">Log In</a>
-        <a href="#" class="mx-6 my-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-3 rounded-lg text-[15px] text-center block transition-colors">
-            List your property
-        </a>
+        <div class="mobile-menu-inner">
+            <a href="#">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+                Explore stays
+            </a>
+            <a href="#">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                Why verified?
+            </a>
+            <a href="#">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Become a host
+            </a>
+            <a href="#">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Help
+            </a>
+            <a href="#">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Log In
+            </a>
+            <a href="#" class="cta-mobile">List your property</a>
+        </div>
     </nav>
 </header>
 
 {{-- ===== HERO ===== --}}
-<section class="relative bg-neutral-800" style="min-height:430px;overflow:hidden;">
+<section class="relative bg-neutral-800" style="min-height:430px;overflow:hidden;padding-bottom:60px;">
     <div class="absolute inset-0 z-0">
         <img src="/image.png" alt="" class="w-full h-full object-cover object-center"/>
-        <div class="absolute inset-0" style="background:linear-gradient(to right,rgba(15,8,2,0.94) 0%,rgba(15,8,2,0.88) 22%,rgba(15,8,2,0.60) 45%,rgba(15,8,2,0.08) 68%,transparent 100%);"></div>
+        {{-- Base dim across the whole image --}}
+        <div class="absolute inset-0" style="background:rgba(0,0,0,0.45);"></div>
+        {{-- Directional gradient on top for left-side text readability --}}
+        <div class="absolute inset-0" style="background:linear-gradient(to right,rgba(15,8,2,0.92) 0%,rgba(15,8,2,0.82) 22%,rgba(15,8,2,0.45) 50%,rgba(15,8,2,0.10) 72%,transparent 100%);"></div>
     </div>
     <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 hero-inner">
         <div class="hero-text-col reveal">
@@ -211,7 +311,7 @@
                 <div><div style="font-family:'Inter',sans-serif;font-size:26px;font-weight:800;color:#f97316;line-height:1;">&lt; 48h</div><div style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;">Avg. Verification Time</div></div>
             </div>
         </div>
-        <div class="hero-img-col">
+        <div class="hero-img-col" style="margin-top:40px;align-self:flex-end;">
             <div class="relative rounded-2xl overflow-hidden shadow-2xl" style="flex:0 0 48%;height:310px;">
                 <img src="/hero1.jpg" alt="Lagos apartment" class="w-full h-full object-cover"/>
                 <div style="position:absolute;top:10px;right:10px;width:52px;height:52px;background:#f97316;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
@@ -228,7 +328,7 @@
 </section>
 
 {{-- ===== SEARCH BAR ===== --}}
-<div class="bg-white">
+<div style="background:#fff;position:relative;z-index:40;">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 search-bar-wrap">
         <form id="search-form" class="search-bar" onsubmit="handleSearch(event)">
             <div class="search-field search-field-where">
@@ -275,7 +375,7 @@
 </div>
 
 {{-- ===== CATEGORY PILLS ===== --}}
-<div class="bg-white border-b border-gray-100" style="padding-top:20px;padding-bottom:16px;">
+<div class="bg-white border-b border-gray-100" style="padding-top:28px;padding-bottom:20px;">
     <div id="cat-pills" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 flex gap-3 overflow-x-auto pb-1"
          style="-webkit-overflow-scrolling:touch;scrollbar-width:none;">
         @foreach ([
@@ -287,8 +387,10 @@
             ['label'=>'Family stays','active'=>false],
             ['label'=>'Business stays','active'=>false],
         ] as $cat)
-            <button class="cat-pill {{ $cat['active'] ? 'active' : '' }}" data-cat="{{ $cat['label'] }}">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <button class="cat-pill {{ $cat['active'] ? 'active' : '' }}"
+                    data-cat="{{ $cat['label'] }}"
+                    onclick="handleCatPill(this)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="pointer-events:none;flex-shrink:0;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
                 {{ $cat['label'] }}
@@ -298,7 +400,7 @@
 </div>
 
 {{-- ===== MAIN CONTENT ===== --}}
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-20">
 
     {{-- Recently Viewed --}}
     <section class="reveal">
@@ -375,19 +477,20 @@
         <div id="popular-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @php
                 $popularCards = [
-                    ['img'=>'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500&h=380&fit=crop','name'=>'Sunset Loft, Lekki Phase 1','loc'=>'Lekki, Lagos','guests'=>2,'price'=>38000,'rating'=>4.8],
-                    ['img'=>'/hero2.jpg','name'=>'The Penthouse, Ikoyi','loc'=>'Ikoyi, Lagos','guests'=>4,'price'=>55000,'rating'=>4.6],
-                    ['img'=>'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&h=380&fit=crop','name'=>'Marina View, VI','loc'=>'VI, Lagos','guests'=>3,'price'=>42000,'rating'=>4.9],
-                    ['img'=>'/hero3.jpg','name'=>'Island Retreat','loc'=>'Lekki Phase 1','guests'=>6,'price'=>65000,'rating'=>4.7],
-                    ['img'=>'/hero1.jpg','name'=>'City Suite, Banana Isl.','loc'=>'Banana Island','guests'=>2,'price'=>48000,'rating'=>4.5],
-                    ['img'=>'/hero2.jpg','name'=>'Green Court, GRA','loc'=>'GRA, Ikeja','guests'=>4,'price'=>52000,'rating'=>4.8],
-                    ['img'=>'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&h=380&fit=crop','name'=>'Central Park Flat','loc'=>'Abuja','guests'=>3,'price'=>35000,'rating'=>4.6],
-                    ['img'=>'/hero3.jpg','name'=>'Harbour View','loc'=>'Port Harcourt','guests'=>5,'price'=>70000,'rating'=>4.9],
+                    ['img'=>'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500&h=380&fit=crop','name'=>'Sunset Loft, Lekki Phase 1','loc'=>'Lekki, Lagos','guests'=>2,'price'=>38000,'rating'=>4.8,'cats'=>'lekki'],
+                    ['img'=>'/hero2.jpg','name'=>'The Penthouse, Ikoyi','loc'=>'Ikoyi, Lagos','guests'=>4,'price'=>55000,'rating'=>4.6,'cats'=>'ikoyi'],
+                    ['img'=>'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&h=380&fit=crop','name'=>'Marina View, VI','loc'=>'VI, Lagos','guests'=>3,'price'=>42000,'rating'=>4.9,'cats'=>'victoria island'],
+                    ['img'=>'/hero3.jpg','name'=>'Beachfront Villa, Lekki','loc'=>'Lekki Phase 1','guests'=>6,'price'=>65000,'rating'=>4.7,'cats'=>'lekki beachfront'],
+                    ['img'=>'/hero1.jpg','name'=>'Family Suite, Ikoyi','loc'=>'Ikoyi, Lagos','guests'=>5,'price'=>48000,'rating'=>4.5,'cats'=>'ikoyi family stays'],
+                    ['img'=>'/hero2.jpg','name'=>'Business Flat, GRA','loc'=>'GRA, Ikeja','guests'=>2,'price'=>52000,'rating'=>4.8,'cats'=>'business stays'],
+                    ['img'=>'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&h=380&fit=crop','name'=>'Ocean Breeze, VI','loc'=>'Victoria Island','guests'=>4,'price'=>35000,'rating'=>4.6,'cats'=>'victoria island beachfront'],
+                    ['img'=>'/hero3.jpg','name'=>'Family Haven, Lekki','loc'=>'Lekki, Lagos','guests'=>6,'price'=>70000,'rating'=>4.9,'cats'=>'lekki family stays'],
                 ];
             @endphp
             @foreach ($popularCards as $idx => $c)
             <div class="card-listing popular-card" style="background:#fff;border-radius:16px;overflow:hidden;cursor:pointer;"
                  data-price="{{ $c['price'] }}" data-rating="{{ $c['rating'] }}" data-guests="{{ $c['guests'] }}"
+                 data-cats="{{ $c['cats'] }}"
                  tabindex="0" role="article">
                 <div style="position:relative;">
                     <img src="{{ $c['img'] }}" alt="{{ $c['name'] }}" style="width:100%;height:200px;object-fit:cover;border-radius:16px;display:block;" loading="lazy"/>
@@ -424,8 +527,8 @@
 </main>
 
 {{-- ===== AI CONCIERGE ===== --}}
-<section class="bg-gray-900 reveal">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+<section class="bg-gray-900 reveal" style="margin-top:80px;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
             <div class="text-white">
                 <div class="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">AI Trip Concierge</div>
@@ -490,39 +593,71 @@
 </section>
 
 {{-- ===== FROM LISTING TO BADGE ===== --}}
-<section class="bg-orange-50 py-12 sm:py-16 reveal">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-10 sm:mb-12">
-            <div class="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-2">Become a host</div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">From listing to badge, in <span class="text-orange-500">four steps</span></h2>
-            <p class="text-gray-500 text-sm mt-3 max-w-md mx-auto">The sequence every property moves through before it can appear in search results.</p>
+<div style="height:80px;background:#0a0a0a;"></div>
+<section class="reveal" style="background:#f9fafb;padding:100px 0;">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {{-- Header --}}
+        <div class="text-center mb-16">
+            <span style="display:inline-block;background:#fff3e8;color:#f97316;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 16px;border-radius:999px;margin-bottom:16px;">Become a host</span>
+            <h2 style="font-size:clamp(32px,4.5vw,52px);font-weight:800;color:#111;margin:0 0 14px 0;line-height:1.15;">From listing to badge, in <span style="color:#f97316;">four steps</span></h2>
+            <p style="font-size:15px;color:#6b7280;max-width:460px;margin:0 auto;line-height:1.7;">The sequence every property moves through before it can appear in search results.</p>
         </div>
+
+        {{-- Cards --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @foreach ([
-                ['step'=>'01','title'=>'Register','desc'=>'The host creates a profile and adds the property.','icon'=>'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z'],
-                ['step'=>'02','title'=>'Verify','desc'=>'ID checks and on-site property details are reviewed.','icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
-                ['step'=>'03','title'=>'Approve','desc'=>'The listing is reviewed and admitted to the directory.','icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'],
-                ['step'=>'04','title'=>'Go Live','desc'=>'The stay appears in search, badge visible to guests.','icon'=>'M13 10V3L4 14h7v7l9-11h-7z'],
-            ] as $step)
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-orange-100 relative
-                        hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-default">
-                <div class="w-11 h-11 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $step['icon'] }}"/></svg>
+                ['step'=>'01','title'=>'Register','desc'=>'The host creates a profile and adds the property details.','icon'=>'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z'],
+                ['step'=>'02','title'=>'Verify','desc'=>'ID checks and on-site property details are reviewed by our team.','icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
+                ['step'=>'03','title'=>'Approve','desc'=>'The listing is reviewed and admitted to the verified directory.','icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'],
+                ['step'=>'04','title'=>'Go Live','desc'=>'Your stay goes live in search with the verified badge visible to all guests.','icon'=>'M13 10V3L4 14h7v7l9-11h-7z'],
+            ] as $idx => $step)
+            <div style="background:#fff;border-radius:20px;padding:32px 28px;border:1px solid #f0f0f0;position:relative;overflow:hidden;transition:box-shadow .2s,transform .2s;"
+                 onmouseover="this.style.boxShadow='0 12px 40px rgba(0,0,0,0.08)';this.style.transform='translateY(-4px)'"
+                 onmouseout="this.style.boxShadow='none';this.style.transform='translateY(0)'">
+
+                {{-- Step number watermark --}}
+                <div style="position:absolute;top:-8px;right:16px;font-size:72px;font-weight:900;color:#f97316;opacity:.06;line-height:1;user-select:none;pointer-events:none;">{{ $step['step'] }}</div>
+
+                {{-- Icon --}}
+                <div style="width:48px;height:48px;background:#fff3e8;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+                    <svg width="22" height="22" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <path d="{{ $step['icon'] }}"/>
+                    </svg>
                 </div>
-                <div class="absolute top-5 right-5 text-3xl font-black text-orange-100 select-none">{{ $step['step'] }}</div>
-                <div class="font-bold text-gray-900 mb-1">{{ $step['title'] }}</div>
-                <p class="text-xs text-gray-500 leading-relaxed">{{ $step['desc'] }}</p>
+
+                {{-- Step label --}}
+                <div style="font-size:11px;font-weight:700;color:#f97316;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Step {{ $step['step'] }}</div>
+
+                {{-- Title --}}
+                <div style="font-size:17px;font-weight:700;color:#111;margin-bottom:10px;">{{ $step['title'] }}</div>
+
+                {{-- Description --}}
+                <p style="font-size:13px;color:#6b7280;line-height:1.7;margin:0;">{{ $step['desc'] }}</p>
             </div>
             @endforeach
         </div>
+
+        {{-- CTA --}}
+        <div style="text-align:center;margin-top:52px;">
+            <a href="#" style="display:inline-flex;align-items:center;gap:8px;background:#f97316;color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:999px;text-decoration:none;transition:background .15s,transform .1s;"
+               onmouseover="this.style.background='#ea6c0a'" onmouseout="this.style.background='#f97316'"
+               onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform='scale(1)'">
+                Start listing your property
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+        </div>
+
     </div>
 </section>
 
+<div style="height:80px;background:#0a0a0a;"></div>
+
 {{-- ===== BOOKING WORKS DIFFERENTLY ===== --}}
-<section style="background:#0a0a0a;padding:60px 0;position:relative;overflow:hidden;" class="reveal">
+<section style="background:#0a0a0a;padding:80px 0;position:relative;overflow:hidden;" class="reveal">
     <div style="position:absolute;top:-60px;right:-60px;width:260px;height:260px;background:#2a1a0e;border-radius:50%;pointer-events:none;"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="mb-10">
+        <div class="mb-14">
             <div style="font-size:11px;font-weight:700;color:#f97316;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Why guests choose us</div>
             <h2 style="font-size:clamp(24px,4vw,32px);font-weight:800;color:#fff;margin:0 0 14px 0;">Booking here works differently</h2>
             <p style="font-size:14px;color:rgba(255,255,255,0.55);max-width:480px;line-height:1.7;margin:0;">
@@ -553,10 +688,10 @@
 </section>
 
 {{-- ===== HOST CTA ===== --}}
-<section style="background:#f5f5f5;padding:60px 0;" class="reveal">
+<section style="background:#f5f5f5;padding:80px 0;" class="reveal">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
-            List a shortlet, earn from <span class="text-orange-500">verified guests</span>
+        <h2 style="font-size:clamp(40px,6vw,72px);font-weight:900;color:#111;line-height:1.08;margin:0 0 20px 0;letter-spacing:-0.03em;">
+            List a shortlet, earn from <span style="color:#f97316;">verified guests</span>
         </h2>
         <p class="text-sm text-gray-500 mb-8">No dashboards to learn first. Add your property, get verified, and go live.</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -578,7 +713,7 @@
 </section>
 
 {{-- ===== GET STARTED CARD ===== --}}
-<section style="background:#f5f5f5;padding:0 0 60px 0;" class="reveal">
+<section style="background:#f5f5f5;padding:0 0 80px 0;" class="reveal">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="rounded-2xl text-center" style="background:#fef0e6;padding:clamp(28px,6vw,48px) clamp(20px,6vw,40px);">
             <div style="font-size:11px;font-weight:700;color:#f97316;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">Get Started</div>
@@ -588,11 +723,21 @@
             <p class="text-sm text-gray-500 mb-7 max-w-xs mx-auto leading-relaxed">
                 Browse verified stays across Lagos, or list your own property in under 48 hours.
             </p>
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="#" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white text-[14px] font-bold px-7 py-3.5 rounded-full transition-all text-center no-underline">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#"
+                   class="inline-flex items-center justify-center gap-2.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white text-[15px] font-semibold px-8 py-3.5 rounded-full transition-all text-center no-underline shadow-lg shadow-orange-200"
+                   style="letter-spacing:0.01em;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+                    </svg>
                     Browse verified stays
                 </a>
-                <a href="#" class="bg-white hover:bg-gray-50 active:scale-95 text-gray-900 text-[14px] font-semibold px-7 py-3.5 rounded-full border border-gray-300 hover:border-gray-400 transition-all text-center no-underline">
+                <a href="#"
+                   class="inline-flex items-center justify-center gap-2.5 bg-white hover:bg-orange-50 active:scale-95 text-gray-900 text-[15px] font-semibold px-8 py-3.5 rounded-full border-2 border-gray-200 hover:border-orange-400 hover:text-orange-500 transition-all text-center no-underline"
+                   style="letter-spacing:0.01em;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
                     List your property
                 </a>
             </div>
@@ -601,13 +746,12 @@
 </section>
 
 {{-- ===== FOOTER ===== --}}
-<footer style="background:#1e1e1e;padding:52px 0 0 0;" class="reveal">
+<footer style="background:#1e1e1e;padding:72px 0 0 0;" class="reveal">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
         <div class="footer-grid">
             <div class="footer-brand">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-                    <img src="/logo.png" alt="Verified Shortlet" style="height:36px;width:auto;"/>
-                    <span style="font-size:15px;font-weight:600;color:#fff;">Verified Shortlet</span>
+                <div style="margin-bottom:16px;">
+                    <img src="/logo.png" alt="Verified Shortlet" style="height:44px;width:auto;filter:brightness(0) invert(1);"/>
                 </div>
                 <p style="font-size:13px;color:#9ca3af;line-height:1.7;max-width:260px;margin:0;">
                     A verified shortlet marketplace across Lagos's most trusted neighbourhoods, with an AI concierge to help you choose.
@@ -662,21 +806,65 @@ function showToast(msg, duration = 2800) {
     t._timer = setTimeout(() => t.classList.remove('show'), duration);
 }
 
-/* ─── Navbar hamburger ─── */
+/* ─── Navbar ─── */
 const navToggle = document.getElementById('nav-toggle');
 const mobileMenu = document.getElementById('mobile-menu');
+const siteHeader = document.getElementById('site-header');
+
+// Scroll shadow
+window.addEventListener('scroll', () => {
+    siteHeader.classList.toggle('scrolled', window.scrollY > 10);
+}, { passive: true });
+
+// Active nav link based on scroll position
+const sections = [
+    { id: 'explore',   label: 'Explore stays' },
+    { id: 'concierge', label: 'Why verified?' },
+    { id: 'host',      label: 'Become a host' },
+];
+const navLinks = document.querySelectorAll('.nav-link');
+navLinks.forEach(link => {
+    link.addEventListener('click', function () {
+        navLinks.forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// Hamburger toggle — smooth slide via grid-template-rows
 navToggle.addEventListener('click', () => {
     const isOpen = mobileMenu.classList.toggle('open');
     navToggle.classList.toggle('open', isOpen);
     navToggle.setAttribute('aria-expanded', isOpen);
     mobileMenu.setAttribute('aria-hidden', !isOpen);
 });
-// Close on outside click
+
+// Close mobile menu on outside click
 document.addEventListener('click', e => {
     if (!navToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
         mobileMenu.classList.remove('open');
         navToggle.classList.remove('open');
         navToggle.setAttribute('aria-expanded', 'false');
+        mobileMenu.setAttribute('aria-hidden', 'true');
+    }
+});
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && mobileMenu.classList.contains('open')) {
+        mobileMenu.classList.remove('open');
+        navToggle.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+        navToggle.focus();
+    }
+});
+
+// Close mobile menu when resized to desktop
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) {
+        mobileMenu.classList.remove('open');
+        navToggle.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+        mobileMenu.setAttribute('aria-hidden', 'true');
     }
 });
 
@@ -730,13 +918,59 @@ function handleSearch(e) {
 }
 
 /* ─── Category pills ─── */
+let activeCat = 'all stays';
+
+function handleCatPill(btn) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    activeCat = btn.dataset.cat.toLowerCase();
+    filterCards();
+}
+
+// Also handle via event delegation as fallback
 document.getElementById('cat-pills').addEventListener('click', e => {
     const pill = e.target.closest('.cat-pill');
     if (!pill) return;
-    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    showToast(`Showing: ${pill.dataset.cat}`);
+    handleCatPill(pill);
 });
+
+function filterCards() {
+    const grid     = document.getElementById('popular-grid');
+    const cards    = Array.from(grid.querySelectorAll('.popular-card'));
+    const guestVal = parseInt(document.getElementById('guest-filter').value);
+    let anyVisible = false;
+
+    cards.forEach(card => {
+        const cats   = card.dataset.cats.toLowerCase();
+        const guests = parseInt(card.dataset.guests);
+
+        const catMatch   = activeCat === 'all stays' || cats.includes(activeCat);
+        let   guestMatch = true;
+        if (guestVal === 2 && guests > 2)                  guestMatch = false;
+        if (guestVal === 4 && (guests < 3 || guests > 4))  guestMatch = false;
+        if (guestVal === 5 && guests < 5)                  guestMatch = false;
+
+        const show = catMatch && guestMatch;
+        card.style.display = show ? '' : 'none';
+        if (show) anyVisible = true;
+    });
+
+    // Empty state
+    let emptyEl = grid.querySelector('.cat-empty');
+    if (!anyVisible) {
+        if (!emptyEl) {
+            emptyEl = document.createElement('div');
+            emptyEl.className = 'cat-empty';
+            emptyEl.style.cssText = 'grid-column:1/-1;text-align:center;padding:48px 0;color:#9ca3af;font-size:14px;';
+            emptyEl.innerHTML = '<div style="font-size:32px;margin-bottom:12px;">🏠</div>No stays found for this filter.<br><span style="font-size:12px;">Try a different category or guest count.</span>';
+        }
+        grid.appendChild(emptyEl);
+    } else {
+        emptyEl?.remove();
+    }
+
+    sortCards();
+}
 
 /* ─── Wishlist / Heart toggle ─── */
 function toggleHeart(btn) {
@@ -781,24 +1015,12 @@ document.getElementById('modal-overlay').addEventListener('click', closeInsights
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInsights(); });
 
 /* ─── Sort & filter popular stays ─── */
-function applyFilters() {
-    const sortVal   = document.getElementById('sort-select').value;
-    const guestVal  = parseInt(document.getElementById('guest-filter').value);
-    const grid      = document.getElementById('popular-grid');
-    const cards     = Array.from(grid.querySelectorAll('.popular-card'));
+function sortCards() {
+    const sortVal = document.getElementById('sort-select').value;
+    const grid    = document.getElementById('popular-grid');
+    const visible = Array.from(grid.querySelectorAll('.popular-card'))
+                         .filter(c => c.style.display !== 'none');
 
-    // Filter
-    cards.forEach(c => {
-        const g = parseInt(c.dataset.guests);
-        let show = true;
-        if (guestVal === 2 && g > 2) show = false;
-        if (guestVal === 4 && (g < 3 || g > 4)) show = false;
-        if (guestVal === 5 && g < 5) show = false;
-        c.style.display = show ? '' : 'none';
-    });
-
-    // Sort visible ones
-    const visible = cards.filter(c => c.style.display !== 'none');
     visible.sort((a, b) => {
         if (sortVal === 'price-asc')  return parseFloat(a.dataset.price)  - parseFloat(b.dataset.price);
         if (sortVal === 'price-desc') return parseFloat(b.dataset.price)  - parseFloat(a.dataset.price);
@@ -808,8 +1030,9 @@ function applyFilters() {
     visible.forEach(c => grid.appendChild(c));
 }
 
-document.getElementById('sort-select').addEventListener('change', applyFilters);
-document.getElementById('guest-filter').addEventListener('change', applyFilters);
+// Both dropdowns now go through filterCards so category + guest + sort all work together
+document.getElementById('sort-select').addEventListener('change', filterCards);
+document.getElementById('guest-filter').addEventListener('change', filterCards);
 
 /* ─── AI Chat ─── */
 const chatResponses = {
