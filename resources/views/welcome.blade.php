@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+    {{-- Auth Modals --}}
+    <x-auth.login-modal />
+    <x-auth.signup-modal />
+
     {{-- Toast Notification --}}
     <x-toast />
 
@@ -258,6 +262,26 @@
 
 @push('scripts')
 <script>
+// Initialize Alpine store for modals
+document.addEventListener('alpine:init', () => {
+    Alpine.store('modals', {
+        showLoginModal: false,
+        showSignupModal: false,
+        openLogin() {
+            this.showLoginModal = true;
+            this.showSignupModal = false;
+        },
+        openSignup() {
+            this.showSignupModal = true;
+            this.showLoginModal = false;
+        },
+        closeAll() {
+            this.showLoginModal = false;
+            this.showSignupModal = false;
+        }
+    });
+});
+
 // Toast notification helper
 window.showToast = function(message, duration = 3000) {
     const toast = document.getElementById('toast');

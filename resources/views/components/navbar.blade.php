@@ -19,10 +19,18 @@
 
         {{-- Desktop auth --}}
         <div class="nav-desktop items-center gap-6">
-            <a href="#" class="text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors">Log In</a>
-            <a href="#" class="inline-flex items-center bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap">
+            <button 
+                @click="showLoginModal = true" 
+                class="text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors"
+            >
+                Log In
+            </button>
+            <button 
+                @click="showSignupModal = true" 
+                class="inline-flex items-center bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap"
+            >
                 List your property
-            </a>
+            </button>
         </div>
 
         {{-- Hamburger --}}
@@ -72,13 +80,21 @@
                 </svg>
                 Help
             </a>
-            <a href="#">
+            <button 
+                @click="mobileMenuOpen = false; showLoginModal = true"
+                class="flex items-center w-full"
+            >
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
                 Log In
-            </a>
-            <a href="#" class="cta-mobile">List your property</a>
+            </button>
+            <button 
+                @click="mobileMenuOpen = false; showSignupModal = true" 
+                class="cta-mobile"
+            >
+                List your property
+            </button>
         </div>
     </nav>
 </header>

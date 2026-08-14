@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Barlow:wght@800;900&display=swap" rel="stylesheet">
     @stack('styles')
 </head>
-<body class="bg-white font-sans text-gray-900 antialiased">
+<body class="bg-white font-sans text-gray-900 antialiased" x-data="{ showLoginModal: false, showSignupModal: false }">
     @yield('content')
     
     @stack('scripts')
