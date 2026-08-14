@@ -3,7 +3,7 @@
     x-show="$store.modals.showSignupModal" 
     x-cloak
     @keydown.escape.window="$store.modals.closeAll()"
-    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4"
+    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
     x-data="{ showPassword: false }"
 >
     <div 
@@ -14,7 +14,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 transform scale-100"
         x-transition:leave-end="opacity-0 transform scale-95"
-        class="bg-[#E8E8E8] rounded-3xl shadow-2xl w-full max-w-md relative max-h-[90vh] overflow-y-auto"
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-md relative max-h-[90vh] overflow-y-auto"
     >
         {{-- Close button --}}
         <button 

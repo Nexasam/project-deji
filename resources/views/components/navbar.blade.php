@@ -20,13 +20,13 @@
         {{-- Desktop auth --}}
         <div class="nav-desktop items-center gap-6">
             <button 
-                @click="showLoginModal = true" 
+                @click="$store.modals.openLogin()" 
                 class="text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors"
             >
                 Log In
             </button>
             <button 
-                @click="showSignupModal = true" 
+                @click="$store.modals.openSignup()" 
                 class="inline-flex items-center bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap"
             >
                 List your property
@@ -81,7 +81,7 @@
                 Help
             </a>
             <button 
-                @click="mobileMenuOpen = false; showLoginModal = true"
+                @click="mobileMenuOpen = false; $store.modals.openLogin()"
                 class="flex items-center w-full"
             >
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;">
@@ -90,7 +90,7 @@
                 Log In
             </button>
             <button 
-                @click="mobileMenuOpen = false; showSignupModal = true" 
+                @click="mobileMenuOpen = false; $store.modals.openSignup()" 
                 class="cta-mobile"
             >
                 List your property
