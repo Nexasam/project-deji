@@ -15,6 +15,7 @@
             </h2>
             <p class="text-gray-600 text-sm">{{ $description }}</p>
         </div>
+        
 
         {{-- Features Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10 max-w-4xl mx-auto">
