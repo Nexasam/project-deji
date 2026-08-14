@@ -6,8 +6,11 @@
     <title>Properties - Verified Shortlet</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#ECECEC] font-sans antialiased" x-data="{ sidebarOpen: false, viewMode: 'grid' }">
+<body class="bg-[#ECECEC] font-sans antialiased" x-data="{ sidebarOpen: false, viewMode: 'grid', propertyDetailOpen: false, selectedProperty: null }">
     <div class="min-h-screen flex">
+        {{-- Property Detail Sidebar --}}
+        <x-property-detail-sidebar />
+        
         {{-- Sidebar --}}
         <aside class="w-[200px] bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
             {{-- Logo Section --}}
@@ -320,100 +323,116 @@
                     {{-- Property Grid --}}
                     <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {{-- Property Card 1 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
-                            status="OCCUPIED"
-                            statusColor="orange"
-                            name="Sunset Loft, Lekki Phase 1"
-                            location="Egbeda, Lagos · Serviced Apartment"
-                            occupancy="84%"
-                            revenue="₦770k"
-                            revenueChange="30d"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
+                                status="OCCUPIED"
+                                statusColor="orange"
+                                name="Sunset Loft, Lekki Phase 1"
+                                location="Egbeda, Lagos · Serviced Apartment"
+                                occupancy="84%"
+                                revenue="₦770k"
+                                revenueChange="30d"
+                            />
+                        </div>
 
                         {{-- Property Card 2 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400"
-                            status="AVAILABLE"
-                            statusColor="green"
-                            name="Bluewater Suite 2A"
-                            location="Egbeda, Lagos · Serviced Apartment"
-                            occupancy="94%"
-                            revenue="₦600k"
-                            revenueChange="30d"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400"
+                                status="AVAILABLE"
+                                statusColor="green"
+                                name="Bluewater Suite 2A"
+                                location="Egbeda, Lagos · Serviced Apartment"
+                                occupancy="94%"
+                                revenue="₦600k"
+                                revenueChange="30d"
+                            />
+                        </div>
 
                         {{-- Property Card 3 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400"
-                            status="CLEANING"
-                            statusColor="blue"
-                            name="Bluewater Suite 4B"
-                            location="Egbeda, Lagos · Shortlet"
-                            occupancy="50%"
-                            revenue="₦410k"
-                            revenueChange="OFG"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400"
+                                status="CLEANING"
+                                statusColor="blue"
+                                name="Bluewater Suite 4B"
+                                location="Egbeda, Lagos · Shortlet"
+                                occupancy="50%"
+                                revenue="₦410k"
+                                revenueChange="OFG"
+                            />
+                        </div>
 
                         {{-- Property Card 4 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
-                            status="INSPECTION"
-                            statusColor="purple"
-                            name="Palm Court 1"
-                            location="Island, Lagos · Boutique Suite"
-                            occupancy="84%"
-                            revenue="₦780k"
-                            revenueChange="30d"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
+                                status="INSPECTION"
+                                statusColor="purple"
+                                name="Palm Court 1"
+                                location="Island, Lagos · Boutique Suite"
+                                occupancy="84%"
+                                revenue="₦780k"
+                                revenueChange="30d"
+                            />
+                        </div>
 
                         {{-- Property Card 5 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
-                            status="BLOCKED"
-                            statusColor="gray"
-                            name="Sunset Loft, Lekki Phase 1"
-                            location="Egbeda, Lagos · Serviced Apartment"
-                            occupancy="84%"
-                            revenue="₦770k"
-                            revenueChange="30d"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
+                                status="BLOCKED"
+                                statusColor="gray"
+                                name="Sunset Loft, Lekki Phase 1"
+                                location="Egbeda, Lagos · Serviced Apartment"
+                                occupancy="84%"
+                                revenue="₦770k"
+                                revenueChange="30d"
+                            />
+                        </div>
 
                         {{-- Property Card 6 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400"
-                            status="AVAILABLE"
-                            statusColor="green"
-                            name="Bluewater Suite 2A"
-                            location="Egbeda, Lagos · Serviced Apartment"
-                            occupancy="94%"
-                            revenue="₦600k"
-                            revenueChange="30d"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400"
+                                status="AVAILABLE"
+                                statusColor="green"
+                                name="Bluewater Suite 2A"
+                                location="Egbeda, Lagos · Serviced Apartment"
+                                occupancy="94%"
+                                revenue="₦600k"
+                                revenueChange="30d"
+                            />
+                        </div>
 
                         {{-- Property Card 7 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
-                            status="OCCUPIED"
-                            statusColor="orange"
-                            name="Sunset Loft, Lekki Phase 1"
-                            location="Egbeda, Lagos · Serviced Apartment"
-                            occupancy="84%"
-                            revenue="₦780k"
-                            revenueChange="30d"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400"
+                                status="OCCUPIED"
+                                statusColor="orange"
+                                name="Sunset Loft, Lekki Phase 1"
+                                location="Egbeda, Lagos · Serviced Apartment"
+                                occupancy="84%"
+                                revenue="₦780k"
+                                revenueChange="30d"
+                            />
+                        </div>
 
                         {{-- Property Card 8 --}}
-                        <x-property-dashboard-card 
-                            image="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400"
-                            status="CLEANING"
-                            statusColor="blue"
-                            name="Bluewater Suite 4B"
-                            location="Egbeda, Lagos · Shortlet"
-                            occupancy="80%"
-                            revenue="₦410k"
-                            revenueChange="30d"
-                        />
+                        <div @click="propertyDetailOpen = true">
+                            <x-property-dashboard-card 
+                                image="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400"
+                                status="CLEANING"
+                                statusColor="blue"
+                                name="Bluewater Suite 4B"
+                                location="Egbeda, Lagos · Shortlet"
+                                occupancy="80%"
+                                revenue="₦410k"
+                                revenueChange="30d"
+                            />
+                        </div>
                     </div>
 
                     {{-- List View --}}
