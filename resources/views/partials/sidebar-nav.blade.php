@@ -7,9 +7,7 @@
     {{-- Logo --}}
     <div class="p-4 border-b border-gray-200">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-[#FF5A00] rounded flex items-center justify-center flex-shrink-0">
-                <span class="text-white text-xs font-bold">VS</span>
-            </div>
+            <img src="/logo1.png" alt="VS Logo" class="h-10 w-auto" />
             <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
         </div>
     </div>

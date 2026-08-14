@@ -84,12 +84,15 @@
                         </div>
                         <div class="mb-3">
                             <p class="text-gray-600 text-sm mb-3">8 photos · 1 video</p>
-                            <div class="flex gap-2">
-                                <img src="/api/placeholder/100/100" alt="Property photo 1" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="/api/placeholder/100/100" alt="Property photo 2" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="/api/placeholder/100/100" alt="Property photo 3" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="/api/placeholder/100/100" alt="Property photo 4" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="/api/placeholder/100/100" alt="Property photo 5" class="w-16 h-16 rounded-lg object-cover" />
+                            <div class="flex gap-2 flex-wrap">
+                                <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=120&h=120&fit=crop" alt="Living room" class="w-16 h-16 rounded-lg object-cover" />
+                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=120&h=120&fit=crop" alt="Bedroom" class="w-16 h-16 rounded-lg object-cover" />
+                                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=120&h=120&fit=crop" alt="Kitchen" class="w-16 h-16 rounded-lg object-cover" />
+                                <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?w=120&h=120&fit=crop" alt="Bathroom" class="w-16 h-16 rounded-lg object-cover" />
+                                <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=120&h=120&fit=crop" alt="Balcony" class="w-16 h-16 rounded-lg object-cover" />
+                                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=120&h=120&fit=crop" alt="Dining area" class="w-16 h-16 rounded-lg object-cover" />
+                                <img src="https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=120&h=120&fit=crop" alt="Study" class="w-16 h-16 rounded-lg object-cover" />
+                                <img src="https://images.unsplash.com/photo-1531835551805-16d864c8d311?w=120&h=120&fit=crop" alt="Exterior" class="w-16 h-16 rounded-lg object-cover" />
                             </div>
                         </div>
                     </div>

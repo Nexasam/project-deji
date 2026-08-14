@@ -13,6 +13,8 @@
     selectedStatus: 'All entries',
     bookingDetailOpen: false,
     selectedBooking: null,
+    addBookingOpen: false,
+    bookingChannel: 'vs',
     openBooking(booking) {
         this.selectedBooking = booking;
         this.bookingDetailOpen = true;
@@ -22,6 +24,125 @@
 
         {{-- Booking Detail Sidebar --}}
         <x-calendar.booking-detail-sidebar />
+
+        {{-- Add Booking Modal --}}
+        <div
+            x-show="addBookingOpen"
+            x-cloak
+            @keydown.escape.window="addBookingOpen = false"
+            class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+        >
+            <div
+                @click.away="addBookingOpen = false"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                style="width:100%; max-width:500px; background:#fff; border-radius:16px; padding:32px; position:relative; font-family:'Inter',sans-serif;"
+            >
+                {{-- Header --}}
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                    <h2 style="font-size:18px; font-weight:700; color:#111827; margin:0;">Add booking/ block date</h2>
+                    <button @click="addBookingOpen = false"
+                        style="width:32px; height:32px; background:#FF5A00; border:none; border-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                        onmouseover="this.style.background='#E64F00'" onmouseout="this.style.background='#FF5A00'">
+                        <svg width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Property --}}
+                <div style="margin-bottom:18px;">
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Property</label>
+                    <div style="position:relative;">
+                        <select style="width:100%; padding:10px 36px 10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; appearance:none; box-sizing:border-box; cursor:pointer;"
+                            onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'">
+                            <option value="">Select property</option>
+                            <option>Sunset Loft, Lekki Phase 1</option>
+                            <option>Bluewater Suite 4B</option>
+                            <option>Highrise Apartment</option>
+                            <option>Emerald Suites</option>
+                        </select>
+                        <svg style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;" width="14" height="14" fill="none" stroke="#6B7280" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                </div>
+
+                {{-- Check-in / Check-out --}}
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+                    <div>
+                        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Check-in</label>
+                        <div style="position:relative;">
+                            <input type="date" placeholder="DD/MM/YYYY"
+                                style="width:100%; padding:10px 36px 10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; box-sizing:border-box;"
+                                onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'" />
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Check-out</label>
+                        <div style="position:relative;">
+                            <input type="date" placeholder="DD/MM/YYYY"
+                                style="width:100%; padding:10px 36px 10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; box-sizing:border-box;"
+                                onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'" />
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Booking channel --}}
+                <div style="margin-bottom:16px;">
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Booking channel</label>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        {{-- Colour dot --}}
+                        <div style="width:14px; height:14px; border-radius:50%; flex-shrink:0; background:#FF5A00;"
+                             :style="bookingChannel === 'vs' ? 'background:#FF5A00' : bookingChannel === 'airbnb' ? 'background:#DC2626' : bookingChannel === 'booking' ? 'background:#1E40AF' : bookingChannel === 'whatsapp' ? 'background:#10B981' : 'background:#6B7280'"></div>
+                        <div style="position:relative; flex:1;">
+                            <select x-model="bookingChannel"
+                                style="width:100%; padding:10px 36px 10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; appearance:none; box-sizing:border-box; cursor:pointer;"
+                                onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'">
+                                <option value="vs">Verified Shortlet (direct)</option>
+                                <option value="airbnb">Airbnb</option>
+                                <option value="booking">Booking.com</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="walkin">Walk-in / Phone</option>
+                            </select>
+                            <svg style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;" width="14" height="14" fill="none" stroke="#6B7280" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Info notice --}}
+                <div x-show="bookingChannel === 'vs'"
+                    style="background:#FFF5EE; border:1.5px solid #FDBA74; border-radius:10px; padding:10px 14px; margin-bottom:18px; font-size:12px; color:#9A3412; font-family:'Inter',sans-serif; line-height:1.5;">
+                    ⚠ This will show as a <strong>Verified Lock (Verified Shortlet)</strong> — system-confirmed and not editable once saved.
+                </div>
+                <div x-show="bookingChannel !== 'vs'"
+                    style="background:#F0FDF4; border:1.5px solid #86EFAC; border-radius:10px; padding:10px 14px; margin-bottom:18px; font-size:12px; color:#166534; font-family:'Inter',sans-serif; line-height:1.5;">
+                    ✏ This will show as a <strong>self-reported block</strong> — you can edit or remove it later.
+                </div>
+
+                {{-- Guest name --}}
+                <div style="margin-bottom:24px;">
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Guest name (optional)</label>
+                    <input type="text" placeholder="e.g Tariye Fabora"
+                        style="width:100%; padding:10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#FF5A00';this.style.background='#fff'"
+                        onblur="this.style.borderColor='#E5E7EB';this.style.background='#F9FAFB'" />
+                </div>
+
+                {{-- Save --}}
+                <button @click="addBookingOpen = false"
+                    style="width:100%; padding:14px; background:#FF5A00; border:none; border-radius:10px; font-size:14px; font-weight:700; color:#fff; font-family:'Inter',sans-serif; cursor:pointer; transition:background .15s;"
+                    onmouseover="this.style.background='#E64F00'" onmouseout="this.style.background='#FF5A00'">
+                    Save entry
+                </button>
+            </div>
+        </div>
         {{-- Sidebar --}}
         @include('partials.sidebar-nav', ['active' => 'calendar'])
 
@@ -69,7 +190,7 @@
                             <h1 class="text-xl font-bold text-gray-900 mb-1">Calendar</h1>
                             <p class="text-xs text-gray-600">Track every booking — verified locks vs self-reported blocks</p>
                         </div>
-                        <button class="flex items-center gap-2 px-4 py-2 bg-[#FF5A00] text-white rounded-lg hover:bg-[#E64F00] text-sm font-medium">
+                        <button @click="addBookingOpen = true" class="flex items-center gap-2 px-4 py-2 bg-[#FF5A00] text-white rounded-lg hover:bg-[#E64F00] text-sm font-medium">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>

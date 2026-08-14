@@ -2,7 +2,7 @@
     {{-- Logo & User Section --}}
     <div class="p-4 border-b border-gray-200">
         <div class="flex items-center gap-2 mb-4">
-            <img src="/logo1.png" alt="VS Logo" class="h-6 w-auto" />
+            <img src="/logo1.png" alt="VS Logo" class="h-8 w-auto" />
             <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
         </div>
         

@@ -27,9 +27,126 @@
                             </svg>
                         </button>
 
-                        <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                            <option>Lekki Waterview Suites</option>
-                        </select>
+                        {{-- Property selector dropdown --}}
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" @click.away="open = false"
+                                class="flex items-center gap-3 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-w-[220px]">
+                                <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-[#FF5A00]" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex items-center gap-1 flex-1 min-w-0">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Viewing</span>
+                                    <span class="text-sm font-semibold text-gray-900 truncate ml-1">Lekki Waterview Suites</span>
+                                </div>
+                                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+
+                            {{-- Dropdown panel --}}
+                            <div x-show="open" x-cloak
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden"
+                                style="width:420px;">
+
+                                {{-- Current viewing header --}}
+                                <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                                    <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-[#FF5A00]" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Viewing</div>
+                                        <div class="text-sm font-bold text-gray-900">Lekki Waterview Suites</div>
+                                    </div>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+
+                                {{-- Search --}}
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-xl">
+                                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                        <input type="text" placeholder="Find a property..."
+                                            class="flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"/>
+                                    </div>
+                                </div>
+
+                                {{-- Property list --}}
+                                <div class="max-h-72 overflow-y-auto">
+                                    <div class="px-4 pt-3 pb-1">
+                                        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Your Properties (5)</p>
+                                    </div>
+
+                                    {{-- Egbeda group --}}
+                                    <div class="px-4 pb-1">
+                                        <p class="text-xs font-semibold text-gray-500 mb-1">Egbeda</p>
+                                    </div>
+                                    @foreach([
+                                        ['initials'=>'BS','name'=>'Bluewater Suite 4B',    'loc'=>'Egbeda, Lagos','bg'=>'#1F2937','active'=>false],
+                                        ['initials'=>'SA','name'=>'Sunset Apartment',       'loc'=>'Egbeda, Lagos','bg'=>'#FF5A00','active'=>true],
+                                        ['initials'=>'BS','name'=>'Bluewater Suite 4B',    'loc'=>'Egbeda, Lagos','bg'=>'#1F2937','active'=>false],
+                                    ] as $p)
+                                    <button @click="open = false"
+                                        class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left {{ $p['active'] ? 'bg-orange-50' : '' }}">
+                                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
+                                             style="background:{{ $p['bg'] }}">{{ $p['initials'] }}</div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-semibold text-gray-900">{{ $p['name'] }}</div>
+                                            <div class="text-xs text-gray-500">{{ $p['loc'] }}</div>
+                                        </div>
+                                        <span class="flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded-full flex-shrink-0">
+                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span>
+                                            Verified
+                                        </span>
+                                    </button>
+                                    @endforeach
+
+                                    {{-- Lekki group --}}
+                                    <div class="px-4 pt-2 pb-1">
+                                        <p class="text-xs font-semibold text-gray-500 mb-1">Lekki</p>
+                                    </div>
+                                    @foreach([
+                                        ['initials'=>'BS','name'=>'Lekki Waterview Suites','loc'=>'Lekki, Lagos', 'bg'=>'#1F2937','active'=>true],
+                                    ] as $p)
+                                    <button @click="open = false"
+                                        class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left {{ $p['active'] ? 'bg-orange-50' : '' }}">
+                                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
+                                             style="background:{{ $p['bg'] }}">{{ $p['initials'] }}</div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-semibold text-gray-900">{{ $p['name'] }}</div>
+                                            <div class="text-xs text-gray-500">{{ $p['loc'] }}</div>
+                                        </div>
+                                        <span class="flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded-full flex-shrink-0">
+                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span>
+                                            Verified
+                                        </span>
+                                    </button>
+                                    @endforeach
+                                </div>
+
+                                {{-- Footer --}}
+                                <div class="border-t border-gray-100 px-4 py-3">
+                                    <a href="/properties" class="flex items-center justify-center gap-1.5 text-sm font-semibold text-[#FF5A00] hover:text-[#E64F00] transition-colors">
+                                        See all properties
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-4">

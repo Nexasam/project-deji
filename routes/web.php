@@ -26,6 +26,22 @@ Route::get('/property/finance', function () {
     return view('property-finance');
 });
 
+Route::get('/property/add/amenities', function () {
+    return view('property-add-amenities');
+});
+
+Route::get('/property/add/documents', function () {
+    return view('property-add-documents');
+});
+
+Route::get('/property/add/marketplace', function () {
+    return view('property-add-marketplace');
+});
+
+Route::get('/property/add/new', function () {
+    return view('property-add-new');
+});
+
 Route::get('/property/add/step1', function () {
     return view('property-add-step1');
 });

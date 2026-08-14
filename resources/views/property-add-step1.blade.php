@@ -40,7 +40,7 @@
                     <p class="text-[#FF5A00] text-sm font-bold uppercase tracking-wider mb-3">LET'S GET YOUR PLACE LISTED</p>
                     <h1 class="text-4xl font-bold text-gray-900 mb-4">What are we adding today?</h1>
                     <p class="text-gray-600 text-lg">
-                        Either way, we'll walk you through it one question at a time â€” it takes about 10 minutes, and you can save your progress and finish later.
+                        Either way, we'll walk you through it one question at a time GÇö it takes about 10 minutes, and you can save your progress and finish later.
                     </p>
                 </div>
 
