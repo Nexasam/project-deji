@@ -171,7 +171,7 @@ return new class extends Migration
             $table->string('device_name')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->timestamp('last_used_at')->nullable();
-            $table->timestamp('expires_at');
+            $table->dateTime('expires_at');
             $table->timestamp('revoked_at')->nullable();
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
@@ -228,9 +228,9 @@ return new class extends Migration
             $table->text('reason');
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
-            $table->timestamp('started_at');
-            $table->timestamp('authorized_at');
-            $table->timestamp('expires_at');
+            $table->dateTime('started_at');
+            $table->dateTime('authorized_at');
+            $table->dateTime('expires_at');
             $table->timestamp('ended_at')->nullable();
             $table->text('termination_reason')->nullable();
             $table->string('status', 40)->default('active');

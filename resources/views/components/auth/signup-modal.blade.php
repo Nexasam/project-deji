@@ -74,7 +74,8 @@
             </div>
 
             {{-- Form --}}
-            <form style="display:flex;flex-direction:column;gap:14px;" @submit.prevent>
+            <form method="POST" action="{{ route('register') }}" style="display:flex;flex-direction:column;gap:14px;">
+                @csrf
 
                 {{-- Name + Email row --}}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -123,7 +124,7 @@
                         </div>
                         <input 
                             type="tel" 
-                            name="phone" 
+                            name="phone_number"
                             required
                             placeholder="080 0000 0000"
                             style="flex:1;padding:10px 12px;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;color:#111827;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;transition:border-color .15s;"
@@ -141,8 +142,8 @@
                             :type="showPassword ? 'text' : 'password'"
                             name="password" 
                             required
-                            minlength="8"
-                            placeholder="Min. 8 characters"
+                            minlength="12"
+                            placeholder="12+ characters"
                             style="width:100%;padding:10px 44px 10px 12px;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;color:#111827;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;transition:border-color .15s;"
                             onfocus="this.style.borderColor='#FF5A00';this.style.background='#fff'"
                             onblur="this.style.borderColor='#E5E7EB';this.style.background='#F9FAFB'"
@@ -161,6 +162,11 @@
                             </svg>
                         </button>
                     </div>
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">Confirm password</label>
+                    <input type="password" name="password_confirmation" required style="width:100%;padding:10px 12px;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;box-sizing:border-box;" />
                 </div>
 
                 {{-- Terms --}}
@@ -182,8 +188,7 @@
 
                 {{-- Submit --}}
                 <button 
-                    type="button"
-                    onclick="window.location.href='/dashboard'"
+                    type="submit"
                     style="width:100%;padding:12px;background:#FF5A00;border:none;border-radius:10px;font-size:14px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;cursor:pointer;transition:background .15s;margin-top:2px;"
                     onmouseover="this.style.background='#E64F00'"
                     onmouseout="this.style.background='#FF5A00'"

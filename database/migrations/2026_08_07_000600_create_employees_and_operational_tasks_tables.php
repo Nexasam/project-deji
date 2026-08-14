@@ -114,11 +114,11 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'operational_task_id'])
+            $table->foreign(['business_id', 'operational_task_id'], 'task_checklist_business_task_fk')
                 ->references(['business_id', 'id'])->on('operational_tasks')->cascadeOnDelete();
 
-            $table->index(['operational_task_id', 'sort_order']);
-            $table->index(['business_id', 'is_completed']);
+            $table->index(['operational_task_id', 'sort_order'], 'task_checklist_task_order_idx');
+            $table->index(['business_id', 'is_completed'], 'task_checklist_business_done_idx');
         });
     }
 

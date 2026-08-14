@@ -30,9 +30,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->foreign(['business_id', 'property_id'])->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
-            $table->unique(['provider', 'external_calendar_id']);
+            $table->unique(['provider', 'external_calendar_id'], 'calendar_provider_external_id_unique');
             $table->unique(['business_id', 'id']);
-            $table->index(['business_id', 'property_id', 'status']);
+            $table->index(['business_id', 'property_id', 'status'], 'calendar_business_property_status_idx');
         });
 
         Schema::create('property_availability_blocks', function (Blueprint $table) {

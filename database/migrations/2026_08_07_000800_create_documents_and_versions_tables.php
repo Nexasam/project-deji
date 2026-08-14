@@ -77,8 +77,8 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->unique(['document_id', 'user_id', 'access_level']);
-            $table->unique(['document_id', 'user_role_id', 'access_level']);
+            $table->unique(['document_id', 'user_id', 'access_level'], 'document_permission_user_access_unique');
+            $table->unique(['document_id', 'user_role_id', 'access_level'], 'document_permission_role_access_unique');
             $table->index(['business_id', 'status', 'expires_at']);
         });
     }

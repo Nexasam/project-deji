@@ -76,10 +76,11 @@
             </div>
 
             {{-- Fields --}}
-            <div style="display:flex;flex-direction:column;gap:16px;">
+            <form method="POST" action="{{ route('login') }}" style="display:flex;flex-direction:column;gap:16px;">
+                @csrf
                 <div>
                     <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;font-family:'Inter',sans-serif;">Email address</label>
-                    <input type="email" placeholder="you@example.com"
+                    <input type="email" name="email" required placeholder="you@example.com"
                         style="width:100%;padding:10px 14px;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;color:#111827;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;"
                         onfocus="this.style.borderColor='#FF5A00';this.style.background='#fff'"
                         onblur="this.style.borderColor='#E5E7EB';this.style.background='#F9FAFB'"
@@ -93,7 +94,7 @@
                             onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Forgot password?</a>
                     </div>
                     <div style="position:relative;">
-                        <input :type="showPassword ? 'text' : 'password'" placeholder="Enter your password"
+                        <input :type="showPassword ? 'text' : 'password'" name="password" required placeholder="Enter your password"
                             style="width:100%;padding:10px 44px 10px 14px;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;color:#111827;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;"
                             onfocus="this.style.borderColor='#FF5A00';this.style.background='#fff'"
                             onblur="this.style.borderColor='#E5E7EB';this.style.background='#F9FAFB'"
@@ -112,14 +113,14 @@
                 </div>
 
                 {{-- Submit --}}
-                <button type="button" onclick="window.location.href='/dashboard'"
+                <button type="submit"
                     style="width:100%;padding:12px;background:#FF5A00;border:none;border-radius:10px;font-size:14px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;cursor:pointer;margin-top:4px;"
                     onmouseover="this.style.background='#E64F00'"
                     onmouseout="this.style.background='#FF5A00'"
                 >
                     Sign in to your account
                 </button>
-            </div>
+            </form>
 
             {{-- Footer --}}
             <p style="text-align:center;font-size:13px;color:#6B7280;margin-top:20px;font-family:'Inter',sans-serif;">

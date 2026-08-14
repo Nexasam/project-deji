@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\IdentityVerificationStatus;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -37,7 +38,7 @@ use Illuminate\Notifications\Notifiable;
     'last_seen_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUuids, Notifiable, SoftDeletes;
@@ -133,6 +134,30 @@ class User extends Authenticatable
     public function activeBusinessContext(): HasOne
     {
         return $this->hasOne(UserBusinessContext::class);
+    }
+
+    public function hasActiveGlobalRole(string $systemKey): bool
+    {
+        return $this->roleAssignments()->where('status', 'active')
+            ->whereNull('business_membership_id')->whereNull('revoked_at')
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->whereHas('role', fn ($query) => $query->where('system_key', $systemKey)->where('status', 'active'))
+            ->exists();
+    }
+
+    public function hasActiveBusinessRole(string $systemKey, string $membershipId): bool
+    {
+        return $this->roleAssignments()->where('business_membership_id', $membershipId)
+            ->where('status', 'active')->whereNull('revoked_at')
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->whereHas('role', fn ($query) => $query->where('system_key', $systemKey)->where('status', 'active'))
+            ->exists();
+    }
+
+    public function resolvedBusinessContext(): ?UserBusinessContext
+    {
+        return $this->activeBusinessContext()->where('status', 'active')
+            ->with(['business', 'membership', 'activeRoleAssignment.role'])->first();
     }
 
     public function workspacePreferences(): HasMany

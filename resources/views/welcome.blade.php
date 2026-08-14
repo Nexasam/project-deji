@@ -128,7 +128,8 @@
                 @php
                     $featuredProperties = [
                         [
-                            'image' => 'https://images.unsplash.com/photo-1502672260066-6bc05c107956?w=500&h=380&fit=crop',
+                            // 'image' => 'https://images.unsplash.com/photo-1502672260066-6bc05c107956?w=500&h=380&fit=crop',
+                            'image' => 'https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=500&h=380&fit=crop',
                             'name' => 'Luxury Penthouse, Ikoyi',
                             'location' => 'Ikoyi, Lagos',
                             'guests' => 6,

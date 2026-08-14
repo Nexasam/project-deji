@@ -46,7 +46,7 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->unique(['notification_id', 'channel', 'destination']);
+            $table->unique(['notification_id', 'channel', 'destination'], 'notification_delivery_target_unique');
             $table->index(['status', 'last_attempted_at']);
             $table->index(['provider', 'provider_reference']);
         });

@@ -43,7 +43,7 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index(['business_id', 'subscription_status', 'created_at']);
+            $table->index(['business_id', 'subscription_status', 'created_at'], 'business_subscription_status_created_idx');
             $table->index(['provider', 'provider_subscription_id']);
         });
 
@@ -64,7 +64,7 @@ return new class extends Migration
 
             $table->foreign(['business_id', 'property_id'])
                 ->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
-            $table->index(['business_id', 'property_id', 'occurred_at']);
+            $table->index(['business_id', 'property_id', 'occurred_at'], 'property_lifecycle_business_property_at_idx');
             $table->index(['event_type', 'occurred_at']);
         });
     }
