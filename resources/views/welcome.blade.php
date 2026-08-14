@@ -262,68 +262,15 @@
 
 @push('scripts')
 <script>
-// Initialize Alpine store for modals
-document.addEventListener('alpine:init', () => {
-    Alpine.store('modals', {
-        showLoginModal: false,
-        showSignupModal: false,
-        openLogin() {
-            this.showLoginModal = true;
-            this.showSignupModal = false;
-        },
-        openSignup() {
-            this.showSignupModal = true;
-            this.showLoginModal = false;
-        },
-        closeAll() {
-            this.showLoginModal = false;
-            this.showSignupModal = false;
-        }
-    });
-});
-
-// Toast notification helper
-window.showToast = function(message, duration = 3000) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, duration);
-}
-
-// Scroll reveal
+// Scroll reveal + header scroll effect
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('reveal-ready'));
-    
-    const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                revealObserver.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
-
-    document.querySelectorAll('.reveal-ready').forEach(el => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight) {
-            el.classList.add('visible');
-        } else {
-            revealObserver.observe(el);
-        }
-    });
-
     // Header scroll effect
     const header = document.getElementById('site-header');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 10) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-    });
+    if (header) {
+        window.addEventListener('scroll', () => {
+            header.classList.toggle('scrolled', window.scrollY > 10);
+        });
+    }
 });
 </script>
 @endpush

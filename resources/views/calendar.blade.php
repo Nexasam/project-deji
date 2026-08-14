@@ -10,9 +10,18 @@
     sidebarOpen: false,
     currentMonth: 'August 2026',
     selectedProperty: 'All properties',
-    selectedStatus: 'All entries'
+    selectedStatus: 'All entries',
+    bookingDetailOpen: false,
+    selectedBooking: null,
+    openBooking(booking) {
+        this.selectedBooking = booking;
+        this.bookingDetailOpen = true;
+    }
 }">
     <div class="min-h-screen flex">
+
+        {{-- Booking Detail Sidebar --}}
+        <x-calendar.booking-detail-sidebar />
         {{-- Sidebar --}}
         <aside class="w-[200px] bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
             {{-- Logo Section --}}
