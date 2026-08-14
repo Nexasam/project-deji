@@ -6,12 +6,12 @@
 
     {{-- AI Insights Modal --}}
     <x-modal id="insights-modal" title="AI Insights">
-        <p>This property has been verified through our AI-powered inspection process.</p>
-        <p>Key highlights include excellent maintenance standards, accurate photo representation, and responsive host communication.</p>
-        <p>Recent guests rated the cleanliness at 4.8/5 and noted the property matches the listing description perfectly.</p>
+        <div x-data="{ insightText: '' }" @set-insight.window="insightText = $event.detail.text">
+            <p x-text="insightText" class="text-sm text-gray-600"></p>
+        </div>
     </x-modal>
 
-    {{-- Navigation --}}
+    {{-- Navbar --}}
     <x-navbar />
 
     {{-- Hero Section --}}
@@ -67,7 +67,8 @@
                             'location' => 'Lekki, Lagos',
                             'guests' => 2,
                             'price' => 45000,
-                            'rating' => 4.5
+                            'rating' => 4.5,
+                            'insightText' => 'This modern loft offers stunning sunset views and is located in a quiet neighborhood with easy access to shopping centers.'
                         ],
                         [
                             'image' => '/hero2.jpg',
@@ -75,7 +76,8 @@
                             'location' => 'Ikoyi, Lagos',
                             'guests' => 2,
                             'price' => 52000,
-                            'rating' => 4.7
+                            'rating' => 4.7,
+                            'insightText' => 'Premium studio apartment with city views, 24/7 security, and located in the heart of upscale Ikoyi.'
                         ],
                         [
                             'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&h=380&fit=crop',
@@ -83,7 +85,8 @@
                             'location' => 'Victoria Island',
                             'guests' => 4,
                             'price' => 60000,
-                            'rating' => 4.6
+                            'rating' => 4.6,
+                            'insightText' => 'Spacious family-friendly apartment with a private garden, perfect for longer stays and remote work.'
                         ],
                         [
                             'image' => '/hero3.jpg',
@@ -91,25 +94,27 @@
                             'location' => 'GRA, Ikeja',
                             'guests' => 3,
                             'price' => 38000,
-                            'rating' => 4.4
+                            'rating' => 4.4,
+                            'insightText' => 'Affordable and comfortable apartment close to the airport, ideal for business travelers and short stays.'
                         ],
                     ];
                 @endphp
 
                 @foreach($recentProperties as $property)
-                    <x-property-card
+                    <x-property-card 
                         :image="$property['image']"
                         :name="$property['name']"
                         :location="$property['location']"
                         :guests="$property['guests']"
                         :price="$property['price']"
                         :rating="$property['rating']"
+                        :insightText="$property['insightText']"
                     />
                 @endforeach
             </div>
         </section>
 
-        {{-- Featured Properties Section --}}
+        {{-- Featured Stays Section --}}
         <section class="reveal">
             <div class="flex items-center justify-between mb-6 gap-4">
                 <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900">
@@ -124,153 +129,81 @@
                 @php
                     $featuredProperties = [
                         [
-                            'image' => 'https://images.unsplash.com/photo-1502672260066-6bc05c107956?w=500&h=380&fit=crop',
-                            'name' => 'Luxury Penthouse, Ikoyi',
-                            'location' => 'Ikoyi, Lagos',
+                            'image' => 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&h=380&fit=crop',
+                            'name' => 'Luxury Penthouse, Banana Island',
+                            'location' => 'Banana Island, Lagos',
                             'guests' => 6,
-                            'price' => 125000,
-                            'rating' => 4.9
+                            'price' => 120000,
+                            'rating' => 4.9,
+                            'insightText' => 'Ultra-luxury penthouse with panoramic ocean views, private pool, and premium amenities in Lagos\' most exclusive neighborhood.'
+                        ],
+                        [
+                            'image' => 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=500&h=380&fit=crop',
+                            'name' => 'Modern Villa, Lekki',
+                            'location' => 'Lekki Phase 1, Lagos',
+                            'guests' => 8,
+                            'price' => 85000,
+                            'rating' => 4.8,
+                            'insightText' => 'Spacious villa perfect for families, featuring a private garden, BBQ area, and modern smart home features.'
+                        ],
+                        [
+                            'image' => 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500&h=380&fit=crop',
+                            'name' => 'Beachfront Apartment',
+                            'location' => 'Oniru, Victoria Island',
+                            'guests' => 4,
+                            'price' => 75000,
+                            'rating' => 4.7,
+                            'insightText' => 'Wake up to ocean views! Direct beach access, perfect for weekend getaways and water sports enthusiasts.'
                         ],
                         [
                             'image' => 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500&h=380&fit=crop',
-                            'name' => 'Beach House, Lekki',
-                            'location' => 'Lekki, Lagos',
-                            'guests' => 4,
-                            'price' => 85000,
-                            'rating' => 4.8
-                        ],
-                        [
-                            'image' => 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=500&h=380&fit=crop',
-                            'name' => 'Modern Apartment, VI',
-                            'location' => 'Victoria Island',
-                            'guests' => 3,
-                            'price' => 55000,
-                            'rating' => 4.7
-                        ],
-                        [
-                            'image' => 'https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=500&h=380&fit=crop',
-                            'name' => 'Cozy Studio, Ikeja',
-                            'location' => 'Ikeja, Lagos',
+                            'name' => 'Executive Suite, Ikoyi',
+                            'location' => 'Old Ikoyi, Lagos',
                             'guests' => 2,
-                            'price' => 35000,
-                            'rating' => 4.6
+                            'price' => 65000,
+                            'rating' => 4.8,
+                            'insightText' => 'Contemporary design meets classic elegance. Ideal for business executives with 24/7 concierge service.'
                         ],
                     ];
                 @endphp
 
                 @foreach($featuredProperties as $property)
-                    <x-property-card
+                    <x-property-card 
                         :image="$property['image']"
                         :name="$property['name']"
                         :location="$property['location']"
                         :guests="$property['guests']"
                         :price="$property['price']"
                         :rating="$property['rating']"
+                        :insightText="$property['insightText']"
                     />
                 @endforeach
             </div>
         </section>
     </main>
 
-    {{-- AI Trip Concierge Section --}}
-    <x-ai-concierge 
-        title="Ask before you book, not after"
-        subtitle="AI TRIP CONCIERGE"
-        description="Type a question about any neighbourhood, budget or house rule and get an answer grounded in verified listing data."
-    />
-
-    {{-- Host Steps Section --}}
-    <x-host-steps 
-        title="four steps"
-        subtitle="BECOME A HOST"
-        description="The sequence every property moves through before it can appear in search results."
-        :steps="[
-            [
-                'title' => 'Register',
-                'description' => 'The host creates a profile and adds the property.'
-            ],
-            [
-                'title' => 'Verify',
-                'description' => 'ID, documents and property details are reviewed.'
-            ],
-            [
-                'title' => 'Approve',
-                'description' => 'The badge is issued and attached to the listing.'
-            ],
-            [
-                'title' => 'Go Live',
-                'description' => 'The stay appears in search, badge visible to guests.'
-            ]
-        ]"
-    />
-
-    {{-- Booking Difference Section --}}
-    <x-booking-difference 
-        title="Booking here works differently"
-        subtitle="WHY GUESTS CHOOSE US"
-        description="Search, compare and book stays that have already passed verification — with an AI concierge on hand for anything a listing page can't answer."
-        :features="[
-            [
-                'icon' => '<svg class=\'w-6 h-6 text-orange-500\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\'/></svg>',
-                'title' => 'Search by neighbourhood',
-                'description' => 'Filter by area, dates and guest count, and browse a grid built for comparing stays quickly.'
-            ],
-            [
-                'icon' => '<svg class=\'w-6 h-6 text-orange-500\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg>',
-                'title' => 'Verified property pages',
-                'description' => 'ID checks, an on-site inspection and photo verification — every badge you see means something.'
-            ],
-            [
-                'icon' => '<svg class=\'w-6 h-6 text-orange-500\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z\'/></svg>',
-                'title' => 'AI insight on every listing',
-                'description' => 'A short, specific read on wifi, noise, safety or host responsiveness — pulled from verified data and guest notes.'
-            ]
-        ]"
-    />
-
-    {{-- Host CTA Section --}}
-    <x-host-cta 
-        title="List a shortlet, earn from verified guests"
-        description="No dashboards to learn first. Add your property, get verified, and go live."
-        buttonText="Register your property"
-        buttonUrl="#"
-        :features="[
-            ['highlight' => '< 48h', 'description' => 'Average time from submitting documents to going live.'],
-            ['highlight' => 'AI-suggested', 'description' => 'Nightly pricing based on comparable verified stays nearby.'],
-            ['highlight' => '1 badge', 'description' => 'One verification badge shown on your listing for as long as it\'s active.']
-        ]"
-    />
-
-    {{-- Final CTA Section --}}
-    <x-final-cta 
-        title="Ready to book a stay you don't have to second-guess?"
-        subtitle="GET STARTED"
-        description="Browse verified stays across Lagos, or list your own property in under 48 hours."
-        primaryButton="Browse verified stays"
-        primaryUrl="#"
-        secondaryButton="List your property"
-        secondaryUrl="#"
-    />
-
     {{-- Footer --}}
-    <x-footer />
+    <x-footer 
+        companyName="Verified Shortlet"
+        description="Your trusted platform for verified short-term rentals across Nigeria. Every property is inspected and every host is verified."
+    />
 @endsection
 
 @push('scripts')
 <script>
-// Toast notification helper
+// Toast notification utility
 window.showToast = function(message, duration = 3000) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.classList.add('show');
-    
     setTimeout(() => {
         toast.classList.remove('show');
     }, duration);
-}
+};
 
-// Scroll reveal
+// Scroll reveal functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Add reveal-ready class via JS
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('reveal-ready'));
     
     const revealObserver = new IntersectionObserver((entries) => {
@@ -283,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
 
     document.querySelectorAll('.reveal-ready').forEach(el => {
+        // Elements already in viewport get shown immediately
         const rect = el.getBoundingClientRect();
         if (rect.top < window.innerHeight) {
             el.classList.add('visible');
@@ -291,9 +225,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Header scroll effect
-    const header = document.getElementById('site-header');
-    window.addEventListener('scroll', () => {
+    // Navbar scroll shadow
+    window.addEventListener('scroll', function() {
+        const header = document.getElementById('site-header');
         if (window.scrollY > 10) {
             header.classList.add('scrolled');
         } else {
