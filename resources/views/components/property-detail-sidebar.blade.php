@@ -36,26 +36,26 @@
     <div class="pds-panel">
 
         {{-- HEADER --}}
-        <div style="flex-shrink:0; padding:28px 28px 0; border-bottom:1px solid #F3F4F6;">
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px;">
+        <div style="flex-shrink:0; padding:32px 32px 0; border-bottom:1px solid #E5E7EB;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px;">
                 <div>
-                    <h2 style="font-family:'Inter',sans-serif; font-size:16px; font-weight:700; color:#111827; margin:0 0 5px; line-height:1.3;">Sunset Loft, Lekki Phase 1</h2>
-                    <p style="font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; margin:0;">Egbeda, Lagos · Serviced Apartment</p>
+                    <h2 style="font-family:'Inter',sans-serif; font-size:22px; font-weight:700; color:#111827; margin:0 0 6px; line-height:1.2;">Sunset Loft, Lekki Phase 1</h2>
+                    <p style="font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; margin:0; font-weight:400;">Egbeda, Lagos · Serviced Apartment</p>
                 </div>
                 <button @click="propertyDetailOpen = false"
-                    style="flex-shrink:0; margin-left:14px; width:34px; height:34px; background:#FF5A00; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                    style="flex-shrink:0; margin-left:16px; width:38px; height:38px; background:#FF5A00; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;"
                     onmouseover="this.style.background='#E64F00'" onmouseout="this.style.background='#FF5A00'">
-                    <svg width="13" height="13" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
             {{-- TABS --}}
             <div class="pds-tabs" style="display:flex; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; gap:0;">
-                @foreach(['overview'=>'Overview','bookings'=>'Bookings','finance'=>'Finance','operations'=>'Operations','assets'=>'Assets','documents'=>'Documents','reviews'=>'Reviews','marketplace'=>'Marketplace'] as $key => $label)
+                @foreach(['overview'=>'Overview','bookings'=>'Bookings','finance'=>'Finance','operations'=>'Operations','assets'=>'Assets','documents'=>'Documents','reviews'=>'Reviews','marketplace'=>'Marketplace','history'=>'History'] as $key => $label)
                 <button
                     @click="activeTab = '{{ $key }}'"
-                    :style="activeTab === '{{ $key }}' ? 'border-bottom:2px solid #FF5A00; color:#FF5A00; font-weight:600;' : 'border-bottom:2px solid transparent; color:#9CA3AF; font-weight:500;'"
-                    style="flex-shrink:0; padding:0 0 14px; margin-right:22px; border-top:none; border-left:none; border-right:none; background:none; cursor:pointer; font-size:12px; font-family:'Inter',sans-serif; white-space:nowrap; transition:color .15s; letter-spacing:.01em;">
+                    :style="activeTab === '{{ $key }}' ? 'color:#FF5A00; font-weight:500; border-bottom:2px solid #FF5A00;' : 'color:#4B5563; font-weight:400; border-bottom:2px solid transparent;'"
+                    style="flex-shrink:0; padding:0 0 14px; margin-right:26px; border-top:none; border-left:none; border-right:none; background:none; cursor:pointer; font-size:14px; font-family:'Inter',sans-serif; white-space:nowrap; transition:color .15s;">
                     {{ $label }}
                 </button>
                 @endforeach
@@ -63,26 +63,26 @@
         </div>
 
         {{-- BODY --}}
-        <div style="flex:1; overflow-y:auto; padding:26px 28px;">
+        <div style="flex:1; overflow-y:auto; padding:28px 32px;">
 
             {{-- ── OVERVIEW ── --}}
             <div x-show="activeTab === 'overview'">
-                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;">
-                    <div class="pds-card" style="padding:10px;">
-                        <div style="font-size:10px; font-weight:600; color:#9CA3AF; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; font-family:'Inter',sans-serif;">Occupancy</div>
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px;">
+                    <div style="background:#F0F4F8; border-radius:10px; padding:14px 12px;">
+                        <div style="font-size:11px; font-weight:400; color:#6B7280; margin-bottom:8px; font-family:'Inter',sans-serif;">Occupancy</div>
                         <div style="font-size:20px; font-weight:700; color:#111827; font-family:'Inter',sans-serif;">84%</div>
                     </div>
-                    <div class="pds-card" style="padding:10px;">
-                        <div style="font-size:10px; font-weight:600; color:#9CA3AF; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; font-family:'Inter',sans-serif;">Revenue</div>
+                    <div style="background:#F0F4F8; border-radius:10px; padding:14px 12px;">
+                        <div style="font-size:11px; font-weight:400; color:#6B7280; margin-bottom:8px; font-family:'Inter',sans-serif;">Revenue (30d)</div>
                         <div style="font-size:20px; font-weight:700; color:#111827; font-family:'Inter',sans-serif;">₦780k</div>
                     </div>
-                    <div class="pds-card" style="padding:10px;">
-                        <div style="font-size:10px; font-weight:600; color:#9CA3AF; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; font-family:'Inter',sans-serif;">ADR</div>
-                        <div style="font-size:20px; font-weight:700; color:#111827; font-family:'Inter',sans-serif;">₦52k</div>
+                    <div style="background:#F0F4F8; border-radius:10px; padding:14px 12px;">
+                        <div style="font-size:11px; font-weight:400; color:#6B7280; margin-bottom:8px; font-family:'Inter',sans-serif;">ADR</div>
+                        <div style="font-size:20px; font-weight:700; color:#111827; font-family:'Inter',sans-serif;">₦52,000</div>
                     </div>
-                    <div class="pds-card" style="padding:10px;">
-                        <div style="font-size:10px; font-weight:600; color:#9CA3AF; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; font-family:'Inter',sans-serif;">Rating</div>
-                        <div style="font-size:20px; font-weight:700; color:#111827; font-family:'Inter',sans-serif;">4.8 ★</div>
+                    <div style="background:#F0F4F8; border-radius:10px; padding:14px 12px;">
+                        <div style="font-size:11px; font-weight:400; color:#6B7280; margin-bottom:8px; font-family:'Inter',sans-serif;">Guest rating</div>
+                        <div style="font-size:20px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:3px;">4.8 <span style="color:#FBBF24;">★</span></div>
                     </div>
                 </div>
                 <div style="background:#1F2937; border-radius:10px; padding:18px; margin-bottom:18px;">
