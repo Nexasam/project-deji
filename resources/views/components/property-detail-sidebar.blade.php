@@ -17,7 +17,7 @@
     .pds-badge-red { background:#FEF2F2; color:#DC2626; }
     .pds-badge-gray { background:#F3F4F6; color:#6B7280; }
     .pds-section { margin-bottom:20px; }
-    .pds-section-title { font-size:11px; font-weight:700; color:#9CA3AF; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px; font-family:'Inter',sans-serif; }
+    .pds-section-title { font-size:10px; font-weight:700; color:#9CA3AF; text-transform:uppercase; letter-spacing:.09em; margin:0 0 10px 0; padding-top:18px; font-family:'Inter',sans-serif; }
     .pds-card { background:#F9FAFB; border:1px solid #F3F4F6; border-radius:10px; padding:14px; margin-bottom:10px; }
     .pds-btn { padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; border:none; }
     .pds-btn-primary { background:#FF5A00; color:#fff; }
@@ -99,7 +99,7 @@
 
             {{-- ── BOOKINGS ── --}}
             <div x-show="activeTab === 'bookings'">
-                <div class="pds-section-title">Upcoming bookings</div>
+                <div class="pds-section-title" style="padding-top:0;">Upcoming bookings</div>
                 @foreach([
                     ['guest'=>'Sarah Johnson','channel'=>'Airbnb','checkin'=>'Aug 15','checkout'=>'Aug 18','status'=>'Confirmed','nights'=>3,'amount'=>'₦156,000'],
                     ['guest'=>'Tunde Balogun','channel'=>'Verified Shortlet','checkin'=>'Aug 20','checkout'=>'Aug 23','status'=>'Confirmed','nights'=>3,'amount'=>'₦162,000'],
@@ -136,7 +136,7 @@
                         <div style="font-size:11px; color:#DC2626; margin-top:3px; font-family:'Inter',sans-serif;">↑ 3% vs last month</div>
                     </div>
                 </div>
-                <div class="pds-section-title">Recent transactions</div>
+                <div class="pds-section-title" style="padding-top:0;">Recent transactions</div>
                 @foreach([
                     ['desc'=>'Airbnb payout','date'=>'Aug 12','amount'=>'+₦156,000','type'=>'in'],
                     ['desc'=>'Cleaning service','date'=>'Aug 11','amount'=>'-₦18,000','type'=>'out'],
@@ -156,7 +156,7 @@
 
             {{-- ── OPERATIONS ── --}}
             <div x-show="activeTab === 'operations'">
-                <div class="pds-section-title">Open tasks</div>
+                <div class="pds-section-title" style="padding-top:0;">Open tasks</div>
                 @foreach([
                     ['task'=>'AC unit repair','priority'=>'High','due'=>'Aug 15','status'=>'Open'],
                     ['task'=>'Deep cleaning scheduled','priority'=>'Medium','due'=>'Aug 14','status'=>'Scheduled'],
@@ -183,7 +183,7 @@
 
             {{-- ── ASSETS ── --}}
             <div x-show="activeTab === 'assets'">
-                <div class="pds-section-title">Property assets</div>
+                <div class="pds-section-title" style="padding-top:0;">Property assets</div>
                 @foreach([
                     ['name'=>'LG Split AC (2 units)','condition'=>'Fair','last'=>'Jul 2026'],
                     ['name'=>'Samsung 55" Smart TV','condition'=>'Good','last'=>'Jan 2026'],
@@ -204,7 +204,7 @@
 
             {{-- ── DOCUMENTS ── --}}
             <div x-show="activeTab === 'documents'">
-                <div class="pds-section-title">Property documents</div>
+                <div class="pds-section-title" style="padding-top:0;">Property documents</div>
                 @foreach([
                     ['name'=>'Certificate of Occupancy','type'=>'Legal','date'=>'Jan 2024','icon'=>'📄'],
                     ['name'=>'Lease Agreement 2026','type'=>'Contract','date'=>'Mar 2026','icon'=>'📋'],
@@ -245,7 +245,7 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="pds-section-title">Recent reviews</div>
+                <div class="pds-section-title" style="padding-top:0;">Recent reviews</div>
                 @foreach([
                     ['guest'=>'Sarah J.','rating'=>5,'date'=>'Aug 10','comment'=>'Fantastic stay! Very clean and exactly as described. Will definitely return.'],
                     ['guest'=>'Tunde B.','rating'=>5,'date'=>'Jul 28','comment'=>'Great location, responsive host. AC was a bit slow but overall excellent.'],
@@ -264,7 +264,7 @@
 
             {{-- ── MARKETPLACE ── --}}
             <div x-show="activeTab === 'marketplace'">
-                <div class="pds-section-title">Listing status</div>
+                <div class="pds-section-title" style="padding-top:0;">Listing status</div>
                 @foreach([
                     ['platform'=>'Verified Shortlet','status'=>'Live','price'=>'₦52,000/night','icon'=>'🟠'],
                     ['platform'=>'Airbnb','status'=>'Live','price'=>'₦55,000/night','icon'=>'🔴'],
