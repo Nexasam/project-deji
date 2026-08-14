@@ -25,18 +25,18 @@
     <nav class="flex-1 p-3 overflow-y-auto">
         <div class="mb-6">
             <p class="text-gray-500 text-[10px] font-bold uppercase tracking-wider px-3 mb-2">Overview</p>
-            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg mb-1">
+            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 {{ request()->is('dashboard') ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }} rounded-lg mb-1">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
                 </svg>
-                <span class="text-sm">Dashboard</span>
+                <span class="text-sm {{ request()->is('dashboard') ? 'font-medium' : '' }}">Dashboard</span>
             </a>
             
-            <a href="/properties" class="flex items-center gap-3 px-3 py-2 text-gray-900 bg-orange-50 rounded-lg mb-1">
-                <svg class="w-4 h-4 text-[#FF5A00]" fill="currentColor" viewBox="0 0 24 24">
+            <a href="/properties" class="flex items-center gap-3 px-3 py-2 {{ request()->is('properties') ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }} rounded-lg mb-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                 </svg>
-                <span class="text-sm font-medium">Properties</span>
+                <span class="text-sm {{ request()->is('properties') ? 'font-medium' : '' }}">Properties</span>
             </a>
             
             <a href="#" class="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg mb-1 relative">
@@ -47,11 +47,11 @@
                 <span class="ml-auto bg-[#FF5A00] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">3</span>
             </a>
             
-            <a href="#" class="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg mb-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            <a href="/calendar" class="flex items-center gap-3 px-3 py-2 {{ request()->is('calendar') ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }} rounded-lg mb-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
                 </svg>
-                <span class="text-sm">Calendar</span>
+                <span class="text-sm {{ request()->is('calendar') ? 'font-medium' : '' }}">Calendar</span>
             </a>
             
             <a href="#" class="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg">

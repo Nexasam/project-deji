@@ -14,6 +14,10 @@ Route::get('/properties', function () {
     return view('properties');
 });
 
+Route::get('/calendar', function () {
+    return view('calendar');
+});
+
 Route::get('/property/detail', function () {
     return view('property-detail');
 });
