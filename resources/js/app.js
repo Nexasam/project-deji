@@ -1,29 +1,28 @@
 import './bootstrap';
-
 import Alpine from 'alpinejs';
 
+// Expose Alpine globally BEFORE start so inline x-data and $store work
 window.Alpine = Alpine;
 
-// Modal store — controls login/signup modal visibility globally
-document.addEventListener('alpine:init', () => {
-    Alpine.store('modals', {
-        showLoginModal: false,
-        showSignupModal: false,
-        openLogin() {
-            this.showLoginModal = true;
-            this.showSignupModal = false;
-        },
-        openSignup() {
-            this.showSignupModal = true;
-            this.showLoginModal = false;
-        },
-        closeAll() {
-            this.showLoginModal = false;
-            this.showSignupModal = false;
-        }
-    });
+// Register all stores BEFORE Alpine.start()
+Alpine.store('modals', {
+    showLoginModal: false,
+    showSignupModal: false,
+    openLogin() {
+        this.showLoginModal = true;
+        this.showSignupModal = false;
+    },
+    openSignup() {
+        this.showSignupModal = true;
+        this.showLoginModal = false;
+    },
+    closeAll() {
+        this.showLoginModal = false;
+        this.showSignupModal = false;
+    }
 });
 
+// Start Alpine
 Alpine.start();
 
 // Toast helper
@@ -35,7 +34,7 @@ window.showToast = function(message, duration = 3000) {
     setTimeout(() => toast.classList.remove('show'), duration);
 };
 
-// Header scroll shadow + scroll reveal
+// Header scroll + scroll reveal
 document.addEventListener('DOMContentLoaded', function () {
     const header = document.getElementById('site-header');
     if (header) {
