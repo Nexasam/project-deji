@@ -25,12 +25,12 @@
             >
                 Log In
             </button>
-            <button 
-                @click="$store.modals.openSignup()" 
+            <a 
+                href="/property/add/step1"
                 class="inline-flex items-center bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap"
             >
                 List your property
-            </button>
+            </a>
         </div>
 
         {{-- Hamburger --}}
@@ -89,12 +89,13 @@
                 </svg>
                 Log In
             </button>
-            <button 
-                @click="mobileMenuOpen = false; $store.modals.openSignup()" 
+            <a 
+                href="/property/add/step1"
+                @click="mobileMenuOpen = false" 
                 class="cta-mobile"
             >
                 List your property
-            </button>
+            </a>
         </div>
     </nav>
 </header>

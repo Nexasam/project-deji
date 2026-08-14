@@ -173,9 +173,9 @@
                     <a href="/property/add/step1" class="text-gray-600 font-medium text-base hover:text-gray-900 transition-colors underline">
                         Back
                     </a>
-                    <button class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-3 px-10 rounded-lg text-base transition-colors shadow-lg">
+                    <a href="/property/add/step3" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-3 px-10 rounded-lg text-base transition-colors shadow-lg inline-block">
                         Next Step
-                    </button>
+                    </a>
                 </div>
             </div>
         </main>

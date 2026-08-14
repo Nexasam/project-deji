@@ -90,9 +90,9 @@
                     <button class="text-gray-600 font-medium text-lg hover:text-gray-900 transition-colors underline">
                         Back
                     </button>
-                    <button class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-4 px-12 rounded-xl text-lg transition-colors shadow-lg">
+                    <a href="/property/add/step2" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-4 px-12 rounded-xl text-lg transition-colors shadow-lg inline-block">
                         Next Step
-                    </button>
+                    </a>
                 </div>
             </div>
         </main>

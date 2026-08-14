@@ -138,7 +138,7 @@
                 {{-- Navigation Buttons --}}
                 <div class="flex items-center justify-between">
                     <a href="/property/add/step8" class="text-gray-600 font-medium text-base hover:text-gray-900 transition-colors underline">Back</a>
-                    <button class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-3 px-10 rounded-lg text-base transition-colors shadow-lg">Review listing</button>
+                    <a href="/property/add/success" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-3 px-10 rounded-lg text-base transition-colors shadow-lg inline-block">Review listing</a>
                 </div>
             </div>
         </main>
