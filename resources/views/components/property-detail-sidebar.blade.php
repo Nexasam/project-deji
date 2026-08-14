@@ -63,7 +63,7 @@
         </div>
 
         {{-- BODY --}}
-        <div style="flex:1; overflow-y:auto; padding:22px 24px;">
+        <div style="flex:1; overflow-y:auto; padding:26px 28px;">
 
             {{-- ── OVERVIEW ── --}}
             <div x-show="activeTab === 'overview'">
