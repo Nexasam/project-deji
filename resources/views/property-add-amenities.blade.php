@@ -7,6 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#ECECEC] font-sans antialiased" x-data="{
+    sidebarOpen: false,
     selected: ['wifi', 'power-backup', 'smart-tv', 'swimming-pool', 'security', 'free-parking'],
     toggle(val) {
         this.selected.includes(val)

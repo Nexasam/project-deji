@@ -6,7 +6,7 @@
     <title>Properties - Add new property (Marketplace)</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#ECECEC] font-sans antialiased" x-data="{ listed: true, success: false }">
+<body class="bg-[#ECECEC] font-sans antialiased" x-data="{ sidebarOpen: false, listed: true, success: false }">
 <div class="min-h-screen flex">
 
     @include('partials.sidebar-nav', ['active' => 'properties'])

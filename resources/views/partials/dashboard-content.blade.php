@@ -3,8 +3,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {{-- Business Health Banner --}}
         <div class="lg:col-span-7">
-            <div class="bg-white rounded-lg p-6">
-                <div class="flex items-start gap-4">
+            <div class="bg-white rounded-lg p-4 md:p-6">
+                <div class="flex items-start gap-3 md:gap-4">
                     {{-- Score Circle --}}
                     <div class="flex-shrink-0">
                         <div class="relative w-20 h-20">
@@ -143,9 +143,9 @@
     </div>
 
     {{-- Financial Snapshot + AI Alert --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
         {{-- Financial Snapshot --}}
-        <div class="lg:col-span-2 bg-white rounded-lg p-6">
+        <div class="md:col-span-2 bg-white rounded-lg p-4 md:p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="text-base font-bold text-gray-900">Financial snapshot</h3>
@@ -209,7 +209,7 @@
     </div>
 
     {{-- Activities --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         {{-- Upcoming Activities --}}
         <div class="bg-white rounded-lg p-5">
             <div class="flex items-center justify-between mb-4">
@@ -219,7 +219,7 @@
                 </div>
                 <a href="#" class="text-xs text-[#FF5A00] font-semibold">View calendar ></a>
             </div>
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div class="text-center">
                     <div class="mb-2">
                         <span class="text-xs text-gray-500">FRI</span>
@@ -325,7 +325,7 @@
             <h3 class="text-base font-bold text-gray-900">Your listings</h3>
             <p class="text-xs text-gray-600">Verification status and performance at a glance</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             @for($i = 0; $i < 4; $i++)
             <div class="group cursor-pointer">
                 <div class="relative mb-3 rounded-xl overflow-hidden">

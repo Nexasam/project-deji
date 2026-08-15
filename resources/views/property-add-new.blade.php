@@ -6,7 +6,7 @@
     <title>Properties - Add new property (Basics)</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#ECECEC] font-sans antialiased" x-data="{ showNewLocation: true }">
+<body class="bg-[#ECECEC] font-sans antialiased" x-data="{ sidebarOpen: false, showNewLocation: true }">
 <div class="min-h-screen flex">
 
     {{-- Sidebar --}}
