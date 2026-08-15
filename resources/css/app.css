@@ -10,3 +10,142 @@
 }
 
 .public-surface { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+
+/* Owner property setup: intentionally scoped so dashboard forms can adopt it gradually. */
+.property-form-section {
+    overflow: hidden;
+    border: 1px solid #dbe3ec;
+    border-top: 3px solid #f97316;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 12px 30px rgb(15 23 42 / 0.035);
+}
+
+.property-form-label {
+    display: block;
+    color: #334155;
+    font-size: 0.875rem;
+    font-weight: 750;
+    line-height: 1.25rem;
+}
+
+.property-form-required { color: #ea580c; }
+.property-form-optional { color: #94a3b8; font-weight: 500; }
+
+.property-form-control-wrap {
+    display: block;
+    width: 100%;
+    position: relative;
+    margin-top: 0.5rem;
+}
+
+.property-form-control {
+    display: block;
+    width: 100%;
+    min-height: 3.125rem;
+    border: 1px solid #b9c5d3;
+    border-radius: 0.75rem;
+    background: #f8fafc;
+    padding: 0.75rem 0.95rem;
+    color: #0f172a;
+    font-size: 0.9375rem;
+    line-height: 1.5rem;
+    outline: none;
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.property-form-control::placeholder { color: #94a3b8; }
+.property-form-control:hover { border-color: #8797aa; background: #fff; }
+.property-form-control:focus {
+    border-color: #f97316;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgb(249 115 22 / 0.13);
+}
+
+.property-form-control.has-leading-icon { padding-left: 2.8rem; }
+.property-form-control.has-leading-addon { padding-left: 4.5rem; }
+.property-form-control.has-select-chevron { padding-right: 2.75rem; appearance: none; }
+.property-form-control.is-invalid {
+    border-color: #ef4444;
+    background: #fffafa;
+}
+.property-form-control.is-invalid:focus { box-shadow: 0 0 0 4px rgb(239 68 68 / 0.12); }
+.property-form-control:disabled {
+    cursor: not-allowed;
+    border-color: #dbe3ec;
+    background: #eef2f6;
+    color: #64748b;
+}
+
+textarea.property-form-control { min-height: 7.5rem; resize: vertical; }
+
+.property-form-control-icon,
+.property-form-select-chevron,
+.property-form-addon {
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    z-index: 1;
+    transform: translateY(-50%);
+    color: #64748b;
+}
+.property-form-control-icon { left: 0.95rem; width: 1.1rem; height: 1.1rem; }
+.property-form-select-chevron { right: 0.95rem; width: 1rem; height: 1rem; }
+.property-form-addon {
+    left: 0.9rem;
+    padding-right: 0.75rem;
+    border-right: 1px solid #cbd5e1;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.025em;
+}
+
+.property-form-help { margin-top: 0.45rem; color: #64748b; font-size: 0.75rem; line-height: 1.2rem; font-weight: 500; }
+.property-form-error { margin-top: 0.45rem; display: block; color: #dc2626; font-size: 0.75rem; line-height: 1.2rem; font-weight: 650; }
+
+.property-form-submit {
+    box-shadow: 0 8px 20px rgb(234 88 12 / 0.22);
+    transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+.property-form-submit:hover { transform: translateY(-1px); box-shadow: 0 11px 24px rgb(234 88 12 / 0.28); }
+.property-form-submit:active { transform: translateY(0); }
+
+.auth-story-media,
+.auth-story-frame {
+    position: absolute;
+    inset: 0;
+}
+
+.auth-story-media { overflow: hidden; background: #020617; }
+
+.auth-story-frame {
+    background-position: center;
+    background-size: cover;
+    opacity: 0;
+    transform: scale(1.04);
+    animation: auth-story-crossfade 24s infinite;
+    will-change: opacity, transform;
+}
+
+.auth-story-frame:nth-child(1) { background-image: url('/hero1.jpg'); animation-delay: 0s; }
+.auth-story-frame:nth-child(2) { background-image: url('/hero2.jpg'); animation-delay: 8s; }
+.auth-story-frame:nth-child(3) { background-image: url('/hero3.jpg'); animation-delay: 16s; }
+
+.auth-story-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, rgb(2 6 23 / 0.96) 0%, rgb(2 6 23 / 0.84) 52%, rgb(2 6 23 / 0.64) 100%);
+}
+
+@keyframes auth-story-crossfade {
+    0% { opacity: 0; transform: scale(1.04); }
+    8% { opacity: 1; }
+    33% { opacity: 1; }
+    42% { opacity: 0; transform: scale(1.12); }
+    100% { opacity: 0; transform: scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-story-frame { animation: none; opacity: 0; transform: none; }
+    .auth-story-frame:first-child { opacity: 1; }
+}

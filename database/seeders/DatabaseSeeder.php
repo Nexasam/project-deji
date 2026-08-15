@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(AccessControlSeeder::class);
+        $this->call(AmenitySeeder::class);
         $this->call(WorkflowTemplateSeeder::class);
     }
 }

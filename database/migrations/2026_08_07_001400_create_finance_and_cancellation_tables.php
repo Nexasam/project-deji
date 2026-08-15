@@ -60,8 +60,8 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->foreign(['business_id', 'booking_id'])->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
-            $table->index(['business_id', 'booking_id', 'allocation_type']);
-            $table->index(['business_id', 'recognized_on', 'direction']);
+            $table->index(['business_id', 'booking_id', 'allocation_type'], 'financial_allocation_booking_type_idx');
+            $table->index(['business_id', 'recognized_on', 'direction'], 'financial_allocation_recognition_idx');
         });
 
         Schema::create('cancellation_policies', function (Blueprint $table) {
@@ -82,7 +82,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreign(['business_id', 'property_id'])->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->index(['business_id', 'property_id', 'status']);
-            $table->index(['business_id', 'is_default', 'effective_from']);
+            $table->index(['business_id', 'is_default', 'effective_from'], 'cancellation_policy_default_effective_idx');
         });
 
         Schema::create('booking_cancellations', function (Blueprint $table) {
@@ -99,7 +99,7 @@ return new class extends Migration
             $table->char('currency', 3);
             $table->foreignUuid('refund_payment_id')->nullable()->constrained('payments')->restrictOnDelete();
             $table->foreignUuid('approved_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('requested_at');
+            $table->dateTime('requested_at');
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->string('status', 40)->default('pending');

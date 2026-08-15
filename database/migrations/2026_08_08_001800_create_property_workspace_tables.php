@@ -13,7 +13,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('property_staff_assignments', function (Blueprint $table) {
+        if (! Schema::hasTable('property_staff_assignments')) {
+            Schema::create('property_staff_assignments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('business_id')->constrained('businesses')->restrictOnDelete();
             $table->uuid('property_id');
@@ -38,9 +39,11 @@ return new class extends Migration
             $table->index(['business_id', 'employee_id', 'assignment_status'], 'property_staff_employee_lookup');
             $table->index(['property_id', 'assignment_role', 'is_primary', 'assignment_status'], 'property_primary_staff_lookup');
             $table->index(['starts_on', 'ends_on']);
-        });
+            });
+        }
 
-        Schema::create('property_marketplace_listings', function (Blueprint $table) {
+        if (! Schema::hasTable('property_marketplace_listings')) {
+            Schema::create('property_marketplace_listings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('business_id')->constrained('businesses')->restrictOnDelete();
             $table->uuid('property_id');
@@ -78,9 +81,10 @@ return new class extends Migration
             $table->foreign(['business_id', 'property_id'])
                 ->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->unique('property_id');
-            $table->index(['business_id', 'publication_status', 'status']);
-            $table->index(['is_publication_eligible', 'publication_status']);
-        });
+            $table->index(['business_id', 'publication_status', 'status'], 'property_listing_publication_idx');
+            $table->index(['is_publication_eligible', 'publication_status'], 'property_listing_eligibility_idx');
+            });
+        }
 
         Schema::create('property_pricing_rules', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -111,8 +115,8 @@ return new class extends Migration
             $table->foreign(['business_id', 'property_id'])
                 ->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->index(['business_id', 'property_id', 'status', 'starts_on', 'ends_on'], 'property_pricing_date_lookup');
-            $table->index(['property_id', 'rule_type', 'priority', 'status']);
-            $table->index(['effective_at', 'expires_at', 'status']);
+            $table->index(['property_id', 'rule_type', 'priority', 'status'], 'property_pricing_rule_idx');
+            $table->index(['effective_at', 'expires_at', 'status'], 'property_pricing_effective_idx');
         });
 
         Schema::create('property_promotions', function (Blueprint $table) {
@@ -150,8 +154,8 @@ return new class extends Migration
                 ->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->unique(['business_id', 'coupon_code']);
             $table->index(['business_id', 'property_id', 'publication_status', 'status'], 'property_promotions_publication_lookup');
-            $table->index(['booking_window_starts_on', 'booking_window_ends_on']);
-            $table->index(['stay_window_starts_on', 'stay_window_ends_on']);
+            $table->index(['booking_window_starts_on', 'booking_window_ends_on'], 'property_promo_booking_window_idx');
+            $table->index(['stay_window_starts_on', 'stay_window_ends_on'], 'property_promo_stay_window_idx');
         });
 
         Schema::create('property_health_snapshots', function (Blueprint $table) {
@@ -209,8 +213,8 @@ return new class extends Migration
             $table->foreign(['business_id', 'property_id', 'asset_id'])
                 ->references(['business_id', 'property_id', 'id'])->on('assets')->restrictOnDelete();
             $table->index(['business_id', 'property_id', 'asset_id', 'status'], 'asset_media_asset_lookup');
-            $table->index(['asset_id', 'sort_order']);
-            $table->index(['asset_id', 'is_primary']);
+            $table->index(['asset_id', 'sort_order'], 'asset_media_sort_idx');
+            $table->index(['asset_id', 'is_primary'], 'asset_media_primary_idx');
         });
 
         Schema::create('review_analyses', function (Blueprint $table) {
@@ -240,7 +244,7 @@ return new class extends Migration
                 ->references(['business_id', 'property_id', 'id'])->on('reviews')->restrictOnDelete();
             $table->unique(['review_id', 'analysis_version']);
             $table->index(['business_id', 'property_id', 'analysed_at'], 'review_analysis_property_lookup');
-            $table->index(['sentiment', 'follow_up_priority', 'status']);
+            $table->index(['sentiment', 'follow_up_priority', 'status'], 'review_analysis_followup_idx');
         });
     }
 

@@ -21,11 +21,11 @@
 <div class="px-4 py-3 border-b border-gray-200">
     <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-[#FF5A00] rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-white text-xs font-bold">SM</span>
+            <span class="text-white text-xs font-bold">{{ str(auth()->user()->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') }}</span>
         </div>
         <div class="flex-1 min-w-0">
-            <p class="text-gray-900 text-xs font-semibold truncate">Sonic Movers</p>
-            <p class="text-gray-500 text-[10px] truncate">Owino workspace</p>
+            <p class="text-gray-900 text-xs font-semibold truncate">{{ auth()->user()->name }}</p>
+            <p class="text-gray-500 text-[10px] truncate">{{ $activeBusiness->name }}</p>
         </div>
         <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -39,7 +39,7 @@
     {{-- Overview --}}
     <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider px-2 mb-1.5 mt-1">Overview</p>
 
-    <a href="/dashboard"
+    <a href="{{ route('owner.dashboard') }}"
        class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors
               {{ $active === 'dashboard' ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
         <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -48,7 +48,7 @@
         Dashboard
     </a>
 
-    <a href="/properties"
+    <a href="{{ route('owner.properties.index') }}"
        class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors
               {{ $active === 'properties' ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
         <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@
         <span class="ml-auto bg-[#FF5A00] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">6</span>
     </a>
 
-    <a href="/calendar"
+    <a href="{{ route('owner.calendar') }}"
        class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors
               {{ $active === 'calendar' ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
         <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">

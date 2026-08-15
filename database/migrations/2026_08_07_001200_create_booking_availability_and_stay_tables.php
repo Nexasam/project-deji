@@ -40,7 +40,7 @@ return new class extends Migration
             $table->foreignUuid('business_id')->constrained('businesses')->restrictOnDelete();
             $table->uuid('property_id');
             $table->uuid('booking_id')->nullable();
-            $table->foreignUuid('external_calendar_connection_id')->nullable()->constrained('external_calendar_connections')->restrictOnDelete();
+            $table->foreignUuid('external_calendar_connection_id')->nullable();
             $table->string('source_type', 40);
             $table->string('source_reference', 191)->nullable();
             $table->boolean('blocks_booking')->default(true);
@@ -58,6 +58,8 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign(['business_id', 'property_id'])->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->foreign(['business_id', 'booking_id'])->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
+            $table->foreign('external_calendar_connection_id', 'availability_block_calendar_fk')
+                ->references('id')->on('external_calendar_connections')->restrictOnDelete();
             $table->unique(['business_id', 'id']);
             $table->index(['business_id', 'property_id', 'block_state', 'starts_on', 'ends_on'], 'availability_overlap_lookup');
             $table->index(['business_id', 'property_id', 'blocks_booking', 'validation_status'], 'availability_block_validation_lookup');
@@ -89,7 +91,7 @@ return new class extends Migration
             $table->string('source', 40)->default('user');
             $table->text('reason')->nullable();
             $table->json('metadata')->nullable();
-            $table->timestamp('occurred_at');
+            $table->dateTime('occurred_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
@@ -111,7 +113,7 @@ return new class extends Migration
             $table->text('reason')->nullable();
             $table->foreignUuid('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
-            $table->timestamp('occurred_at');
+            $table->dateTime('occurred_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
@@ -143,7 +145,7 @@ return new class extends Migration
             $table->timestamp('failed_at')->nullable();
             $table->text('failure_reason')->nullable();
             $table->json('metadata')->nullable();
-            $table->timestamp('occurred_at');
+            $table->dateTime('occurred_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
@@ -168,7 +170,7 @@ return new class extends Migration
             $table->string('priority', 20)->default('normal');
             $table->text('description');
             $table->text('resolution')->nullable();
-            $table->timestamp('requested_at');
+            $table->dateTime('requested_at');
             $table->timestamp('resolved_at')->nullable();
             $table->string('status', 40)->default('open');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
@@ -196,7 +198,7 @@ return new class extends Migration
             $table->decimal('financial_impact', 19, 4)->nullable();
             $table->char('currency', 3)->nullable();
             $table->text('resolution')->nullable();
-            $table->timestamp('occurred_at');
+            $table->dateTime('occurred_at');
             $table->timestamp('resolved_at')->nullable();
             $table->string('status', 40)->default('open');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();

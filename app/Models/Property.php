@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -50,6 +51,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'owner_name',
     'manager_name',
     'status',
+    'created_by',
+    'updated_by',
 ])]
 class Property extends Model
 {
@@ -94,6 +97,11 @@ class Property extends Model
             ->withTimestamps();
     }
 
+    public function setupSteps(): HasMany
+    {
+        return $this->hasMany(PropertySetupStep::class);
+    }
+
     public function amenityAssignments(): HasMany
     {
         return $this->hasMany(PropertyAmenity::class);
@@ -102,6 +110,11 @@ class Property extends Model
     public function houseRules(): HasMany
     {
         return $this->hasMany(PropertyHouseRule::class);
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'owner');
     }
 
     public function media(): HasMany
