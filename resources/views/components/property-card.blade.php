@@ -44,8 +44,8 @@
         </button>
     </div>
 
-    <div style="padding:10px 4px 4px 4px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+    <div style="padding:12px 12px 10px 12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
             <span style="font-size:14px;font-weight:700;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72%;">
                 {{ $name }}
             </span>
@@ -56,10 +56,10 @@
                 <span style="font-size:12px;font-weight:600;color:#111;">{{ $rating }}</span>
             </div>
         </div>
-        
-        <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">{{ $location }}</div>
-        
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+
+        <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">{{ $location }}</div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
             <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#6b7280;">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -73,7 +73,7 @@
                 <span style="font-size:16px;font-weight:800;color:#111;">₦{{ number_format($price) }}</span>
                 <span style="font-size:12px;color:#6b7280;"> / night</span>
             </div>
-            <button 
+            <button
                 @click="openInsights"
                 class="insights-btn"
             >

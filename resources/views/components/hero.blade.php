@@ -16,7 +16,7 @@
     ]
 ])
 
-<section class="relative bg-neutral-800" style="min-height:430px;overflow:hidden;padding-bottom:60px;">
+<section class="relative bg-neutral-800" style="min-height:430px;overflow:hidden;padding-bottom:60px;padding-top:16px;">
     {{-- Background with overlay --}}
     <div class="absolute inset-0 z-0">
         <img src="{{ $backgroundImage }}" alt="" class="w-full h-full object-cover object-center"/>

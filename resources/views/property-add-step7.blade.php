@@ -16,35 +16,34 @@
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
         <header class="bg-white border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <img src="/logo1.png" alt="VS Logo" class="h-8 w-auto" />
-                    <span class="text-gray-900 text-lg font-semibold">Verified Shortlet</span>
+                    <img src="/logo1.png" alt="VS Logo" class="h-7 w-auto" />
+                    <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-sm text-gray-600">Step 7 of 9</span>
-                    <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Save & exit</button>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-500">Step 7 of 9</span>
+                    <a href="/owner/properties" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Save & exit</a>
                 </div>
             </div>
-            <div class="h-1 bg-gray-200"><div class="h-1 bg-[#FF5A00]" style="width: 77.77%"></div></div>
+            <div class="h-0.5 bg-gray-200"><div class="h-0.5 bg-[#FF5A00]" style="width: 77.77%"></div></div>
         </header>
 
         {{-- Main Content --}}
-        <main class="flex-1 px-4 py-12">
+        <main class="flex-1 px-4 py-7">
             <div class="w-full max-w-4xl mx-auto">
                 {{-- Title Section --}}
-                <div class="mb-8">
-                    <p class="text-[#FF5A00] text-sm font-bold uppercase tracking-wider mb-2">PAPERWORK</p>
-                    <h1 class="text-4xl font-bold text-gray-900 mb-3">Any documents to keep on file?</h1>
-                    <p class="text-gray-600 text-base">
+                <div class="mb-5">`n                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">PAPERWORK</p>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1.5">Any documents to keep on file?</h1>
+                    <p class="text-gray-600 text-sm text-gray-500">
                         Totally optional — lease agreements, inspection reports or receipts. Whatever you upload here stays attached to this property for your own records.
                     </p>
                 </div>
 
                 {{-- Upload Area --}}
-                <div class="bg-white rounded-2xl shadow-sm p-8 mb-6">
+                <div class="bg-white rounded-xl shadow-sm p-5 mb-5">
                     {{-- Dashed Upload Box --}}
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-16 mb-6 text-center hover:border-[#FF5A00] transition-colors cursor-pointer">
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 mb-4 text-center hover:border-[#FF5A00] transition-colors cursor-pointer">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-[#FF5A00] rounded-lg flex items-center justify-center mb-4">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +70,7 @@
                                     </div>
                                     <span class="text-gray-900 text-sm font-medium" x-text="doc.name"></span>
                                 </div>
-                                <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-3">
                                     <span class="text-gray-600 text-sm" x-text="doc.size"></span>
                                     <button @click="documents.splice(index, 1)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,11 +85,12 @@
 
                 {{-- Navigation Buttons --}}
                 <div class="flex items-center justify-between">
-                    <a href="/property/add/step6" class="text-gray-600 font-medium text-base hover:text-gray-900 transition-colors underline">Back</a>
-                    <a href="/property/add/step8" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-3 px-10 rounded-lg text-base transition-colors shadow-lg inline-block">Next Step</a>
+                    <a href="/owner/properties/create/step6" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
+                    <a href="/owner/properties/create/step8" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</a>
                 </div>
             </div>
         </main>
     </div>
 </body>
 </html>
+

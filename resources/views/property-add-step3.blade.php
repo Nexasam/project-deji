@@ -18,26 +18,24 @@
 
     {{-- Header --}}
     <header class="bg-white border-b border-gray-200">
-        <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <img src="/logo1.png" alt="VS Logo" class="h-8 w-auto" />
-                <span class="text-gray-900 font-semibold">Verified Shortlet</span>
+                <img src="/logo1.png" alt="VS Logo" class="h-7 w-auto" />
+                <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
             </div>
-            <div class="flex items-center gap-4">
-                <span class="text-sm text-gray-500">Step 3 of 9</span>
-                <button class="px-4 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Save &amp; exit</button>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500">Step 3 of 9</span>
+                <a href="/owner/properties" class="px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Save &amp; exit</a>
             </div>
         </div>
-        <div class="h-1 bg-gray-200"><div class="h-1 bg-[#FF5A00]" style="width:33%"></div></div>
+        <div class="h-0.5 bg-gray-200"><div class="h-0.5 bg-[#FF5A00]" style="width:33%"></div></div>
     </header>
 
-    <main class="flex-1 py-10 px-4">
+    <main class="flex-1 py-7 px-4">
         <div class="max-w-3xl mx-auto">
-
-            {{-- Title --}}
-            <div class="mb-8">
-                <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-widest mb-2">The Basics</p>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Tell us about the place</h1>
+            <div class="mb-5">
+                <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-widest mb-1.5">The Basics</p>
+                <h1 class="text-2xl font-bold text-gray-900 mb-1.5">Tell us about the place</h1>
                 <p class="text-gray-500 text-sm">A few quick facts guests use to decide if it fits them.</p>
             </div>
 
@@ -54,7 +52,7 @@
                         ['val'=>'villa',      'label'=>'Villa',          'icon'=>'M17 11h3c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2h-3c-1.11 0-2 .9-2 2v1H9V5c0-1.11-.9-2-2-2H4c-1.11 0-2 .9-2 2v4c0 1.11.89 2 2 2h3c1.11 0 2-.9 2-2V8h2v7H9.01C7.35 15 6 16.35 6 18v2h12v-2c0-1.65-1.34-3-3-3H13V8h2v1c0 1.11.89 2 2 2z'],
                     ] as $t)
                     <button @click="type = '{{ $t['val'] }}'"
-                        class="flex flex-col items-start p-5 bg-white border-2 rounded-xl transition-all text-left"
+                        class="flex flex-col items-start p-3 bg-white border-2 rounded-xl transition-all text-left"
                         :class="type === '{{ $t['val'] }}' ? 'border-[#FF5A00]' : 'border-gray-200 hover:border-gray-300'">
                         <svg class="w-9 h-9 mb-3 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
                             <path d="{{ $t['icon'] }}"/>
@@ -151,8 +149,8 @@
 
                 {{-- Nav --}}
                 <div class="flex items-center justify-between px-6 py-5 border-t border-gray-100">
-                    <a href="/property/add/step2" class="text-sm text-gray-600 underline hover:text-gray-900">Back</a>
-                    <a href="/property/add/step4"
+                    <a href="/owner/properties/create/step2" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
+                    <a href="/owner/properties/create/step4"
                         class="px-8 py-2.5 bg-[#FF5A00] hover:bg-[#E64F00] text-white text-sm font-bold rounded-lg transition-colors">
                         Next Step
                     </a>
@@ -164,3 +162,4 @@
 </div>
 </body>
 </html>
+

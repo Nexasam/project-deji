@@ -7,20 +7,29 @@
     <title>{{ $editing ? 'Continue property setup' : 'Add property' }} – {{ $business->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="{ sidebarOpen: false }">
     <div class="flex min-h-screen">
         @include('partials.sidebar-nav', ['active' => 'properties'])
 
         <div class="min-w-0 flex-1">
             <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-                <div class="flex items-center justify-between gap-4 px-5 py-3 lg:px-8">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2 text-xs text-slate-500">
-                            <a href="{{ route('owner.properties.index') }}" class="font-semibold hover:text-orange-700">Properties</a>
-                            <span>/</span>
-                            <span>{{ $editing ? $property->name : 'New property' }}</span>
+                <div class="flex items-center justify-between gap-4 px-4 py-3 lg:px-8">
+                    <div class="flex items-center gap-3 min-w-0">
+                        {{-- Hamburger – mobile only --}}
+                        <button @click="sidebarOpen = true"
+                                class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                        </button>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 text-xs text-slate-500">
+                                <a href="{{ route('owner.properties.index') }}" class="font-semibold hover:text-orange-700">Properties</a>
+                                <span>/</span>
+                                <span>{{ $editing ? $property->name : 'New property' }}</span>
+                            </div>
+                            <h1 class="mt-1 truncate text-lg font-extrabold tracking-tight">{{ $editing ? 'Continue property setup' : 'Add property' }}</h1>
                         </div>
-                        <h1 class="mt-1 truncate text-lg font-extrabold tracking-tight">{{ $editing ? 'Continue property setup' : 'Add property' }}</h1>
                     </div>
 
                     <div class="flex items-center gap-3">

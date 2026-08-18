@@ -20,7 +20,9 @@ Route::middleware(['auth', 'verified'])->prefix('owner')->name('owner.')->group(
     Route::middleware(['business.context', 'business.owner'])->group(function () {
         Route::get('/dashboard', OwnerDashboardController::class)->name('dashboard');
         Route::get('/properties', [OwnerPropertyController::class, 'index'])->name('properties.index');
-        Route::get('/properties/create', [OwnerPropertyController::class, 'create'])->name('properties.create');
+        Route::get('/properties/create', fn() => redirect('/owner/properties/create/step1'))->name('properties.create');
+        Route::get('/properties/create/step1', fn() => view('property-add-step1'))->name('properties.create.step1');
+        Route::get('/properties/create/wizard', [OwnerPropertyController::class, 'create'])->name('properties.create.wizard');
         Route::post('/properties', [OwnerPropertyController::class, 'store'])->name('properties.store');
         Route::get('/properties/{property}/setup', [OwnerPropertyController::class, 'resume'])->name('properties.resume');
         Route::get('/properties/{property}/setup/basics', [OwnerPropertyController::class, 'edit'])->name('properties.edit');
@@ -70,6 +72,15 @@ Route::middleware(['auth', 'verified'])->prefix('owner')->name('owner.')->group(
 Route::redirect('/dashboard', '/owner/dashboard');
 Route::redirect('/properties', '/owner/properties');
 Route::redirect('/calendar', '/owner/calendar');
-Route::redirect('/property/add/step1', '/owner/properties/create');
+Route::redirect('/property/add/step1', '/owner/properties/create/step1');
+Route::redirect('/property2', '/owner/properties/create');
+
+// Standalone preview routes for the sidebar-based wizard pages (backup/reference)
+Route::middleware(['auth', 'verified', 'business.context', 'business.owner'])->prefix('owner/preview')->name('owner.preview.')->group(function () {
+    Route::get('/property-wizard',       fn() => view('property-add-new'))->name('property-wizard');
+    Route::get('/property-amenities',    fn() => view('property-add-amenities'))->name('property-amenities');
+    Route::get('/property-documents',    fn() => view('property-add-documents'))->name('property-documents');
+    Route::get('/property-marketplace',  fn() => view('property-add-marketplace'))->name('property-marketplace');
+});
 
 require __DIR__.'/auth.php';

@@ -164,7 +164,8 @@
 .hero-inner { 
     display: flex; 
     align-items: center; 
-    gap: 20px; 
+    gap: 20px;
+    padding-top: 36px;
 }
 .hero-text-col { 
     flex: 0 0 36%; 
@@ -441,7 +442,7 @@
     }
     .hero-inner { 
         flex-direction: column; 
-        padding-top: 32px; 
+        padding-top: 48px; 
         padding-bottom: 32px; 
     }
 }
