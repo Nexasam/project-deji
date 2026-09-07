@@ -21,15 +21,15 @@
         <div class="nav-desktop items-center gap-6">
             <button 
                 @click="$store.modals.openLogin()" 
-                class="text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors"
+                class="inline-flex h-10 items-center justify-center text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors"
             >
                 Log In
             </button>
             <a 
-                href="/property/add/step1"
+                href="{{ route('register') }}"
                 class="inline-flex items-center bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap"
             >
-                List your property
+                Get started
             </a>
         </div>
 
@@ -90,11 +90,11 @@
                 Log In
             </button>
             <a 
-                href="/property/add/step1"
+                href="{{ route('register') }}"
                 @click="mobileMenuOpen = false" 
                 class="cta-mobile"
             >
-                List your property
+                Get started
             </a>
         </div>
     </nav>

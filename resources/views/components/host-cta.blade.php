@@ -1,8 +1,8 @@
 @props([
     'title' => 'List a shortlet, earn from verified guests',
     'description' => 'No dashboards to learn first. Add your property, get verified, and go live.',
-    'buttonText' => 'Register your property',
-    'buttonUrl' => '#',
+    'buttonText' => 'Get started',
+    'buttonUrl' => '/register',
     'features' => []
 ])
 

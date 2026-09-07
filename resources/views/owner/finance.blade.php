@@ -6,7 +6,7 @@
     <title>Finance – {{ $business->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#F4F4F4] font-sans antialiased" x-data="{ sidebarOpen: false }">
+<body class="bg-slate-50 font-sans antialiased" x-data="{ sidebarOpen: false }">
 <div class="flex h-screen overflow-hidden">
 
     {{-- Sidebar --}}
@@ -19,7 +19,7 @@
         @include('partials.header')
 
         {{-- Scrollable content --}}
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto bg-slate-50">
             <div class="p-6 max-w-[1200px] mx-auto space-y-5">
 
                 {{-- Page title + actions --}}
@@ -293,7 +293,6 @@
     </div>
 </div>
 
-@push('styles')
 <style>
 .fin-card        { background:#fff; border-radius:12px; border:1px solid #f0f0f0; }
 .fin-btn-outline { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:12px; font-weight:600; color:#374151; background:#fff; cursor:pointer; transition:border-color .15s,background .15s; white-space:nowrap; }
@@ -309,7 +308,6 @@
 .fin-full-report-btn { width:100%; padding:10px; border-radius:999px; border:1.5px solid #e5e7eb; background:#fff; font-size:11px; font-weight:700; letter-spacing:.06em; color:#374151; cursor:pointer; transition:border-color .15s,background .15s; }
 .fin-full-report-btn:hover { border-color:#d1d5db; background:#f9fafb; }
 </style>
-@endpush
 
 </body>
 </html>

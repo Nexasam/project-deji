@@ -4,8 +4,8 @@
     'description' => 'Browse verified stays across Lagos, or list your own property in under 48 hours.',
     'primaryButton' => 'Browse verified stays',
     'primaryUrl' => '#',
-    'secondaryButton' => 'List your property',
-    'secondaryUrl' => '#'
+    'secondaryButton' => 'Get started',
+    'secondaryUrl' => '/register'
 ])
 
 <section class="bg-[#FFF5ED] py-24">

@@ -81,56 +81,53 @@
                     </section>
                 @else
                     <section>
-                        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                            <div>
-                                <p class="text-sm font-semibold text-orange-600">{{ $properties->count() }} {{ Str::plural('property', $properties->count()) }}</p>
-                                <h2 class="mt-1 text-3xl font-extrabold tracking-tight">Your properties</h2>
-                                <p class="mt-2 text-sm text-slate-600">Real properties currently owned by {{ $business->name }}.</p>
+                        <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                            <div class="flex items-center gap-3">
+                                <h2 class="text-xl font-extrabold tracking-tight">Your properties</h2>
+                                <span class="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-700">{{ $properties->count() }} {{ Str::plural('property', $properties->count()) }}</span>
                             </div>
-                            <a href="{{ route('owner.properties.create') }}" class="inline-flex items-center justify-center rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white hover:bg-orange-700">Add another property</a>
+                            <a href="{{ route('owner.properties.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-700"><span class="text-base leading-none">+</span> Add property</a>
                         </div>
+                        <p class="mt-1 text-xs text-slate-500">Real portfolio · {{ $business->name }}</p>
 
-                        <div class="mt-7 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                            <div class="divide-y divide-slate-100">
-                                @foreach ($properties as $property)
-                                    <article class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                                        <div class="flex items-start gap-4">
-                                            <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-orange-50 font-extrabold text-orange-600">{{ str($property->name)->substr(0, 2)->upper() }}</div>
-                                            <div>
-                                                <h3 class="font-extrabold text-slate-950">{{ $property->name }}</h3>
-                                                <p class="mt-1 text-sm text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }} · {{ str($property->property_type)->replace('_', ' ')->title() }}</p>
-                                                <p class="mt-1 text-xs text-slate-400">Property code: {{ $property->code }}</p>
-                                            </div>
+                        <div data-testid="dashboard-property-grid" class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                            @foreach ($properties as $property)
+                                <article data-testid="dashboard-property-card" class="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-sm font-extrabold text-orange-600">{{ str($property->name)->substr(0, 2)->upper() }}</div>
+                                        <div class="flex flex-wrap justify-end gap-1.5">
+                                            <span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700">{{ str($property->publication_status->value)->title() }}</span>
+                                            <span class="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">{{ str($property->verification_status->value)->title() }}</span>
                                         </div>
-                                        <div class="flex flex-wrap gap-2 sm:justify-end">
-                                            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{{ str($property->publication_status->value)->title() }}</span>
-                                            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{{ str($property->verification_status->value)->title() }}</span>
-                                            @if ($property->publication_status->value === 'draft')
-                                                <a href="{{ route('owner.properties.resume', $property) }}" class="rounded-full bg-orange-600 px-3 py-1 text-xs font-bold text-white hover:bg-orange-700">Continue setup</a>
-                                            @elseif ($property->publication_status->value === 'unpublished' && $property->verification_status->value === 'unverified')
-                                                <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}">@csrf<button class="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700 hover:bg-orange-100">Submit to marketplace</button></form>
-                                            @endif
-                                        </div>
-                                    </article>
-                                @endforeach
-                            </div>
+                                    </div>
+                                    <h3 class="mt-3 truncate font-extrabold text-slate-950" title="{{ $property->name }}">{{ $property->name }}</h3>
+                                    <p class="mt-1 truncate text-xs text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }} · {{ str($property->property_type)->replace('_', ' ')->title() }}</p>
+                                    <p class="mt-2 truncate font-mono text-[10px] text-slate-400" title="{{ $property->code }}">{{ $property->code }}</p>
+                                    <div class="mt-auto pt-4">
+                                        @if ($property->publication_status->value === 'draft')
+                                            <a href="{{ route('owner.properties.resume', $property) }}" class="inline-flex w-full items-center justify-center rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700">Continue setup</a>
+                                        @elseif ($property->publication_status->value === 'unpublished' && $property->verification_status->value === 'unverified')
+                                            <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}">@csrf<button class="w-full rounded-lg bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 hover:bg-orange-100">Submit to marketplace</button></form>
+                                        @else
+                                            <a href="{{ route('owner.properties.index') }}" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">View properties</a>
+                                        @endif
+                                    </div>
+                                </article>
+                            @endforeach
                         </div>
                     </section>
                 @endif
 
-                <section class="mt-10 overflow-hidden rounded-3xl border border-amber-200 bg-[#ececec] shadow-sm">
-                    <div class="flex flex-col justify-between gap-3 border-b border-amber-200 bg-amber-50 px-5 py-4 sm:flex-row sm:items-center lg:px-7">
+                <section class="mt-12 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                    <div class="flex flex-col justify-between gap-3 px-5 py-4 sm:flex-row sm:items-center lg:px-6">
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="rounded-full bg-amber-200 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-900">Sample data</span>
-                                <h2 class="font-extrabold text-slate-950">Operational dashboard preview</h2>
+                                <span class="rounded-full bg-slate-200 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-600">Sample data</span>
+                                <h2 class="text-sm font-extrabold text-slate-800">Operational dashboard preview</h2>
                             </div>
-                            <p class="mt-1 text-xs leading-5 text-amber-900">The figures below demonstrate the future booking, finance, operations and AI experience. Your real business records remain above.</p>
+                            <p class="mt-1 text-xs leading-5 text-slate-500">Preview data only. Your real business records remain above.</p>
                         </div>
-                        <a href="{{ route('owner.dashboard', ['view' => 'demo']) }}" class="shrink-0 text-xs font-bold text-amber-900 underline decoration-amber-400 underline-offset-4">Open full presentation view</a>
-                    </div>
-                    <div class="p-5 lg:p-7">
-                        @include('partials.dashboard-content')
+                        <a href="{{ route('owner.dashboard', ['view' => 'demo']) }}" class="shrink-0 text-xs font-bold text-slate-600 underline decoration-slate-300 underline-offset-4">Open presentation view</a>
                     </div>
                 </section>
             </main>

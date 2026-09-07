@@ -230,8 +230,8 @@
     <x-host-cta 
         title="List a shortlet, earn from verified guests"
         description="No dashboards to learn first. Add your property, get verified, and go live."
-        buttonText="Register your property"
-        buttonUrl="#"
+        buttonText="Get started"
+        :buttonUrl="route('register')"
         :features="[
             ['highlight' => '< 48h', 'description' => 'Average time from submitting documents to going live.'],
             ['highlight' => 'AI-suggested', 'description' => 'Nightly pricing based on comparable verified stays nearby.'],
@@ -246,8 +246,8 @@
         description="Browse verified stays across Lagos, or list your own property in under 48 hours."
         primaryButton="Browse verified stays"
         primaryUrl="#"
-        secondaryButton="List your property"
-        secondaryUrl="#"
+        secondaryButton="Get started"
+        :secondaryUrl="route('register')"
     />
 
     {{-- Footer --}}

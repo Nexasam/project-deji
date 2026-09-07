@@ -30,7 +30,7 @@
                 </div>
             </header>
 
-            <main class="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+            <main class="mx-auto max-w-[1600px] px-4 py-6 lg:px-6">
                 @if (session('status'))<div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif
                 @if ($errors->any())<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ $errors->first() }}</div>@endif
                 @if ($properties->isEmpty())
@@ -48,21 +48,21 @@
                         <a href="{{ route('owner.properties.create') }}" class="rounded-xl bg-orange-600 px-5 py-3 text-center text-sm font-bold text-white hover:bg-orange-700">Add property</a>
                     </div>
 
-                    <div class="mt-7 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                         @foreach ($properties as $property)
-                            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <div class="flex items-start justify-between gap-4"><div class="flex size-12 items-center justify-center rounded-xl bg-orange-50 font-extrabold text-orange-600">{{ str($property->name)->substr(0, 2)->upper() }}</div><span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{{ str($property->publication_status->value)->title() }}</span></div>
-                                <h3 class="mt-5 text-lg font-extrabold">{{ $property->name }}</h3>
-                                <p class="mt-1 text-sm text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }}</p>
-                                <dl class="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-4 text-sm"><div><dt class="text-xs text-slate-400">Guests</dt><dd class="mt-1 font-bold">{{ $property->capacity }}</dd></div><div><dt class="text-xs text-slate-400">Bedrooms</dt><dd class="mt-1 font-bold">{{ $property->bedrooms }}</dd></div><div><dt class="text-xs text-slate-400">Bathrooms</dt><dd class="mt-1 font-bold">{{ $property->bathrooms }}</dd></div></dl>
-                                <div class="mt-5 flex items-center justify-between"><span class="text-xs font-semibold text-amber-700">{{ str($property->verification_status->value)->title() }}</span><span class="text-xs text-slate-400">{{ $property->code }}</span></div>
+                            <article data-testid="property-card" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="flex items-start justify-between gap-2"><div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-sm font-extrabold text-orange-600">{{ str($property->name)->substr(0, 2)->upper() }}</div><span class="max-w-[7rem] truncate rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700">{{ str($property->publication_status->value)->title() }}</span></div>
+                                <h3 class="mt-3 truncate text-base font-extrabold" title="{{ $property->name }}">{{ $property->name }}</h3>
+                                <p class="mt-1 truncate text-xs text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }}</p>
+                                <dl class="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-xs"><div><dt class="text-[10px] text-slate-400">Guests</dt><dd class="mt-0.5 font-bold">{{ $property->capacity }}</dd></div><div><dt class="text-[10px] text-slate-400">Beds</dt><dd class="mt-0.5 font-bold">{{ $property->bedrooms }}</dd></div><div><dt class="text-[10px] text-slate-400">Baths</dt><dd class="mt-0.5 font-bold">{{ $property->bathrooms }}</dd></div></dl>
+                                <div class="mt-3 flex items-center justify-between gap-2"><span class="truncate text-[10px] font-semibold text-amber-700">{{ str($property->verification_status->value)->title() }}</span><span class="truncate text-[10px] text-slate-400">{{ $property->code }}</span></div>
                                 @if ($property->publication_status->value === 'draft')
-                                    <a href="{{ route('owner.properties.resume', $property) }}" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-orange-700">
+                                    <a href="{{ route('owner.properties.resume', $property) }}" class="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 text-xs font-extrabold text-white hover:bg-orange-700">
                                         Continue setup
-                                        <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                     </a>
                                 @elseif ($property->publication_status->value === 'unpublished' && $property->verification_status->value === 'unverified')
-                                    <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}" class="mt-5">@csrf<button class="w-full rounded-xl border border-orange-300 bg-orange-50 px-4 py-2.5 text-sm font-extrabold text-orange-700 hover:bg-orange-100">Submit for marketplace verification</button></form>
+                                    <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}" class="mt-3">@csrf<button class="w-full rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-xs font-extrabold text-orange-700 hover:bg-orange-100">Submit for verification</button></form>
                                 @endif
                             </article>
                         @endforeach
