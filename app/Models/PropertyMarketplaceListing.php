@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['business_id', 'property_id', 'slug', 'public_title', 'short_summary', 'public_description', 'check_in_time', 'check_out_time', 'instant_booking_enabled', 'minimum_advance_notice_hours', 'maximum_advance_booking_days', 'seo_title', 'seo_description', 'seo_keywords', 'seo_score', 'seo_score_details', 'listing_quality_score', 'listing_quality_details', 'publication_status', 'is_publication_eligible', 'publication_eligibility_details', 'eligibility_checked_at', 'published_by', 'published_at', 'unpublished_by', 'unpublished_at', 'suspension_reason', 'status', 'created_by', 'updated_by'])]
+#[Fillable(['business_id', 'property_id', 'slug', 'public_title', 'short_summary', 'public_description', 'stay_categories', 'check_in_time', 'check_out_time', 'instant_booking_enabled', 'minimum_advance_notice_hours', 'maximum_advance_booking_days', 'seo_title', 'seo_description', 'seo_keywords', 'seo_score', 'seo_score_details', 'listing_quality_score', 'listing_quality_details', 'publication_status', 'is_publication_eligible', 'publication_eligibility_details', 'eligibility_checked_at', 'published_by', 'published_at', 'unpublished_by', 'unpublished_at', 'suspension_reason', 'status', 'created_by', 'updated_by'])]
 class PropertyMarketplaceListing extends Model
 {
     use HasUuids, SoftDeletes;
@@ -17,6 +17,7 @@ class PropertyMarketplaceListing extends Model
     {
         return [
             'instant_booking_enabled' => 'boolean',
+            'stay_categories' => 'array',
             'seo_keywords' => 'array',
             'seo_score' => 'integer',
             'seo_score_details' => 'array',

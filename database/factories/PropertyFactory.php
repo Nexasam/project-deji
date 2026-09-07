@@ -47,6 +47,7 @@ class PropertyFactory extends Factory
             ]),
             'capacity' => fake()->numberBetween(1, 20),
             'bedrooms' => fake()->numberBetween(0, 10),
+            'beds' => fake()->numberBetween(1, 12),
             'bathrooms' => fake()->randomElement([1, 1.5, 2, 2.5, 3, 4]),
             'description' => fake()->paragraph(),
             'default_nightly_price' => fake()->randomFloat(4, 50, 1000),
