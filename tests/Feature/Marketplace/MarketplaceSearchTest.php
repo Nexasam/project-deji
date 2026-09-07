@@ -28,6 +28,17 @@ class MarketplaceSearchTest extends TestCase
             ->assertSee('9 serviced apartments');
     }
 
+    public function test_home_shows_up_to_one_hundred_results_without_ai_insights_controls(): void
+    {
+        $response = $this->get('/')->assertOk()
+            ->assertSee('Admiralty Waterfront Residence')
+            ->assertSee('Oniru Beachside Studio')
+            ->assertDontSee('class="insights-btn"', false);
+
+        $this->assertSame(10, $response->viewData('properties')->count());
+        $this->assertSame(100, $response->viewData('properties')->perPage());
+    }
+
     public function test_search_and_filters_are_combined_on_the_backend(): void
     {
         $this->get('/?q=Coastal&category=beachfront&min_price=80000&max_price=100000&beds=2')

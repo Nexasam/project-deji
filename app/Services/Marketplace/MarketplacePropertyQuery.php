@@ -27,7 +27,7 @@ final class MarketplacePropertyQuery
             ->when($filters['beds'] ?? null, fn ($query, $value) => $query->where('beds', '>=', $value))
             ->when($filters['guests'] ?? null, fn ($query, $value) => $query->where('capacity', '>=', $value));
 
-        return $query->orderBy('name')->paginate(5)->withQueryString();
+        return $query->orderBy('name')->paginate(100)->withQueryString();
     }
 
     public function eligibleBySlug(string $slug): Property
