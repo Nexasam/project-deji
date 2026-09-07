@@ -129,7 +129,10 @@ return new class extends Migration
                 ->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
             $table->foreign(['business_id', 'payment_id'])
                 ->references(['business_id', 'id'])->on('payments')->restrictOnDelete();
-            $table->foreign(['business_id', 'source_document_id'])
+            $table->foreign(
+                ['business_id', 'source_document_id'],
+                'booking_fin_docs_source_document_fk'
+            )
                 ->references(['business_id', 'id'])->on('booking_financial_documents')->restrictOnDelete();
             $table->unique(['business_id', 'document_number']);
             $table->unique(['business_id', 'id']);

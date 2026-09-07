@@ -57,7 +57,10 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->unique(['business_id', 'briefing_date']);
-            $table->index(['business_id', 'generation_status', 'briefing_date']);
+            $table->index(
+                ['business_id', 'generation_status', 'briefing_date'],
+                'dashboard_briefings_generation_date_idx'
+            );
         });
 
         Schema::create('business_health_snapshots', function (Blueprint $table) {
@@ -76,7 +79,10 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->unique(['business_id', 'period_type', 'snapshot_date']);
+            $table->unique(
+                ['business_id', 'period_type', 'snapshot_date'],
+                'business_health_period_date_unique'
+            );
             $table->index(['business_id', 'snapshot_date', 'score']);
         });
 
@@ -120,7 +126,10 @@ return new class extends Migration
             $table->foreign(['business_id', 'booking_id'])
                 ->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
             $table->unique(['business_id', 'recommendation_key']);
-            $table->index(['business_id', 'recommendation_status', 'priority']);
+            $table->index(
+                ['business_id', 'recommendation_status', 'priority'],
+                'ai_recommendations_status_priority_idx'
+            );
             $table->index(['business_id', 'category', 'generated_at']);
             $table->index(['property_id', 'recommendation_status']);
             $table->index(['booking_id', 'recommendation_status']);
