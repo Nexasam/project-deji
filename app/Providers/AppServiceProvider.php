@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Contracts\Payments\PaymentGateway;
+use App\Services\Payments\SimulatedPaymentGateway;
+
 use App\Models\Business;
 use App\Models\BusinessMembership;
 use App\Models\UserRole;
@@ -12,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(PaymentGateway::class, SimulatedPaymentGateway::class);
         // Bind a fallback ActiveBusinessContext so the app works without auth middleware.
         // The real binding is set per-request by EnsureActiveBusinessContext when auth is on.
         $this->app->bindIf(ActiveBusinessContext::class, function () {

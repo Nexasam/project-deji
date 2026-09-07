@@ -13,10 +13,12 @@ use App\Http\Controllers\Owner\PropertyWizardController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\MarketplacePropertyController;
 use App\Http\Controllers\Guest\GuestBookingController;
+use App\Http\Controllers\Guest\MarketplaceCheckoutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', MarketplaceController::class)->name('home');
 Route::get('/stays/{slug}', MarketplacePropertyController::class)->name('marketplace.show');
+Route::post('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'store'])->middleware('auth')->name('marketplace.checkout.store');
 Route::middleware('auth')->prefix('guest')->name('guest.')->group(function () {
     Route::get('/bookings', [GuestBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [GuestBookingController::class, 'show'])->name('bookings.show');
