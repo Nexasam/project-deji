@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Owner\StorePropertyRequest;
 use App\Http\Requests\Owner\StorePropertyMediaRequest;
+use App\Http\Requests\Owner\StorePropertyRequest;
 use App\Http\Requests\Owner\UpdatePropertyAmenitiesRequest;
 use App\Models\Amenity;
-use App\Services\Property\CreatePropertyService;
-use App\Services\Property\SyncPropertyAmenitiesService;
-use App\Services\Property\StorePropertyMediaService;
-use App\Services\Property\UpdatePropertyService;
-use App\Services\Property\PropertySetupWorkflow;
-use App\Support\ActiveBusinessContext;
 use App\Models\Property;
+use App\Services\Property\CreatePropertyService;
+use App\Services\Property\PropertySetupWorkflow;
+use App\Services\Property\StorePropertyMediaService;
+use App\Services\Property\SyncPropertyAmenitiesService;
+use App\Services\Property\UpdatePropertyService;
+use App\Support\ActiveBusinessContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -54,7 +54,7 @@ class OwnerPropertyController extends Controller
         $workflow->initialize($property, $request->user());
         $workflow->complete($property, 'basics', $request->user());
 
-        return redirect()->route('owner.properties.setup.amenities', $property)
+        return redirect()->route('owner.properties.wizard.step', ['property' => $property, 'step' => 4])
             ->with('status', "{$property->name} basics were saved.");
     }
 
@@ -84,7 +84,7 @@ class OwnerPropertyController extends Controller
         $service->update($draft, $request->user(), $request->propertyAttributes());
         $workflow->complete($draft, 'basics', $request->user());
 
-        return redirect()->route('owner.properties.setup.amenities', $draft)
+        return redirect()->route('owner.properties.wizard.step', ['property' => $draft, 'step' => 4])
             ->with('status', "{$draft->name} basics were updated.");
     }
 

@@ -9,14 +9,15 @@ use App\Models\User;
 final class PropertySetupWorkflow
 {
     public const STEPS = [
+        'property-kind' => true,
+        'location' => true,
         'basics' => true,
-        'amenities' => false,
+        'amenities' => true,
         'media' => true,
-        'house-rules' => false,
-        'operations' => false,
         'assets' => false,
         'documents' => false,
-        'marketplace' => false,
+        'name-price' => true,
+        'channels' => false,
         'review' => true,
     ];
 
@@ -54,6 +55,7 @@ final class PropertySetupWorkflow
     public function resumeKey(Property $property): string
     {
         $this->initialize($property);
+
         return $property->setupSteps()->whereIn('state', ['pending', 'in_progress'])->orderBy('sort_order')->value('step_key') ?? 'review';
     }
 
@@ -61,25 +63,27 @@ final class PropertySetupWorkflow
     {
         $keys = array_keys(self::STEPS);
         $position = array_search($key, $keys, true);
+
         return $position === false ? null : ($keys[$position + 1] ?? null);
     }
 
     public function routeName(string $key): string
     {
-        return $key === 'basics' ? 'owner.properties.edit' : 'owner.properties.setup.'. $key;
+        return $key === 'basics' ? 'owner.properties.edit' : 'owner.properties.setup.'.$key;
     }
 
     private function inferState(Property $property, string $key): string
     {
         $complete = match ($key) {
-            'basics' => $property->information_completed_at !== null,
-            'amenities' => $property->amenities()->exists(),
+            'property-kind' => true,
+            'location' => filled(data_get($property->address, 'city')),
+            'basics' => filled($property->booking_mode),
+            'amenities' => $property->setupSteps()->where('step_key', 'amenities')->where('state', 'completed')->exists(),
             'media' => $property->media()->where('media_type', 'image')->exists(),
-            'house-rules' => $property->houseRules()->exists(),
-            'operations' => $property->cleaningSchedules()->exists(),
             'assets' => $property->assets()->exists(),
             'documents' => $property->documents()->exists(),
-            'marketplace' => $property->marketplaceListing()->exists(),
+            'name-price' => $property->information_completed_at !== null && $property->default_nightly_price !== null,
+            'channels' => $property->channelConnections()->exists(),
             'review' => $property->publication_status->value !== 'draft',
             default => false,
         };

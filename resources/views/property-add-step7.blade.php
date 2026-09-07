@@ -6,13 +6,7 @@
     <title>Add Property - Step 7 - Verified Shortlet</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 font-sans antialiased" x-data="{ 
-    documents: [
-        { name: 'Egbeda Properties Bluewater Tenancy Agreement.pdf', size: '30 KB' },
-        { name: 'Egbeda Properties Bluewater Rules and Regulations.pdf', size: '30 KB' },
-        { name: 'Egbeda Properties Bluewater Tenancy Agreement.pdf', size: '30 KB' }
-    ]
-}">
+<body class="bg-gray-100 font-sans antialiased">
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
         <header class="bg-white border-b border-gray-200">
@@ -22,7 +16,7 @@
                     <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500">Step 7 of 9</span>
+                    <span class="text-xs text-gray-500">Step 7 of 10</span>
                     <a href="/owner/properties" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Save & exit</a>
                 </div>
             </div>
@@ -31,9 +25,11 @@
 
         {{-- Main Content --}}
         <main class="flex-1 px-4 py-7">
-            <div class="w-full max-w-4xl mx-auto">
+            <form method="POST" enctype="multipart/form-data" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>7]) }}" class="w-full max-w-4xl mx-auto">
+                @csrf
                 {{-- Title Section --}}
-                <div class="mb-5">`n                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">PAPERWORK</p>
+                <div class="mb-5">
+                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">PAPERWORK</p>
                     <h1 class="text-2xl font-bold text-gray-900 mb-1.5">Any documents to keep on file?</h1>
                     <p class="text-gray-600 text-sm text-gray-500">
                         Totally optional — lease agreements, inspection reports or receipts. Whatever you upload here stays attached to this property for your own records.
@@ -43,7 +39,7 @@
                 {{-- Upload Area --}}
                 <div class="bg-white rounded-xl shadow-sm p-5 mb-5">
                     {{-- Dashed Upload Box --}}
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 mb-4 text-center hover:border-[#FF5A00] transition-colors cursor-pointer">
+                    <label class="block border-2 border-dashed border-gray-300 rounded-xl p-6 mb-4 text-center hover:border-[#FF5A00] transition-colors cursor-pointer">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-[#FF5A00] rounded-lg flex items-center justify-center mb-4">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,12 +50,13 @@
                                 <span class="font-bold">Click to upload</span> or drag and drop
                             </p>
                             <p class="text-gray-500 text-sm">PDF, DOC or image files, up to 10</p>
+                            <input type="file" name="documents[]" multiple accept=".pdf,.doc,.docx,image/*" class="sr-only">
                         </div>
-                    </div>
+                    </label>
 
                     {{-- Uploaded Documents List --}}
                     <div class="space-y-3">
-                        <template x-for="(doc, index) in documents" :key="index">
+                        @foreach($property->documents as $document)
                             <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
@@ -68,29 +65,31 @@
                                             <path d="M14 2v6h6"/>
                                         </svg>
                                     </div>
-                                    <span class="text-gray-900 text-sm font-medium" x-text="doc.name"></span>
+                                    <span class="text-gray-900 text-sm font-medium">{{ $document->title }}</span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <span class="text-gray-600 text-sm" x-text="doc.size"></span>
-                                    <button @click="documents.splice(index, 1)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
+                                    <span class="text-gray-600 text-sm">{{ optional($document->versions->first())->size_bytes ? round($document->versions->first()->size_bytes / 1024).' KB' : '' }}</span>
+                                    <button type="submit" form="delete-document-{{ $document->id }}" aria-label="Remove document" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
                                     </button>
                                 </div>
                             </div>
-                        </template>
+                        @endforeach
                     </div>
                 </div>
 
                 {{-- Navigation Buttons --}}
                 <div class="flex items-center justify-between">
-                    <a href="/owner/properties/create/step6" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <a href="/owner/properties/create/step8" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</a>
+                    <a href="{{ route('owner.properties.wizard.step', ['property'=>$property,'step'=>6]) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
+                    <div class="flex gap-3"><button type="submit" formaction="{{ route('owner.properties.wizard.skip', ['property'=>$property,'step'=>7]) }}" class="text-sm underline">Skip</button><button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md">Next Step</button></div>
                 </div>
-            </div>
+            </form>
+            @foreach($property->documents as $document)
+                <form id="delete-document-{{ $document->id }}" method="POST" action="{{ route('owner.properties.wizard.documents.destroy', ['property'=>$property,'document'=>$document]) }}" class="hidden">@csrf @method('DELETE')</form>
+            @endforeach
         </main>
     </div>
 </body>
 </html>
-

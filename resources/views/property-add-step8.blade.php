@@ -7,10 +7,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-100 font-sans antialiased" x-data="{ 
-    propertyName: 'e.g Bluewater Suite 5A',
-    description: '',
-    nightlyRate: '50000',
-    discount: '',
+    propertyName: @js(old('name', $property->name === 'Untitled property' ? '' : $property->name)),
+    description: @js(old('description', $property->description)),
+    nightlyRate: @js(old('default_nightly_price', $property->default_nightly_price)),
+    discount: @js(old('discount_percentage', optional($property->promotions->firstWhere('name', 'Longer stay discount'))->discount_value)),
+    minimumStay: @js(old('minimum_stay_nights', optional($property->promotions->firstWhere('name', 'Longer stay discount'))->minimum_stay_nights ?? 7)),
     multipleRooms: false
 }">
     <div class="min-h-screen flex flex-col">
@@ -31,9 +32,12 @@
 
         {{-- Main Content --}}
         <main class="flex-1 px-4 py-7">
-            <div class="w-full max-w-4xl mx-auto">
+            <form method="POST" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>8]) }}" class="w-full max-w-4xl mx-auto">
+                @csrf
+                @if($errors->any())<div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ $errors->first() }}</div>@endif
                 {{-- Title Section --}}
-                <div class="mb-5">`n                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">ALMOST THERE</p>
+                <div class="mb-5">
+                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">ALMOST THERE</p>
                     <h1 class="text-2xl font-bold text-gray-900 mb-1.5">Give it a name and a price</h1>
                     <p class="text-gray-500 text-sm">
                         The name is how you'll find this flat everywhere in Verified Shortlet — from your dashboard to guest bookings
@@ -46,7 +50,8 @@
                     <div class="mb-6">
                         <label class="block text-gray-900 font-bold text-base mb-3">Property name</label>
                         <input 
-                            type="text" 
+                            type="text"
+                            name="name"
                             x-model="propertyName"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
                         />
@@ -61,7 +66,7 @@
                     {{-- Description --}}
                     <div class="mb-6">
                         <label class="block text-gray-900 font-bold text-base mb-3">Description</label>
-                        <textarea 
+                        <textarea name="description"
                             x-model="description"
                             placeholder="Describe the layout, what makes it a great stay, nearby landmarks..."
                             rows="5"
@@ -75,32 +80,35 @@
                         <div>
                             <label class="block text-gray-900 font-bold text-base mb-3">Nightly rate (₦)</label>
                             <input 
-                                type="text" 
+                            type="number"
+                                name="default_nightly_price"
                                 x-model="nightlyRate"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
                             />
                         </div>
 
                         {{-- Weekly/Monthly Discount --}}
-                        <div>
+                        <div class="grid grid-cols-2 gap-3">
                             <label class="block text-gray-900 font-bold text-base mb-3">
-                                Weekly / monthly discount <span class="font-normal text-gray-600">(optional)</span>
+                                Longer-stay discount <span class="font-normal text-gray-600">(optional)</span>
                             </label>
+                            <span></span>
                             <input 
-                                type="text" 
+                                type="number" name="discount_percentage" min="1" max="100" step="0.01"
                                 x-model="discount"
-                                placeholder="e.g 10% off / 7+ nights"
+                                placeholder="10% off"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
                             />
+                            <input type="number" name="minimum_stay_nights" min="2" max="365" x-model="minimumStay" placeholder="7 nights" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900" />
                         </div>
                     </div>
 
                     {{-- Multiple Bookable Rooms Checkbox --}}
                     <div class="flex items-start gap-3">
-                        <label class="flex items-center gap-3 cursor-pointer">
+                        <label class="flex items-center gap-3 cursor-not-allowed opacity-60">
                             <input 
                                 type="checkbox" 
-                                x-model="multipleRooms"
+                                disabled
                                 class="sr-only"
                             />
                             <div class="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors"
@@ -109,19 +117,18 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </div>
-                            <span class="text-gray-900 font-bold text-base">This property has multiple bookable rooms</span>
+                            <span class="text-gray-900 font-bold text-base">Multiple bookable rooms — coming soon</span>
                         </label>
                     </div>
                 </div>
 
                 {{-- Navigation Buttons --}}
                 <div class="flex items-center justify-between">
-                    <a href="/owner/properties/create/step7" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <a href="/owner/properties/create/channels" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</a>
+                    <a href="{{ route('owner.properties.wizard.step', ['property'=>$property,'step'=>7]) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
+                    <button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</button>
                 </div>
-            </div>
+            </form>
         </main>
     </div>
 </body>
 </html>
-

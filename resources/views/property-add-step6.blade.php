@@ -7,8 +7,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-100 font-sans antialiased" x-data="{ 
-    items: ['smart-tv', 'microwave', 'gas-cooker', 'sofa-set'],
-    customItems: []
+    items: @js($property->assets->pluck('name')->all()),
+    customItems: [],
+    newItem: ''
 }">
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
@@ -19,7 +20,7 @@
                     <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500">Step 6 of 9</span>
+                    <span class="text-xs text-gray-500">Step 6 of 10</span>
                     <a href="/owner/properties" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Save & exit</a>
                 </div>
             </div>
@@ -28,9 +29,12 @@
 
         {{-- Main Content --}}
         <main class="flex-1 px-4 py-7">
-            <div class="w-full max-w-4xl mx-auto">
+            <form method="POST" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>6]) }}" class="w-full max-w-4xl mx-auto">
+                @csrf
+                <input type="hidden" name="assets" :value="JSON.stringify([...items, ...customItems])">
                 {{-- Title Section --}}
-                <div class="mb-5">`n                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">INSIDE THE FLAT</p>
+                <div class="mb-5">
+                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">INSIDE THE FLAT</p>
                     <h1 class="text-2xl font-bold text-gray-900 mb-1.5">What's already there?</h1>
                     <p class="text-gray-600 text-sm text-gray-500">
                         Select what's in the flat itself — not shared building items like a generator for the whole block. We'll mark these as Good condition to start; you can update any of them later.
@@ -180,7 +184,7 @@
                                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors"
                                 @keydown.enter="if(newItem.trim()) { customItems.push(newItem.trim()); newItem = ''; }"
                             />
-                            <button @click="if(newItem.trim()) { customItems.push(newItem.trim()); newItem = ''; }"
+                            <button type="button" @click="if(newItem.trim()) { customItems.push(newItem.trim()); newItem = ''; }"
                                     class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -189,7 +193,7 @@
                         </div>
 
                         {{-- Add Another Item Button --}}
-                        <button class="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 font-medium hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors">
+                        <button type="button" @click="$el.previousElementSibling.querySelector('input').focus()" class="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 font-medium hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors">
                             + Add another item
                         </button>
                     </div>
@@ -197,12 +201,11 @@
 
                 {{-- Navigation Buttons --}}
                 <div class="flex items-center justify-between">
-                    <a href="/owner/properties/create/step5" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <a href="/owner/properties/create/step7" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</a>
+                    <a href="{{ route('owner.properties.wizard.step', ['property'=>$property,'step'=>5]) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
+                    <div class="flex gap-3"><button type="submit" formaction="{{ route('owner.properties.wizard.skip', ['property'=>$property,'step'=>6]) }}" class="text-sm underline">Skip</button><button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md">Next Step</button></div>
                 </div>
-            </div>
+            </form>
         </main>
     </div>
 </body>
 </html>
-

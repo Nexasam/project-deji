@@ -28,9 +28,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'latitude',
     'longitude',
     'property_type',
+    'booking_mode',
     'capacity',
     'bedrooms',
     'bathrooms',
+    'floor_area_sqm',
     'description',
     'default_nightly_price',
     'pricing_currency',
@@ -68,6 +70,7 @@ class Property extends Model
             'capacity' => 'integer',
             'bedrooms' => 'integer',
             'bathrooms' => 'decimal:1',
+            'floor_area_sqm' => 'decimal:2',
             'default_nightly_price' => 'decimal:4',
             'verification_status' => PropertyVerificationStatus::class,
             'maintenance_status' => PropertyMaintenanceStatus::class,
@@ -83,6 +86,11 @@ class Property extends Model
             'archived_at' => 'datetime',
             'status' => PropertyStatus::class,
         ];
+    }
+
+    public function channelConnections(): HasMany
+    {
+        return $this->hasMany(PropertyChannelConnection::class);
     }
 
     public function business(): BelongsTo

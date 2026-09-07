@@ -30,26 +30,13 @@ class FirstPropertyOnboardingTest extends TestCase
     public function test_first_property_is_created_as_a_draft_for_the_active_business(): void
     {
         [$user, $business] = $this->ownerWithBusiness();
-        $otherBusiness = Business::factory()->create();
-
-        $response = $this->actingAs($user)->post(route('owner.properties.store'), [
-            'business_id' => $otherBusiness->id,
-            'name' => 'Harbour View Apartment',
-            'property_type' => 'apartment',
-            'address_line' => '12 Admiralty Way',
-            'city' => 'Lekki',
-            'state' => 'Lagos',
-            'country_code' => 'NG',
-            'capacity' => 4,
-            'bedrooms' => 2,
-            'bathrooms' => 2,
-            'description' => 'A serviced two-bedroom apartment.',
-            'default_nightly_price' => 120000,
+        $response = $this->actingAs($user)->post(route('owner.properties.wizard.start'), [
+            'property_kind' => 'brand_new',
         ]);
 
-        $response->assertRedirect(route('owner.dashboard'));
+        $property = Property::query()->sole();
+        $response->assertRedirect(route('owner.properties.wizard.step', ['property' => $property, 'step' => 2]));
 
-        $property = Property::query()->where('name', 'Harbour View Apartment')->firstOrFail();
         $this->assertSame($business->id, $property->business_id);
         $this->assertSame('draft', $property->publication_status->value);
         $this->assertSame('unverified', $property->verification_status->value);

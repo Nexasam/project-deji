@@ -16,7 +16,7 @@
                     <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500">Step 1 of 9</span>
+                    <span class="text-xs text-gray-500">Step 1 of 10</span>
                     <a href="/owner/properties" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                         Save & exit
                     </a>
@@ -37,6 +37,9 @@
                     <p class="text-gray-500 text-sm">We'll walk you through it one question at a time — takes about 10 minutes, and you can save your progress anytime.</p>
                 </div>
 
+                <form method="POST" action="{{ route('owner.properties.wizard.start') }}">
+                @csrf
+                <input type="hidden" name="property_kind" value="brand_new">
                 {{-- Selection Cards --}}
                 <div class="bg-white rounded-xl shadow-sm p-5 mb-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -64,8 +67,8 @@
                             <div class="p-4">
                                 <h3 class="text-base font-bold text-gray-900 mb-1">Another flat in a property</h3>
                                 <p class="text-gray-500 text-sm mb-3">e.g. adding "3C" to a Bluewater building you already list.</p>
-                                <button class="w-full bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold py-2.5 px-4 rounded-lg transition-colors tracking-wider">
-                                    ADD ANOTHER FLAT
+                                <button type="button" disabled class="w-full bg-gray-300 text-gray-600 text-xs font-bold py-2.5 px-4 rounded-lg cursor-not-allowed tracking-wider">
+                                    COMING SOON
                                 </button>
                             </div>
                         </div>
@@ -75,10 +78,11 @@
                 {{-- Navigation --}}
                 <div class="flex items-center justify-between">
                     <button class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</button>
-                    <a href="/owner/properties/create/step2" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">
+                    <button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">
                         Next Step
-                    </a>
+                    </button>
                 </div>
+                </form>
             </div>
         </main>
     </div>

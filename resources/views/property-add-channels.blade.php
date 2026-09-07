@@ -8,17 +8,14 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased" x-data="{
     channels: {
-        airbnb:     { connected: false, username: '', syncing: false },
-        bookingcom: { connected: false, propertyId: '', syncing: false },
-        whatsapp:   { connected: false, phone: '', syncing: false },
+        airbnb:     { connected: {{ $property->channelConnections->contains('provider', 'airbnb') ? 'true' : 'false' }}, username: @js(optional($property->channelConnections->firstWhere('provider', 'airbnb'))->external_reference ?? ''), syncing: false },
+        bookingcom: { connected: {{ $property->channelConnections->contains('provider', 'bookingcom') ? 'true' : 'false' }}, propertyId: @js(optional($property->channelConnections->firstWhere('provider', 'bookingcom'))->external_reference ?? ''), syncing: false },
+        whatsapp:   { connected: {{ $property->channelConnections->contains('provider', 'whatsapp') ? 'true' : 'false' }}, phone: @js(optional($property->channelConnections->firstWhere('provider', 'whatsapp'))->external_reference ?? ''), syncing: false },
         direct:     { connected: true,  note: 'Always on — guests book directly through Verified Shortlet.' },
     },
     connectChannel(key) {
-        this.channels[key].syncing = true;
-        setTimeout(() => {
-            this.channels[key].connected = true;
-            this.channels[key].syncing = false;
-        }, 1200);
+        this.channels[key].connected = true;
+        this.channels[key].syncing = false;
     },
     disconnectChannel(key) {
         this.channels[key].connected = false;
@@ -50,7 +47,7 @@
                     <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">DISTRIBUTION CHANNELS</p>
                     <h1 class="text-2xl font-bold text-gray-900 mb-1.5">Where do you want to take bookings?</h1>
                     <p class="text-gray-500 text-sm">
-                        Connect the platforms you already use. Bookings from each channel will sync to your calendar automatically — no double-booking.
+                        Add the platforms you use. We’ll save each request as connection pending; live synchronization will be enabled later.
                     </p>
                 </div>
 
@@ -93,7 +90,7 @@
                                     <span x-show="channels.airbnb.connected"
                                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
                                         <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                        CONNECTED
+                                        CONNECTION PENDING
                                     </span>
                                 </div>
                                 <p class="text-xs text-gray-400">Sync via iCal — bookings confirmed on Airbnb appear on your calendar as locked entries.</p>
@@ -128,7 +125,7 @@
                              class="mt-4 pt-4 border-t border-gray-100">
                             <label class="block text-xs font-semibold text-gray-600 mb-2">Airbnb iCal URL</label>
                             <div class="flex items-center gap-2">
-                                <input type="url" x-model="channels.airbnb.username"
+                                <input form="channels-form" name="channels[airbnb]" type="url" x-model="channels.airbnb.username"
                                        placeholder="Paste your Airbnb iCal export link here"
                                        class="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#FF385C] text-gray-800" />
                                 <button class="px-3 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-black transition-colors flex-shrink-0">Save</button>
@@ -152,7 +149,7 @@
                                     <span x-show="channels.bookingcom.connected"
                                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
                                         <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                        CONNECTED
+                                        CONNECTION PENDING
                                     </span>
                                 </div>
                                 <p class="text-xs text-gray-400">Sync via iCal or channel manager API — confirmed bookings lock your calendar automatically.</p>
@@ -186,7 +183,7 @@
                              class="mt-4 pt-4 border-t border-gray-100">
                             <label class="block text-xs font-semibold text-gray-600 mb-2">Booking.com iCal URL</label>
                             <div class="flex items-center gap-2">
-                                <input type="url" x-model="channels.bookingcom.propertyId"
+                                <input form="channels-form" name="channels[bookingcom]" type="url" x-model="channels.bookingcom.propertyId"
                                        placeholder="Paste your Booking.com iCal export link here"
                                        class="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003580] text-gray-800" />
                                 <button class="px-3 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-black transition-colors flex-shrink-0">Save</button>
@@ -238,7 +235,7 @@
                              class="mt-4 pt-4 border-t border-gray-100">
                             <label class="block text-xs font-semibold text-gray-600 mb-2">WhatsApp booking number</label>
                             <div class="flex items-center gap-2">
-                                <input type="tel" x-model="channels.whatsapp.phone"
+                                <input form="channels-form" name="channels[whatsapp]" type="tel" x-model="channels.whatsapp.phone"
                                        placeholder="+2348105550555"
                                        class="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#25D366] text-gray-800" />
                                 <button class="px-3 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-black transition-colors flex-shrink-0">Save</button>
@@ -278,17 +275,17 @@
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                     </svg>
                     <p class="text-gray-700 text-sm">
-                        You can skip this and connect channels later from your property settings. Channels you connect here will start syncing as soon as you publish.
+                        You can skip this and add channel details later. Saving here does not connect to an external provider yet.
                     </p>
                 </div>
 
                 {{-- Navigation --}}
                 <div class="flex items-center justify-between">
-                    <a href="/owner/properties/create/step8" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <div class="flex items-center gap-3">
-                        <a href="/owner/properties/create/step9" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Skip for now</a>
-                        <a href="/owner/properties/create/step9" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</a>
-                    </div>
+                    <a href="{{ route('owner.properties.wizard.step', ['property'=>$property,'step'=>8]) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
+                    <form id="channels-form" method="POST" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>9]) }}" class="flex items-center gap-3">@csrf
+                        <button type="submit" formaction="{{ route('owner.properties.wizard.skip', ['property'=>$property,'step'=>9]) }}" class="text-sm text-gray-500 hover:text-gray-700 underline">Skip for now</button>
+                        <button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm shadow-md">Next Step</button>
+                    </form>
                 </div>
             </div>
         </main>

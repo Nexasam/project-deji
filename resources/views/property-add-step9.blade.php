@@ -1,150 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Add Property - Step 9 - Verified Shortlet</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-gray-100 font-sans antialiased">
-    <div class="min-h-screen flex flex-col">
-        {{-- Header --}}
-        <header class="bg-white border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <img src="/logo1.png" alt="VS Logo" class="h-7 w-auto" />
-                    <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500">Step 10 of 10</span>
-                    <a href="/owner/properties" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Save & exit</a>
-                </div>
-            </div>
-            <div class="h-0.5 bg-[#FF5A00]" style="width: 100%"></div>
-        </header>
-
-        {{-- Main Content --}}
-        <main class="flex-1 px-4 py-7">
-            <div class="w-full max-w-4xl mx-auto">
-                {{-- Title Section --}}
-                <div class="mb-5">`n                    <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">LAST LOOK</p>
-                    <h1 class="text-2xl font-bold text-gray-900 mb-1.5">Review your listing</h1>
-                    <p class="text-gray-600 text-sm text-gray-500">
-                        Everything look right? You can jump back to fix anything, or send it off for review.
-                    </p>
-                </div>
-
-                {{-- Review Sections --}}
-                <div class="space-y-4 mb-6">
-                    {{-- Location --}}
-                    <div class="bg-white rounded-xl border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-gray-900 font-bold text-base">Location</h3>
-                            <button class="text-[#FF5A00] text-sm font-semibold hover:text-[#E55000] transition-colors">Edit</button>
-                        </div>
-                        <div class="space-y-2">
-                            <p class="text-gray-900 font-semibold text-base">Dynasty · Egbeda</p>
-                            <p class="text-gray-600 text-sm">Lagos, Lekki, Igbo-Elerin (Ecowas Roard Road)</p>
-                            <div class="flex items-center gap-2 text-sm">
-                                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-gray-900">Pin set — <span class="text-gray-600">John Wick Igbosere Street, Lekki Phase I, Ilabo</span></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- The basics --}}
-                    <div class="bg-white rounded-xl border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-gray-900 font-bold text-base">The basics</h3>
-                            <button class="text-[#FF5A00] text-sm font-semibold hover:text-[#E55000] transition-colors">Edit</button>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-gray-900 font-semibold text-base">Self-contained · entire</p>
-                            <p class="text-gray-600 text-sm">2 Guests · 1 bed · 1 bath</p>
-                        </div>
-                    </div>
-
-                    {{-- Amenities --}}
-                    <div class="bg-white rounded-xl border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-gray-900 font-bold text-base">Amenities</h3>
-                            <button class="text-[#FF5A00] text-sm font-semibold hover:text-[#E55000] transition-colors">Edit</button>
-                        </div>
-                        <p class="text-gray-600 text-sm">5 amenities selected</p>
-                    </div>
-
-                    {{-- Photos & video --}}
-                    <div class="bg-white rounded-xl border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-gray-900 font-bold text-base">Photos & video</h3>
-                            <button class="text-[#FF5A00] text-sm font-semibold hover:text-[#E55000] transition-colors">Edit</button>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-gray-600 text-sm mb-3">8 photos · 1 video</p>
-                            <div class="flex gap-2 flex-wrap">
-                                <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=120&h=120&fit=crop" alt="Living room" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=120&h=120&fit=crop" alt="Bedroom" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=120&h=120&fit=crop" alt="Kitchen" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?w=120&h=120&fit=crop" alt="Bathroom" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=120&h=120&fit=crop" alt="Balcony" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=120&h=120&fit=crop" alt="Dining area" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=120&h=120&fit=crop" alt="Study" class="w-16 h-16 rounded-lg object-cover" />
-                                <img src="https://images.unsplash.com/photo-1531835551805-16d864c8d311?w=120&h=120&fit=crop" alt="Exterior" class="w-16 h-16 rounded-lg object-cover" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Assets --}}
-                    <div class="bg-white rounded-xl border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-gray-900 font-bold text-base">Assets</h3>
-                            <button class="text-[#FF5A00] text-sm font-semibold hover:text-[#E55000] transition-colors">Edit</button>
-                        </div>
-                        <p class="text-gray-600 text-sm">Smart TV, Air conditioner, Dining set, Sofa set</p>
-                    </div>
-
-                    {{-- Documents --}}
-                    <div class="bg-white rounded-xl border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-gray-900 font-bold text-base">Documents</h3>
-                            <button class="text-[#FF5A00] text-sm font-semibold hover:text-[#E55000] transition-colors">Edit</button>
-                        </div>
-                        <p class="text-gray-600 text-sm">3 file(s) attached</p>
-                    </div>
-
-                    {{-- Name & price --}}
-                    <div class="bg-white rounded-xl border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <h3 class="text-gray-900 font-bold text-base">Name & price</h3>
-                            <button class="text-[#FF5A00] text-sm font-semibold hover:text-[#E55000] transition-colors">Edit</button>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-gray-900 font-semibold text-base">SomeMovels Property</p>
-                            <p class="text-gray-600 text-sm">₦80,000 / night</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Info Box --}}
-                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                    <p class="text-gray-700 text-sm">
-                        Typically submits your listing for a quick andflawless review — usually within 24 hours — before it appears on the marketplace. You can also save it as a draft and publish when you're ready.
-                    </p>
-                </div>
-
-                {{-- Navigation Buttons --}}
-                <div class="flex items-center justify-between">
-                    <a href="/owner/properties/create/channels" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <a href="/owner/properties/create/success" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Review listing</a>
-                </div>
-            </div>
-        </main>
-    </div>
-</body>
-</html>
-
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Review {{ $property->name }} - Verified Shortlet</title>@vite(['resources/css/app.css','resources/js/app.js'])</head>
+<body class="bg-gray-100 font-sans antialiased"><div class="min-h-screen flex flex-col">
+<header class="bg-white border-b border-gray-200"><div class="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between"><div class="flex items-center gap-2"><img src="/logo1.png" alt="VS Logo" class="h-7"><span class="text-sm font-semibold">Verified Shortlet</span></div><div class="flex items-center gap-3"><span class="text-xs text-gray-500">Step 10 of 10</span><a href="{{ route('owner.properties.index') }}" class="px-3 py-1.5 text-xs border rounded-lg">Save & exit</a></div></div><div class="h-0.5 bg-[#FF5A00]"></div></header>
+<main class="flex-1 px-4 py-7"><div class="w-full max-w-4xl mx-auto"><div class="mb-5"><p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider">Last look</p><h1 class="text-2xl font-bold mt-1">Review your listing</h1><p class="text-gray-500 text-sm mt-1">Everything below comes from your saved property draft.</p></div>
+@if($errors->any())<div class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{{ $errors->first() }}</div>@endif
+@php $sections=[
+ [2,'Location',[data_get($property->address,'city').' · '.data_get($property->address,'state'),data_get($property->address,'line_1')]],
+ [3,'The basics',[str($property->property_type)->replace('-',' ')->title().' · '.str($property->booking_mode)->title(),$property->capacity.' Guests · '.$property->bedrooms.' bed · '.$property->bathrooms.' bath']],
+ [4,'Amenities',[$property->amenities->count().' amenities selected']],
+ [5,'Photos & video',[$property->media->where('media_type','image')->count().' photos · '.$property->media->where('media_type','video')->count().' video']],
+ [6,'Assets',[$property->assets->pluck('name')->join(', ') ?: 'None added']],
+ [7,'Documents',[$property->documents->count().' file(s) attached']],
+ [8,'Name & price',[$property->name,'₦'.number_format((float)$property->default_nightly_price).' / night']],
+ [9,'Booking channels',[$property->channelConnections->count().' connection request(s) pending']],
+]; @endphp
+<div class="space-y-4 mb-6">@foreach($sections as [$step,$title,$lines])<section class="bg-white rounded-xl border border-gray-200 p-6"><div class="flex justify-between mb-3"><h2 class="font-bold">{{ $title }}</h2><a href="{{ route('owner.properties.wizard.step',['property'=>$property,'step'=>$step]) }}" class="text-[#FF5A00] text-sm font-semibold">Edit</a></div>@foreach($lines as $line)<p class="text-sm text-gray-600">{{ $line }}</p>@endforeach @if($step===5)<div class="flex gap-2 mt-3 flex-wrap">@foreach($property->media->where('media_type','image') as $image)<img src="{{ Storage::disk($image->storage_disk)->url($image->storage_path) }}" class="w-16 h-16 rounded-lg object-cover" alt="{{ $image->alt_text }}">@endforeach</div>@endif</section>@endforeach</div>
+<div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-gray-700">Submitting sends this listing for verification. It will remain pending until reviewed.</div>
+<div class="flex justify-between items-center"><a href="{{ route('owner.properties.wizard.step',['property'=>$property,'step'=>9]) }}" class="text-sm underline text-gray-500">Back</a><form method="POST" action="{{ route('owner.properties.wizard.submit',$property) }}">@csrf<button class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm">Submit for review</button></form></div>
+</div></main></div></body></html>

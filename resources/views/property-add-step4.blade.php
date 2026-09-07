@@ -6,7 +6,7 @@
     <title>Add Property - Step 4 - Verified Shortlet</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 font-sans antialiased" x-data="{ amenities: ['wifi', 'power-backup', 'smart-tv', 'swimming-pool', '24-7-security', 'free-parking'] }">
+<body class="bg-gray-100 font-sans antialiased" x-data="{ amenities: @js(old('amenities', $property->amenities->pluck('code')->all())) }">
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
         <header class="bg-white border-b border-gray-200">
@@ -16,7 +16,7 @@
                     <span class="text-gray-900 text-sm font-semibold">Verified Shortlet</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500">Step 4 of 9</span>
+                    <span class="text-xs text-gray-500">Step 4 of 10</span>
                     <a href="/owner/properties" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Save & exit</a>
                 </div>
             </div>
@@ -25,7 +25,9 @@
 
         {{-- Main Content --}}
         <main class="flex-1 px-4 py-7">
-            <div class="w-full max-w-5xl mx-auto">
+            <form method="POST" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>4]) }}" class="w-full max-w-5xl mx-auto">
+                @csrf
+                <input type="hidden" name="amenity_codes" :value="JSON.stringify(amenities)">
                 <div class="mb-5">
                     <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">Make it stand out</p>
                     <h1 class="text-2xl font-bold text-gray-900 mb-1.5">What does the place offer?</h1>
@@ -187,13 +189,11 @@
 
                 {{-- Navigation --}}
                 <div class="flex items-center justify-between">
-                    <a href="/owner/properties/create/step3" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <a href="/owner/properties/create/step5" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</a>
+                    <a href="{{ route('owner.properties.wizard.step', ['property'=>$property,'step'=>3]) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
+                    <button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</button>
                 </div>
-            </div>
+            </form>
         </main>
     </div>
 </body>
 </html>
-
-
