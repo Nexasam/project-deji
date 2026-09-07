@@ -9,6 +9,12 @@
         <p class="mt-4">{{ $booking->arrival_date->format('d M Y') }} – {{ $booking->departure_date->format('d M Y') }}</p>
         <p class="mt-2">{{ $booking->number_of_guests }} guests · {{ ucfirst($booking->status->value) }}</p>
         <p class="text-2xl font-bold mt-6">₦{{ number_format((float)$booking->total_amount) }}</p>
+        @if($booking->status->value === 'confirmed')
+            <form method="POST" action="{{ route('guest.bookings.cancel', $booking) }}" class="mt-8">@csrf
+                <textarea name="reason" class="w-full rounded-xl border-gray-300" placeholder="Reason for cancellation"></textarea>
+                <button class="mt-3 rounded-xl border border-red-300 px-5 py-3 font-bold text-red-600">Cancel booking</button>
+            </form>
+        @endif
     </section>
 </main>
 @endsection

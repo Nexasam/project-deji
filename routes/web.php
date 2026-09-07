@@ -14,6 +14,7 @@ use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\MarketplacePropertyController;
 use App\Http\Controllers\Guest\GuestBookingController;
 use App\Http\Controllers\Guest\MarketplaceCheckoutController;
+use App\Http\Controllers\Guest\GuestBookingCancellationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', MarketplaceController::class)->name('home');
@@ -22,6 +23,7 @@ Route::post('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'st
 Route::middleware('auth')->prefix('guest')->name('guest.')->group(function () {
     Route::get('/bookings', [GuestBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [GuestBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking}/cancel', GuestBookingCancellationController::class)->name('bookings.cancel');
 });
 
 Route::prefix('owner')->name('owner.')->group(function () {
