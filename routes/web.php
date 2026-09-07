@@ -66,6 +66,7 @@ Route::prefix('owner')->name('owner.')->group(function () {
         Route::view('/properties/create/step7', 'property-add-step7')->name('properties.create.step7');
         Route::view('/properties/create/step8', 'property-add-step8')->name('properties.create.step8');
         Route::view('/properties/create/step9', 'property-add-step9')->name('properties.create.step9');
+        Route::view('/properties/create/channels', 'property-add-channels')->name('properties.create.channels');
         Route::view('/properties/create/success', 'property-add-success')->name('properties.create.success');
     });
 });

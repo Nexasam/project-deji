@@ -321,13 +321,23 @@
                             <h1 class="text-xl font-bold text-gray-900 mb-0.5">Calendar</h1>
                             <p class="text-xs text-gray-600">Track every booking — verified locks vs self-reported blocks</p>
                         </div>
-                        <button @click="addBookingOpen = true"
-                                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#FF5A00] text-white rounded-lg hover:bg-[#E64F00] text-sm font-medium flex-shrink-0 self-start sm:self-auto">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Add booking
-                        </button>
+                        <div class="flex items-center gap-2 flex-shrink-0 self-start sm:self-auto">
+                            <button @click="entryType = 'block'; addBookingOpen = true"
+                                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-medium transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="9" stroke-width="2"/>
+                                    <path stroke-linecap="round" stroke-width="2" d="M5.636 5.636l12.728 12.728"/>
+                                </svg>
+                                Block dates
+                            </button>
+                            <button @click="entryType = 'reservation'; addBookingOpen = true"
+                                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#FF5A00] hover:bg-[#E64F00] text-white rounded-lg text-sm font-medium transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                New reservation
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Calendar Card --}}
