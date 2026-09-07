@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AccessControlSeeder::class);
         $this->call(AmenitySeeder::class);
         $this->call(WorkflowTemplateSeeder::class);
+        $this->call(ServicedApartmentMarketplaceSeeder::class);
     }
 }
