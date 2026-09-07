@@ -10,9 +10,12 @@ use App\Http\Controllers\Owner\OwnerOperationsController;
 use App\Http\Controllers\Owner\OwnerPropertyController;
 use App\Http\Controllers\Owner\PropertySetupController;
 use App\Http\Controllers\Owner\PropertyWizardController;
+use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\MarketplacePropertyController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', MarketplaceController::class)->name('home');
+Route::get('/stays/{slug}', MarketplacePropertyController::class)->name('marketplace.show');
 
 Route::prefix('owner')->name('owner.')->group(function () {
     Route::get('/', OwnerEntryController::class)->name('entry');

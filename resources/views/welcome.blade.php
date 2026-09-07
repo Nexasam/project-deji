@@ -42,10 +42,56 @@
     {{-- Filter Bar --}}
     <x-filter-bar />
 
-    {{-- Main Content --}}
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-20">
-        {{-- Recently Viewed Section --}}
-        <section class="reveal">
+    <form action="{{ route('home') }}" method="GET" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 grid grid-cols-2 md:grid-cols-6 gap-3" aria-label="Search serviced apartments">
+        <input class="col-span-2 rounded-xl border-gray-300" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Search apartment or location">
+        <select class="rounded-xl border-gray-300" name="category">
+            @foreach(['all'=>'All stays','lekki'=>'Lekki','ikoyi'=>'Ikoyi','victoria-island'=>'Victoria Island','beachfront'=>'Beachfront','family'=>'Family stays','business'=>'Business stays'] as $value => $label)
+                <option value="{{ $value }}" @selected(($filters['category'] ?? 'all') === $value)>{{ $label }}</option>
+            @endforeach
+        </select>
+        <input class="rounded-xl border-gray-300" type="number" min="0" name="min_price" value="{{ $filters['min_price'] ?? '' }}" placeholder="Min price">
+        <input class="rounded-xl border-gray-300" type="number" min="0" name="max_price" value="{{ $filters['max_price'] ?? '' }}" placeholder="Max price">
+        <select class="rounded-xl border-gray-300" name="beds">
+            <option value="">Any beds</option>
+            @foreach(range(1, 5) as $beds)<option value="{{ $beds }}" @selected((string)($filters['beds'] ?? '') === (string)$beds)>{{ $beds }}+ beds</option>@endforeach
+        </select>
+        <button class="col-span-2 md:col-span-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold py-3">Search stays</button>
+    </form>
+
+    {{-- Backend-powered marketplace inventory --}}
+    <section id="marketplace" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+        <div class="flex items-end justify-between gap-4 mb-6">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-widest text-orange-500">Live marketplace</p>
+                <h2 class="text-2xl font-extrabold text-gray-900 mt-1">
+                    {{ $properties->total() }} serviced {{ Str::plural('apartment', $properties->total()) }}
+                </h2>
+            </div>
+        </div>
+        @if($properties->isEmpty())
+            <div class="rounded-2xl bg-gray-50 border border-gray-200 p-10 text-center text-gray-600">No serviced apartments match these filters.</div>
+        @else
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+                @foreach($properties as $property)
+                    <a href="{{ route('marketplace.show', $property->marketplaceListing->slug) }}" class="block">
+                        <x-property-card
+                            :image="optional($property->media->firstWhere('is_primary', true) ?? $property->media->first())->external_url"
+                            :name="$property->marketplaceListing->public_title"
+                            :location="data_get($property->address, 'city').', '.data_get($property->address, 'state')"
+                            :guests="$property->capacity"
+                            :price="(float) $property->default_nightly_price"
+                            rating="New"
+                        />
+                    </a>
+                @endforeach
+            </div>
+            <div class="mt-8">{{ $properties->links() }}</div>
+        @endif
+    </section>
+
+    {{-- Legacy sample listing grids removed; the live marketplace above is authoritative. --}}
+    @if(false)
+        <section>
             <div class="flex items-center justify-between mb-6 gap-4">
                 <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900">
                     Recently Viewed <span class="text-orange-500">Apartments</span>
@@ -168,7 +214,7 @@
                 @endforeach
             </div>
         </section>
-    </main>
+    @endif
 
     {{-- AI Trip Concierge Section --}}
     <x-ai-concierge 
