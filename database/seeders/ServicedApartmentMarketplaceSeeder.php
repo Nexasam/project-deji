@@ -69,7 +69,7 @@ class ServicedApartmentMarketplaceSeeder extends Seeder
                 'property_id' => $property->id, 'sort_order' => $position,
             ], [
                 'business_id' => $business->id, 'media_type' => 'image',
-                'external_url' => "https://images.unsplash.com/photo-{$data['photo']}-{$position}?auto=format&fit=crop&w=1200&q=80",
+                'external_url' => '/apt'.((($index + $position - 1) % 3) + 1).'.jpg',
                 'title' => $data['name'], 'alt_text' => $data['name'].' serviced apartment',
                 'is_primary' => $position === 1, 'status' => 'active', 'deleted_at' => null,
             ]);

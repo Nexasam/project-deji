@@ -37,6 +37,10 @@ class ServicedApartmentMarketplaceSeederTest extends TestCase
             $this->assertNotNull($property->marketplaceListing);
             $this->assertTrue($property->marketplaceListing->is_publication_eligible);
             $this->assertGreaterThanOrEqual(2, $property->media()->count());
+            $property->media()->each(function ($media): void {
+                $this->assertStringStartsWith('/apt', $media->external_url);
+                $this->assertFileExists(public_path(ltrim($media->external_url, '/')));
+            });
             $this->assertGreaterThanOrEqual(4, $property->amenities()->count());
         });
     }
