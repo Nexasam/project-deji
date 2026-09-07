@@ -18,14 +18,21 @@
 </div>
 
 {{-- User --}}
+@php
+    $sidebarUser     = auth()->user();
+    $sidebarBusiness = $activeBusiness ?? null;
+    $sidebarInitials = $sidebarUser
+        ? str($sidebarUser->name)->explode(' ')->map(fn($p) => str($p)->substr(0,1))->take(2)->join('')
+        : 'VS';
+@endphp
 <div class="px-4 py-3 border-b border-gray-200">
     <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-[#FF5A00] rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-white text-xs font-bold">{{ str(auth()->user()->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') }}</span>
+            <span class="text-white text-xs font-bold">{{ $sidebarInitials }}</span>
         </div>
         <div class="flex-1 min-w-0">
-            <p class="text-gray-900 text-xs font-semibold truncate">{{ auth()->user()->name }}</p>
-            <p class="text-gray-500 text-[10px] truncate">{{ $activeBusiness->name }}</p>
+            <p class="text-gray-900 text-xs font-semibold truncate">{{ $sidebarUser?->name ?? 'Guest' }}</p>
+            <p class="text-gray-500 text-[10px] truncate">{{ $sidebarBusiness?->name ?? 'My Business' }}</p>
         </div>
         <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -57,8 +64,9 @@
         Properties
     </a>
 
-    <a href="#"
-       class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50 relative">
+    <a href="{{ route('owner.bookings') }}"
+       class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors relative
+              {{ $active === 'bookings' ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
@@ -86,7 +94,7 @@
     {{-- Manage --}}
     <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider px-2 mb-1.5">Manage</p>
 
-    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+    <a href="{{ route('owner.finance') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors {{ $active === 'finance' ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
         <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
             <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
         </svg>

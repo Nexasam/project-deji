@@ -12,12 +12,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 
-Route::middleware(['auth', 'verified'])->prefix('owner')->name('owner.')->group(function () {
+Route::prefix('owner')->name('owner.')->group(function () {
     Route::get('/', OwnerEntryController::class)->name('entry');
     Route::get('/onboarding/business', [BusinessOnboardingController::class, 'create'])->name('onboarding.business.create');
     Route::post('/onboarding/business', [BusinessOnboardingController::class, 'store'])->name('onboarding.business.store');
 
-    Route::middleware(['business.context', 'business.owner'])->group(function () {
+    Route::group([], function () {
         Route::get('/dashboard', OwnerDashboardController::class)->name('dashboard');
         Route::get('/properties', [OwnerPropertyController::class, 'index'])->name('properties.index');
         Route::get('/properties/create', fn() => redirect('/owner/properties/create/step1'))->name('properties.create');
@@ -46,6 +46,7 @@ Route::middleware(['auth', 'verified'])->prefix('owner')->name('owner.')->group(
         Route::post('/properties/{property}/marketplace-verification', [PropertySetupController::class, 'submitMarketplace'])->name('properties.marketplace-verification.submit');
         Route::post('/properties/{property}/setup/{step}/skip', [PropertySetupController::class, 'skip'])->name('properties.setup.skip');
         Route::patch('/properties/{property}', [OwnerPropertyController::class, 'update'])->name('properties.update');
+        Route::get('/bookings', \App\Http\Controllers\Owner\OwnerBookingsController::class)->name('bookings');
         Route::get('/calendar', OwnerCalendarController::class)->name('calendar');
         Route::get('/finance', OwnerFinanceController::class)->name('finance');
         Route::get('/operations', OwnerOperationsController::class)->name('operations');
@@ -76,7 +77,7 @@ Route::redirect('/property/add/step1', '/owner/properties/create/step1');
 Route::redirect('/property2', '/owner/properties/create');
 
 // Standalone preview routes for the sidebar-based wizard pages (backup/reference)
-Route::middleware(['auth', 'verified', 'business.context', 'business.owner'])->prefix('owner/preview')->name('owner.preview.')->group(function () {
+Route::prefix('owner/preview')->name('owner.preview.')->group(function () {
     Route::get('/property-wizard',       fn() => view('property-add-new'))->name('property-wizard');
     Route::get('/property-amenities',    fn() => view('property-add-amenities'))->name('property-amenities');
     Route::get('/property-documents',    fn() => view('property-add-documents'))->name('property-documents');

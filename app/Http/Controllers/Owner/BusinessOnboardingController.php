@@ -12,7 +12,7 @@ class BusinessOnboardingController extends Controller
 {
     public function create(): View|RedirectResponse
     {
-        if (auth()->user()->resolvedBusinessContext()) {
+        if (auth()->user()?->resolvedBusinessContext()) {
             return redirect()->route('owner.dashboard');
         }
 

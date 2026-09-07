@@ -1,101 +1,95 @@
-<div style="background:#fff;position:relative;z-index:40;">
+<div class="search-bar-outer">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 search-bar-wrap">
-        <form 
-            id="search-form" 
-            class="search-bar" 
-            x-data="searchBar()" 
+        <form
+            id="search-form"
+            class="search-bar"
+            x-data="searchBar()"
             @submit.prevent="handleSearch"
         >
             {{-- Where Field --}}
             <div class="search-field search-field-where">
-                <div style="font-family:'Inter',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:#111;margin-bottom:3px;">WHERE</div>
-                <input 
-                    id="search-where" 
-                    type="text" 
-                    placeholder="Lekki, Ikoyi, Victoria Island..."
+                <label class="search-field-label">WHERE</label>
+                <input
+                    id="search-where"
+                    type="text"
+                    placeholder="Lekki, Ikoyi, V.I…"
                     x-model="where"
-                    style="font-family:'Inter',sans-serif;width:100%;font-size:14px;color:#374151;border:none;outline:none;background:transparent;"
+                    class="search-field-input"
                     autocomplete="off"
                 />
             </div>
 
+            <div class="search-divider"></div>
+
             {{-- Dates Field --}}
-            <div class="search-field search-field-dates">
-                <div style="font-family:'Inter',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:#111;margin-bottom:3px;">CHECK IN / OUT</div>
-                <input 
-                    id="search-dates" 
-                    type="text" 
-                    placeholder="Add dates"
-                    x-model="datesDisplay"
-                    @click="datePickerOpen = !datePickerOpen"
-                    class="date-input" 
-                    readonly
-                    style="font-size:14px;"
-                />
+            <div class="search-field search-field-dates" @click="datePickerOpen = !datePickerOpen">
+                <label class="search-field-label">CHECK IN / OUT</label>
+                <div class="search-field-value" :class="datesDisplay ? 'has-value' : ''">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="search-field-icon"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    <span x-text="datesDisplay || 'Add dates'"></span>
+                </div>
             </div>
+
+            <div class="search-divider"></div>
 
             {{-- Guests Field --}}
             <div class="search-field search-field-guests">
-                <div style="font-family:'Inter',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:#111;margin-bottom:3px;">GUESTS</div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <button 
-                        type="button" 
+                <label class="search-field-label">GUESTS</label>
+                <div class="search-guests-control">
+                    <button
+                        type="button"
                         @click="decrementGuests"
-                        aria-label="Remove guest" 
-                        style="width:24px;height:24px;border-radius:50%;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6b7280;cursor:pointer;background:none;transition:border-color .15s,color .15s;"
+                        aria-label="Remove guest"
+                        class="guest-btn"
+                        :disabled="guests <= 1"
                     >−</button>
-                    <span x-text="guests" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#111;min-width:14px;text-align:center;"></span>
-                    <button 
-                        type="button" 
+                    <span x-text="guests + ' guest' + (guests > 1 ? 's' : '')" class="guest-count"></span>
+                    <button
+                        type="button"
                         @click="incrementGuests"
-                        aria-label="Add guest" 
-                        style="width:24px;height:24px;border-radius:50%;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6b7280;cursor:pointer;background:none;transition:border-color .15s,color .15s;"
+                        aria-label="Add guest"
+                        class="guest-btn"
+                        :disabled="guests >= 20"
                     >+</button>
                 </div>
             </div>
 
             {{-- Search Button --}}
             <button type="submit" class="search-btn">
-                <svg width="17" height="17" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+                <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="8"/>
                     <path d="M21 21l-4.35-4.35"/>
                 </svg>
-                Search
+                <span>Search</span>
             </button>
         </form>
 
         {{-- Date Picker Dropdown --}}
-        <div 
-            x-show="datePickerOpen" 
+        <div
+            x-show="datePickerOpen"
             @click.away="datePickerOpen = false"
-            x-transition
-            style="display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);padding:20px;z-index:50;width:320px;"
-            x-bind:style="datePickerOpen ? 'display: block;' : 'display: none;'"
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0 translate-y-1"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-1"
+            style="display:none;"
+            class="date-picker-dropdown"
         >
-            <div class="flex gap-3 mb-3">
-                <div style="flex:1;">
-                    <label style="font-size:11px;font-weight:700;color:#111;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px;">Check In</label>
-                    <input 
-                        type="date" 
-                        x-model="checkIn"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400 transition-colors"
-                    />
+            <p class="date-picker-title">Select your dates</p>
+            <div class="date-picker-row">
+                <div class="date-picker-field">
+                    <label class="date-picker-label">Check In</label>
+                    <input type="date" x-model="checkIn" class="date-picker-input" />
                 </div>
-                <div style="flex:1;">
-                    <label style="font-size:11px;font-weight:700;color:#111;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px;">Check Out</label>
-                    <input 
-                        type="date" 
-                        x-model="checkOut"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400 transition-colors"
-                    />
+                <div class="date-picker-sep">→</div>
+                <div class="date-picker-field">
+                    <label class="date-picker-label">Check Out</label>
+                    <input type="date" x-model="checkOut" class="date-picker-input" />
                 </div>
             </div>
-            <button 
-                @click="applyDates" 
-                class="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
-            >
-                Apply dates
-            </button>
+            <button @click="applyDates" class="date-picker-apply">Apply dates</button>
         </div>
     </div>
 </div>
@@ -111,32 +105,19 @@ function searchBar() {
         datePickerOpen: false,
         datesDisplay: '',
 
-        incrementGuests() {
-            if (this.guests < 20) this.guests++;
-        },
-
-        decrementGuests() {
-            if (this.guests > 1) this.guests--;
-        },
+        incrementGuests() { if (this.guests < 20) this.guests++; },
+        decrementGuests() { if (this.guests > 1) this.guests--; },
 
         applyDates() {
             if (this.checkIn && this.checkOut) {
-                const checkInDate = new Date(this.checkIn);
-                const checkOutDate = new Date(this.checkOut);
-                this.datesDisplay = `${checkInDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${checkOutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                const fmt = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                this.datesDisplay = fmt(this.checkIn) + ' – ' + fmt(this.checkOut);
                 this.datePickerOpen = false;
             }
         },
 
         handleSearch() {
-            console.log('Search:', {
-                where: this.where,
-                checkIn: this.checkIn,
-                checkOut: this.checkOut,
-                guests: this.guests
-            });
-            // Add your search logic here
-            window.showToast('Search functionality coming soon!');
+            window.showToast('Search coming soon!');
         }
     }
 }

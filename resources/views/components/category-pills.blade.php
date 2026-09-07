@@ -1,54 +1,54 @@
 @props([
     'categories' => [
-        ['label' => 'All stays', 'active' => true],
-        ['label' => 'Lekki', 'active' => false],
-        ['label' => 'Ikoyi', 'active' => false],
-        ['label' => 'Victoria Island', 'active' => false],
-        ['label' => 'Beachfront', 'active' => false],
-        ['label' => 'Family stays', 'active' => false],
-        ['label' => 'Business stays', 'active' => false],
+        ['label' => 'All stays',       'icon' => 'all'],
+        ['label' => 'Lekki',           'icon' => 'location'],
+        ['label' => 'Ikoyi',           'icon' => 'location'],
+        ['label' => 'Victoria Island', 'icon' => 'location'],
+        ['label' => 'Beachfront',      'icon' => 'beach'],
+        ['label' => 'Family stays',    'icon' => 'family'],
+        ['label' => 'Business stays',  'icon' => 'business'],
     ]
 ])
 
-<div class="bg-white border-b border-gray-100" style="padding-top:28px;padding-bottom:20px;">
-    <div 
-        id="cat-pills" 
-        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 flex gap-3 overflow-x-auto pb-1"
-        style="-webkit-overflow-scrolling:touch;scrollbar-width:none;"
-        x-data="categoryPills()"
-    >
-        @foreach($categories as $category)
-            <button 
-                class="cat-pill {{ $category['active'] ? 'active' : '' }}"
+<div class="cat-strip" x-data="categoryPills()">
+    {{-- Left fade mask --}}
+    <div class="cat-fade cat-fade-left" aria-hidden="true"></div>
+
+    <div id="cat-pills" class="cat-scroll">
+        @foreach($categories as $i => $category)
+            <button
+                class="cat-pill {{ $i === 0 ? 'active' : '' }}"
                 data-cat="{{ $category['label'] }}"
-                @click="handleCategoryClick($event.target)"
+                @click="select($el)"
             >
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="pointer-events:none;flex-shrink:0;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
+                @if($category['icon'] === 'all')
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                @elseif($category['icon'] === 'beach')
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3C8 3 4 7 4 11c0 3 2 5 4 6m4-14c4 0 8 4 8 8 0 3-2 5-4 6m-4-14v18M8 21h8"/></svg>
+                @elseif($category['icon'] === 'family')
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="2"/><circle cx="15" cy="7" r="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-2a4 4 0 014-4h2m4 0h2a4 4 0 014 4v2"/></svg>
+                @elseif($category['icon'] === 'business')
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                @else
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                @endif
                 {{ $category['label'] }}
             </button>
         @endforeach
     </div>
+
+    {{-- Right fade mask --}}
+    <div class="cat-fade cat-fade-right" aria-hidden="true"></div>
 </div>
 
 @push('scripts')
 <script>
 function categoryPills() {
     return {
-        handleCategoryClick(btn) {
-            const cat = btn.dataset.cat;
-            
-            // Remove active class from all pills
-            document.querySelectorAll('.cat-pill').forEach(pill => {
-                pill.classList.remove('active');
-            });
-            
-            // Add active class to clicked pill
+        select(btn) {
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            
-            console.log('Category selected:', cat);
-            // Add your filter logic here
+            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
     }
 }

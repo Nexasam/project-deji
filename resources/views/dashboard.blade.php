@@ -25,11 +25,11 @@
                     <div class="flex items-center gap-3">
                         <x-owner.view-switch route-name="owner.dashboard" mode="real" />
                         <div class="hidden text-right sm:block">
-                            <p class="text-sm font-bold text-slate-900">{{ auth()->user()->name }}</p>
+                            <p class="text-sm font-bold text-slate-900">{{ auth()->user()?->name ?? 'Guest' }}</p>
                             <p class="text-xs text-slate-500">Business owner</p>
                         </div>
                         <div class="flex size-10 items-center justify-center rounded-full bg-orange-600 text-sm font-extrabold text-white">
-                            {{ str(auth()->user()->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') }}
+                            {{ auth()->user() ? str(auth()->user()->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') : 'VS' }}
                         </div>
                         <form method="POST" action="{{ route('logout') }}">@csrf
                             <button class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-950">Log out</button>

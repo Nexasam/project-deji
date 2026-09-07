@@ -38,7 +38,7 @@
                             <p class="text-xs text-slate-500">Draft property setup</p>
                         </div>
                         <div class="flex size-9 items-center justify-center rounded-full bg-orange-600 text-xs font-extrabold text-white">
-                            {{ str(auth()->user()->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') }}
+                            {{ auth()->user() ? str(auth()->user()->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') : 'VS' }}
                         </div>
                         <a href="{{ route('owner.dashboard') }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-950">
                             Exit setup

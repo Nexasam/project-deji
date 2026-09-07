@@ -37,17 +37,10 @@
     <x-search-bar />
 
     {{-- Category Pills --}}
-    <x-category-pills 
-        :categories="[
-            ['label' => 'All stays', 'active' => true],
-            ['label' => 'Lekki', 'active' => false],
-            ['label' => 'Ikoyi', 'active' => false],
-            ['label' => 'Victoria Island', 'active' => false],
-            ['label' => 'Beachfront', 'active' => false],
-            ['label' => 'Family stays', 'active' => false],
-            ['label' => 'Business stays', 'active' => false],
-        ]"
-    />
+    <x-category-pills />
+
+    {{-- Filter Bar --}}
+    <x-filter-bar />
 
     {{-- Main Content --}}
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-20">

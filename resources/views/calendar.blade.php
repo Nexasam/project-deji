@@ -26,121 +26,244 @@
         {{-- Booking Detail Sidebar --}}
         <x-calendar.booking-detail-sidebar />
 
-        {{-- Add Booking Modal --}}
+        {{-- New Calendar Entry Modal --}}
         <div
             x-show="addBookingOpen"
             x-cloak
             @keydown.escape.window="addBookingOpen = false"
-            class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
+            class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+            x-data="{
+                entryType: 'block',
+                checkIn: '',
+                checkOut: '',
+                blockReason: '',
+                guestName: '',
+                guestPhone: '',
+                bookingSource: 'direct',
+                dateError: false,
+                selectedProperty: 'Sunset Loft, Lekki Phase 1',
+                selectedPropertyLocation: 'Egbeda, Lagos',
+                get startingDate() {
+                    if (!this.checkIn) return 'Aug 6, 2026';
+                    return new Date(this.checkIn).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+                },
+                get propertyInitials() {
+                    return this.selectedProperty.split(',')[0].split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+                },
+                validateDates() {
+                    this.dateError = !!(this.checkIn && this.checkOut && this.checkOut <= this.checkIn);
+                },
+                save() {
+                    this.validateDates();
+                    if (!this.dateError) { this.addBookingOpen = false; }
+                }
+            }"
         >
+            {{-- Sheet --}}
             <div
                 @click.away="addBookingOpen = false"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:enter="transition ease-out duration-250"
+                x-transition:enter-start="opacity-0 translate-y-8"
+                x-transition:enter-end="opacity-100 translate-y-0"
                 x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                style="width:100%; max-width:500px; background:#fff; border-radius:16px 16px 0 0; padding:24px 20px; position:relative; font-family:'Inter',sans-serif;"
-                class="sm:rounded-2xl sm:mx-4 sm:mb-0"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 translate-y-8"
+                class="w-full bg-white sm:rounded-2xl sm:max-w-[460px] sm:mx-4 flex flex-col"
+                style="border-radius:20px 20px 0 0; max-height:94dvh; font-family:'Inter',sans-serif;"
             >
-                {{-- Drag handle (mobile) --}}
-                <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4 sm:hidden"></div>
+                {{-- Drag handle (mobile only) --}}
+                <div class="flex justify-center pt-3 pb-0 sm:hidden flex-shrink-0">
+                    <div class="w-9 h-1 bg-gray-200 rounded-full"></div>
+                </div>
 
-                {{-- Header --}}
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-                    <h2 style="font-size:16px; font-weight:700; color:#111827; margin:0;">Add booking / block date</h2>
+                {{-- Scrollable body --}}
+                <div class="flex-1 overflow-y-auto px-5 pt-4 pb-2">
+
+                    {{-- Header --}}
+                    <div class="flex items-start justify-between mb-1">
+                        <div>
+                            <h2 class="text-[17px] font-bold text-gray-900 leading-snug">New Calendar Entry</h2>
+                            <p class="text-[12px] text-gray-400 mt-0.5" x-text="'Starting ' + startingDate"></p>
+                        </div>
+                        <button @click="addBookingOpen = false"
+                            class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors mt-0.5 flex-shrink-0 ml-3">
+                            <svg width="13" height="13" fill="none" stroke="#374151" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <hr class="border-gray-100 my-4" />
+
+                    {{-- Property card --}}
+                    <div class="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3 mb-5">
+                        <div class="w-12 h-12 rounded-xl bg-[#FF5A00] flex items-center justify-center flex-shrink-0">
+                            <span class="text-white text-sm font-bold" x-text="propertyInitials"></span>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[14px] font-bold text-gray-900 leading-tight truncate" x-text="selectedProperty"></p>
+                            <p class="text-[12px] text-gray-500 mt-0.5" x-text="selectedPropertyLocation"></p>
+                        </div>
+                        <button class="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:border-gray-300 transition-colors flex-shrink-0">
+                            <svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    {{-- Check-in / Check-out --}}
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        <div>
+                            <label class="block text-[10px] font-bold tracking-widest uppercase text-gray-400 mb-2">Check-in</label>
+                            <div class="relative">
+                                <input type="date" x-model="checkIn" @change="validateDates"
+                                    class="w-full px-3 py-3 pr-10 bg-white border-2 rounded-xl text-[13px] font-semibold text-gray-900 outline-none transition-colors cursor-pointer"
+                                    :class="dateError ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-gray-800'"
+                                />
+                                <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="16" height="16" fill="#111" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold tracking-widest uppercase text-gray-400 mb-2">Check-out</label>
+                            <div class="relative">
+                                <input type="date" x-model="checkOut" @change="validateDates"
+                                    class="w-full px-3 py-3 pr-10 bg-white border-2 rounded-xl text-[13px] font-semibold text-gray-900 outline-none transition-colors cursor-pointer"
+                                    :class="dateError ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-gray-800'"
+                                />
+                                <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="16" height="16" fill="#111" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Date error --}}
+                    <div x-show="dateError" style="display:none"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        class="flex items-center gap-2 bg-red-50 text-red-500 text-[12px] font-medium rounded-full px-4 py-2 mt-3 w-fit">
+                        <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        Check-out must be after check-in
+                    </div>
+
+                    {{-- Entry type toggle --}}
+                    <div class="grid grid-cols-2 gap-3 mt-5 mb-5">
+
+                        {{-- Block dates --}}
+                        <button type="button" @click="entryType = 'block'"
+                            class="flex flex-col items-center justify-center gap-3 py-5 rounded-2xl border-2 transition-all"
+                            :class="entryType === 'block'
+                                ? 'border-gray-200 bg-gray-50'
+                                : 'border-gray-100 bg-gray-50 opacity-60 hover:opacity-80'"
+                        >
+                            <div class="w-11 h-11 rounded-full flex items-center justify-center bg-white">
+                                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="1.8">
+                                    <circle cx="12" cy="12" r="9"/>
+                                    <path stroke-linecap="round" d="M5.636 5.636l12.728 12.728"/>
+                                </svg>
+                            </div>
+                            <span class="text-[13px] font-bold"
+                                :class="entryType === 'block' ? 'text-gray-900' : 'text-gray-400'">
+                                Block dates
+                            </span>
+                        </button>
+
+                        {{-- New reservation --}}
+                        <button type="button" @click="entryType = 'reservation'"
+                            class="flex flex-col items-center justify-center gap-3 py-5 rounded-2xl border-2 transition-all"
+                            :class="entryType === 'reservation'
+                                ? 'border-[#FF5A00] bg-orange-50'
+                                : 'border-gray-100 bg-gray-50 opacity-60 hover:opacity-80'"
+                        >
+                            <div class="w-11 h-11 rounded-full flex items-center justify-center bg-white">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="#111827">
+                                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
+                                </svg>
+                            </div>
+                            <span class="text-[13px] font-bold"
+                                :class="entryType === 'reservation' ? 'text-gray-900' : 'text-gray-400'">
+                                New reservation
+                            </span>
+                        </button>
+                    </div>
+
+                    {{-- Block: reason --}}
+                    <div x-show="entryType === 'block'" style="display:none"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="mb-4"
+                    >
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-2">Reason for blocking</label>
+                        <textarea x-model="blockReason" rows="3" placeholder="Maintenance"
+                            class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-900 outline-none resize-none transition-colors focus:border-gray-400 placeholder-gray-300"
+                        ></textarea>
+                    </div>
+
+                    {{-- Reservation: guest fields --}}
+                    <div x-show="entryType === 'reservation'" style="display:none"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="space-y-4 mb-4"
+                    >
+                        {{-- Guest name --}}
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-2">Guest name</label>
+                            <input type="text" x-model="guestName" placeholder="e.g Ngozi Eze"
+                                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-900 outline-none transition-colors focus:border-gray-400 placeholder-gray-300"
+                            />
+                        </div>
+
+                        {{-- Phone number --}}
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-2">Phone number</label>
+                            <input type="tel" x-model="guestPhone" placeholder="+2348105550555"
+                                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-[13px] text-gray-900 outline-none transition-colors focus:border-gray-400 placeholder-gray-300"
+                            />
+                        </div>
+
+                        {{-- Booking source pills --}}
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-3">Booking source</label>
+                            <div class="flex flex-wrap gap-2">
+                                @php
+                                    $sources = [
+                                        ['value' => 'whatsapp',  'label' => 'WhatsApp',  'active_bg' => 'bg-[#25D366] border-[#25D366] text-white', 'idle_bg' => 'bg-white border-gray-200 text-gray-600'],
+                                        ['value' => 'direct',    'label' => 'Direct',    'active_bg' => 'bg-[#FF5A00] border-[#FF5A00] text-white', 'idle_bg' => 'bg-white border-gray-200 text-gray-600'],
+                                        ['value' => 'airbnb',    'label' => 'Airbnb',    'active_bg' => 'bg-[#FF385C] border-[#FF385C] text-white', 'idle_bg' => 'bg-white border-gray-200 text-gray-600'],
+                                        ['value' => 'booking',   'label' => 'Booking.com','active_bg'=> 'bg-[#003580] border-[#003580] text-white', 'idle_bg' => 'bg-white border-gray-200 text-gray-600'],
+                                        ['value' => 'walkin',    'label' => 'Walk-in',   'active_bg' => 'bg-gray-800 border-gray-800 text-white',   'idle_bg' => 'bg-white border-gray-200 text-gray-600'],
+                                    ];
+                                @endphp
+                                @foreach($sources as $src)
+                                <button
+                                    type="button"
+                                    @click="bookingSource = '{{ $src['value'] }}'"
+                                    class="px-4 py-2 rounded-full border text-[13px] font-semibold transition-all"
+                                    :class="bookingSource === '{{ $src['value'] }}' ? '{{ $src['active_bg'] }}' : '{{ $src['idle_bg'] }} hover:border-gray-300'"
+                                >
+                                    {{ $src['label'] }}
+                                </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                </div>{{-- end scrollable body --}}
+
+                {{-- Sticky footer --}}
+                <div class="flex-shrink-0 border-t border-gray-100 px-5 py-4 grid grid-cols-2 gap-3">
                     <button @click="addBookingOpen = false"
-                        style="width:32px; height:32px; background:#FF5A00; border:none; border-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;"
-                        onmouseover="this.style.background='#E64F00'" onmouseout="this.style.background='#FF5A00'">
-                        <svg width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
+                        class="py-3.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-[14px] font-bold text-gray-700 transition-colors">
+                        Close
+                    </button>
+                    <button @click="save()"
+                        class="py-3.5 rounded-xl text-[14px] font-bold text-white transition-colors"
+                        :class="entryType === 'reservation' ? 'bg-[#FF5A00] hover:bg-[#E64F00]' : 'bg-gray-900 hover:bg-black'">
+                        <span x-text="entryType === 'block' ? 'Block dates' : 'Confirm reservation'"></span>
                     </button>
                 </div>
 
-                {{-- Property --}}
-                <div style="margin-bottom:16px;">
-                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Property</label>
-                    <div style="position:relative;">
-                        <select style="width:100%; padding:10px 36px 10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; appearance:none; box-sizing:border-box; cursor:pointer;"
-                            onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'">
-                            <option value="">Select property</option>
-                            <option>Sunset Loft, Lekki Phase 1</option>
-                            <option>Bluewater Suite 4B</option>
-                            <option>Highrise Apartment</option>
-                            <option>Emerald Suites</option>
-                        </select>
-                        <svg style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;" width="14" height="14" fill="none" stroke="#6B7280" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </div>
-                </div>
-
-                {{-- Check-in / Check-out --}}
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
-                    <div>
-                        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Check-in</label>
-                        <input type="date"
-                            style="width:100%; padding:10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; box-sizing:border-box;"
-                            onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'" />
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Check-out</label>
-                        <input type="date"
-                            style="width:100%; padding:10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; box-sizing:border-box;"
-                            onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'" />
-                    </div>
-                </div>
-
-                {{-- Booking channel --}}
-                <div style="margin-bottom:14px;">
-                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Booking channel</label>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:14px; height:14px; border-radius:50%; flex-shrink:0; background:#FF5A00;"
-                             :style="bookingChannel === 'vs' ? 'background:#FF5A00' : bookingChannel === 'airbnb' ? 'background:#DC2626' : bookingChannel === 'booking' ? 'background:#1E40AF' : bookingChannel === 'whatsapp' ? 'background:#10B981' : 'background:#6B7280'"></div>
-                        <div style="position:relative; flex:1;">
-                            <select x-model="bookingChannel"
-                                style="width:100%; padding:10px 36px 10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; appearance:none; box-sizing:border-box; cursor:pointer;"
-                                onfocus="this.style.borderColor='#FF5A00'" onblur="this.style.borderColor='#E5E7EB'">
-                                <option value="vs">Verified Shortlet (direct)</option>
-                                <option value="airbnb">Airbnb</option>
-                                <option value="booking">Booking.com</option>
-                                <option value="whatsapp">WhatsApp</option>
-                                <option value="walkin">Walk-in / Phone</option>
-                            </select>
-                            <svg style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;" width="14" height="14" fill="none" stroke="#6B7280" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Notice --}}
-                <div x-show="bookingChannel === 'vs'"
-                    style="background:#FFF5EE; border:1.5px solid #FDBA74; border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:12px; color:#9A3412; font-family:'Inter',sans-serif; line-height:1.5;">
-                    ⚠ This will show as a <strong>Verified Lock</strong> — system-confirmed and not editable once saved.
-                </div>
-                <div x-show="bookingChannel !== 'vs'"
-                    style="background:#F0FDF4; border:1.5px solid #86EFAC; border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:12px; color:#166534; font-family:'Inter',sans-serif; line-height:1.5;">
-                    ✏ This will show as a <strong>self-reported block</strong> — you can edit or remove it later.
-                </div>
-
-                {{-- Guest name --}}
-                <div style="margin-bottom:20px;">
-                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Guest name (optional)</label>
-                    <input type="text" placeholder="e.g Tariye Fabora"
-                        style="width:100%; padding:10px 14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:10px; font-size:13px; color:#111827; font-family:'Inter',sans-serif; outline:none; box-sizing:border-box;"
-                        onfocus="this.style.borderColor='#FF5A00';this.style.background='#fff'"
-                        onblur="this.style.borderColor='#E5E7EB';this.style.background='#F9FAFB'" />
-                </div>
-
-                {{-- Save --}}
-                <button @click="addBookingOpen = false"
-                    style="width:100%; padding:14px; background:#FF5A00; border:none; border-radius:10px; font-size:14px; font-weight:700; color:#fff; font-family:'Inter',sans-serif; cursor:pointer; transition:background .15s;"
-                    onmouseover="this.style.background='#E64F00'" onmouseout="this.style.background='#FF5A00'">
-                    Save entry
-                </button>
             </div>
         </div>
 

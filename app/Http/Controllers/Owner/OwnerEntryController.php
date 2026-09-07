@@ -9,8 +9,8 @@ class OwnerEntryController extends Controller
 {
     public function __invoke(): RedirectResponse
     {
-        return auth()->user()->resolvedBusinessContext()
+        return auth()->user()?->resolvedBusinessContext()
             ? redirect()->route('owner.dashboard')
-            : redirect()->route('owner.onboarding.business.create');
+            : redirect()->route('owner.dashboard'); // no auth: go straight to dashboard
     }
 }
