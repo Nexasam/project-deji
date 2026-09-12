@@ -30,6 +30,18 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('owner.entry', absolute: false));
     }
 
+    public function test_guest_login_returns_to_the_selected_marketplace_stay(): void
+    {
+        $user = User::factory()->create();
+
+        $this->get('/login?redirect=/stays/banana-island-harbour-flat');
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect('/stays/banana-island-harbour-flat');
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();

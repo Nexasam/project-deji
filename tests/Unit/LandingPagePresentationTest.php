@@ -62,30 +62,59 @@ class LandingPagePresentationTest extends TestCase
         $view = file_get_contents(dirname(__DIR__, 2).'/resources/views/owner/finance.blade.php');
 
         $this->assertStringContainsString('<body class="bg-slate-50', $view);
-        $this->assertStringContainsString('<main class="flex-1 overflow-y-auto bg-slate-50">', $view);
+        $this->assertStringContainsString('<main class="mx-auto max-w-[1600px]', $view);
         $this->assertStringNotContainsString('bg-[#ECECEC]', $view);
-        $this->assertStringContainsString('.fin-card', $view);
-        $this->assertStringContainsString('background:#fff', $view);
+        $this->assertStringContainsString('border border-slate-200 bg-white', $view);
         $this->assertStringNotContainsString("@push('styles')", $view);
     }
 
-    public function test_property_portfolio_uses_five_compact_columns_on_desktop(): void
+    public function test_property_portfolio_uses_four_columns_on_desktop(): void
     {
         $view = file_get_contents(dirname(__DIR__, 2).'/resources/views/owner/properties/index.blade.php');
 
-        $this->assertStringContainsString('xl:grid-cols-5', $view);
+        $this->assertStringContainsString('xl:grid-cols-4', $view);
+        $this->assertStringNotContainsString('xl:grid-cols-5', $view);
         $this->assertStringContainsString('data-testid="property-card"', $view);
         $this->assertStringContainsString('rounded-xl border border-slate-200 bg-white p-4', $view);
     }
 
-    public function test_dashboard_real_properties_use_a_compact_card_grid(): void
+    public function test_dashboard_real_properties_use_a_four_column_card_grid(): void
     {
         $view = file_get_contents(dirname(__DIR__, 2).'/resources/views/dashboard.blade.php');
 
         $this->assertStringContainsString('data-testid="dashboard-property-grid"', $view);
-        $this->assertStringContainsString('xl:grid-cols-5', $view);
+        $this->assertStringContainsString('xl:grid-cols-4', $view);
+        $this->assertStringNotContainsString('xl:grid-cols-5', $view);
         $this->assertStringContainsString('data-testid="dashboard-property-card"', $view);
         $this->assertStringContainsString('Real portfolio', $view);
         $this->assertStringNotContainsString("@include('partials.dashboard-content')", $view);
+    }
+
+    public function test_landing_hero_uses_the_bold_responsive_composition_and_keeps_a_backup(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $hero = file_get_contents($root.'/resources/views/components/hero.blade.php');
+        $css = file_get_contents($root.'/resources/css/components.css');
+
+        $this->assertFileExists($root.'/resources/views/components/backups/hero-2026-09-08.blade.php');
+        $this->assertStringContainsString('hero-trust-card', $hero);
+        $this->assertStringContainsString('hero-primary-image', $hero);
+        $this->assertStringContainsString('clamp(3rem, 5.4vw, 5.25rem)', $css);
+        $this->assertMatchesRegularExpression('/@media\s*\(max-width:\s*1023px\).*?\.hero-img-col\s*\{[^}]*display:\s*flex/s', $css);
+        $this->assertDoesNotMatchRegularExpression('/\.hero-img-col\s*\{[^}]*display:\s*none\s*!important/s', $css);
+    }
+
+    public function test_auth_story_images_resolve_through_the_application_in_development(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $css = file_get_contents($root.'/resources/css/app.css');
+
+        $this->assertStringNotContainsString("url('/hero1.jpg')", $css);
+        foreach (['login', 'register', 'forgot-password'] as $viewName) {
+            $view = file_get_contents($root."/resources/views/auth/{$viewName}.blade.php");
+            $this->assertStringContainsString("asset('hero1.jpg')", $view);
+            $this->assertStringContainsString("asset('hero2.jpg')", $view);
+            $this->assertStringContainsString("asset('hero3.jpg')", $view);
+        }
     }
 }

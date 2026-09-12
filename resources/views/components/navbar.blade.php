@@ -19,18 +19,34 @@
 
         {{-- Desktop auth --}}
         <div class="nav-desktop items-center gap-6">
+            @auth
+            <a href="{{ route('guest.bookings.index') }}" class="inline-flex h-10 items-center justify-center text-[15px] font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                My bookings
+            </a>
+            <span class="max-w-36 truncate text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</span>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="inline-flex items-center rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-gray-300 hover:bg-gray-50">Log out</button>
+            </form>
+            @else
+            @if (request()->routeIs('home'))
             <button 
                 @click="$store.modals.openLogin()" 
                 class="inline-flex h-10 items-center justify-center text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors"
             >
                 Log In
             </button>
+            @else
+            <a href="{{ route('login', ['redirect' => request()->getRequestUri()]) }}" class="inline-flex h-10 items-center justify-center text-[15px] font-normal text-gray-700 hover:text-gray-900 transition-colors">Log In</a>
+            @endif
+            @php($navbarRegistrationUrl = request()->routeIs('home') ? route('register') : route('register', ['redirect' => request()->getRequestUri()]))
             <a 
-                href="{{ route('register') }}"
+                href="{{ $navbarRegistrationUrl }}"
                 class="inline-flex items-center bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap"
             >
                 Get started
             </a>
+            @endauth
         </div>
 
         {{-- Hamburger --}}
@@ -80,6 +96,15 @@
                 </svg>
                 Help
             </a>
+            @auth
+            <a href="{{ route('guest.bookings.index') }}">My bookings</a>
+            <span class="px-4 py-3 text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</span>
+            <form method="POST" action="{{ route('logout') }}" class="w-full">
+                @csrf
+                <button class="flex w-full items-center">Log out</button>
+            </form>
+            @else
+            @if (request()->routeIs('home'))
             <button 
                 @click="mobileMenuOpen = false; $store.modals.openLogin()"
                 class="flex items-center w-full"
@@ -89,13 +114,18 @@
                 </svg>
                 Log In
             </button>
+            @else
+            <a href="{{ route('login', ['redirect' => request()->getRequestUri()]) }}">Log In</a>
+            @endif
+            @php($mobileRegistrationUrl = request()->routeIs('home') ? route('register') : route('register', ['redirect' => request()->getRequestUri()]))
             <a 
-                href="{{ route('register') }}"
+                href="{{ $mobileRegistrationUrl }}"
                 @click="mobileMenuOpen = false" 
                 class="cta-mobile"
             >
                 Get started
             </a>
+            @endauth
         </div>
     </nav>
 </header>

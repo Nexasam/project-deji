@@ -13,29 +13,41 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('financial_accounts', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('business_id')->constrained('businesses')->restrictOnDelete();
-            $table->string('code', 80);
-            $table->string('name');
-            $table->string('account_type', 40)->default(FinancialAccountType::Bank->value);
-            $table->string('provider', 80)->nullable();
-            $table->string('external_account_reference', 191)->nullable();
-            $table->char('currency', 3);
-            $table->decimal('opening_balance', 19, 4)->default(0);
-            $table->date('opening_balance_date')->nullable();
-            $table->boolean('is_default')->default(false);
-            $table->string('status', 40)->default('active');
-            $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamps();
-            $table->softDeletes();
+        if (! Schema::hasTable('financial_accounts')) {
+            Schema::create('financial_accounts', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->foreignUuid('business_id')->constrained('businesses')->restrictOnDelete();
+                $table->string('code', 80);
+                $table->string('name');
+                $table->string('account_type', 40)->default(FinancialAccountType::Bank->value);
+                $table->string('provider', 80)->nullable();
+                $table->string('external_account_reference', 191)->nullable();
+                $table->char('currency', 3);
+                $table->decimal('opening_balance', 19, 4)->default(0);
+                $table->date('opening_balance_date')->nullable();
+                $table->boolean('is_default')->default(false);
+                $table->string('status', 40)->default('active');
+                $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->timestamps();
+                $table->softDeletes();
 
-            $table->unique(['business_id', 'code']);
-            $table->unique(['business_id', 'id']);
-            $table->index(['business_id', 'account_type', 'currency', 'status']);
-            $table->index(['provider', 'external_account_reference']);
-        });
+                $table->unique(['business_id', 'code']);
+                $table->unique(['business_id', 'id']);
+                $table->index(['business_id', 'account_type', 'currency', 'status'], 'financial_accounts_type_currency_idx');
+                $table->index(['provider', 'external_account_reference'], 'financial_accounts_provider_ref_idx');
+            });
+        } else {
+            Schema::table('financial_accounts', function (Blueprint $table) {
+                if (! Schema::hasIndex('financial_accounts', 'financial_accounts_type_currency_idx')) {
+                    $table->index(['business_id', 'account_type', 'currency', 'status'], 'financial_accounts_type_currency_idx');
+                }
+
+                if (! Schema::hasIndex('financial_accounts', 'financial_accounts_provider_ref_idx')) {
+                    $table->index(['provider', 'external_account_reference'], 'financial_accounts_provider_ref_idx');
+                }
+            });
+        }
 
         Schema::create('cost_centres', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -107,7 +119,7 @@ return new class extends Migration
             $table->foreign(['business_id', 'cost_centre_id'])->references(['business_id', 'id'])->on('cost_centres')->restrictOnDelete();
             $table->foreign(['business_id', 'tax_category_id'])->references(['business_id', 'id'])->on('tax_categories')->restrictOnDelete();
             $table->unique(['business_id', 'id']);
-            $table->index(['business_id', 'next_occurrence_on', 'status']);
+            $table->index(['business_id', 'next_occurrence_on', 'status'], 'expense_recurring_next_idx');
         });
 
         Schema::table('expenses', function (Blueprint $table) {
@@ -135,7 +147,7 @@ return new class extends Migration
             $table->string('previous_status', 40)->nullable();
             $table->string('new_status', 40);
             $table->text('reason')->nullable();
-            $table->timestamp('occurred_at');
+            $table->dateTime('occurred_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
@@ -152,7 +164,7 @@ return new class extends Migration
             $table->char('quote_currency', 3);
             $table->decimal('rate', 20, 10);
             $table->string('provider', 80);
-            $table->timestamp('effective_at');
+            $table->dateTime('effective_at');
             $table->timestamp('expires_at')->nullable();
             $table->json('provider_metadata')->nullable();
             $table->string('status', 40)->default('active');
@@ -161,7 +173,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['business_id', 'base_currency', 'quote_currency', 'provider', 'effective_at'], 'exchange_rate_source_unique');
-            $table->index(['base_currency', 'quote_currency', 'effective_at']);
+            $table->index(['base_currency', 'quote_currency', 'effective_at'], 'exchange_rates_currency_date_idx');
         });
 
         Schema::create('financial_transactions', function (Blueprint $table) {
@@ -186,7 +198,7 @@ return new class extends Migration
             $table->char('currency', 3);
             $table->decimal('base_amount', 19, 4)->nullable();
             $table->char('base_currency', 3)->nullable();
-            $table->timestamp('occurred_at');
+            $table->dateTime('occurred_at');
             $table->date('effective_on');
             $table->timestamp('due_at')->nullable();
             $table->timestamp('settled_at')->nullable();
@@ -198,14 +210,14 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'financial_account_id'])->references(['business_id', 'id'])->on('financial_accounts')->restrictOnDelete();
+            $table->foreign(['business_id', 'financial_account_id'], 'financial_transactions_account_fk')->references(['business_id', 'id'])->on('financial_accounts')->restrictOnDelete();
             $table->foreign(['business_id', 'property_id'])->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->foreign(['business_id', 'booking_id'])->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
             $table->foreign(['business_id', 'payment_id'])->references(['business_id', 'id'])->on('payments')->restrictOnDelete();
             $table->foreign(['business_id', 'expense_id'])->references(['business_id', 'id'])->on('expenses')->restrictOnDelete();
             $table->foreign(['business_id', 'tax_category_id'])->references(['business_id', 'id'])->on('tax_categories')->restrictOnDelete();
             $table->unique(['business_id', 'id']);
-            $table->foreign(['business_id', 'reversed_transaction_id'])->references(['business_id', 'id'])->on('financial_transactions')->restrictOnDelete();
+            $table->foreign(['business_id', 'reversed_transaction_id'], 'financial_tx_reversal_fk')->references(['business_id', 'id'])->on('financial_transactions')->restrictOnDelete();
             $table->unique(['business_id', 'reference']);
             $table->index(['business_id', 'effective_on', 'direction', 'transaction_status'], 'financial_transaction_cashflow_lookup');
             $table->index(['business_id', 'property_id', 'effective_on', 'economic_category'], 'financial_transaction_property_lookup');
@@ -258,7 +270,7 @@ return new class extends Migration
 
             $table->foreign(['business_id', 'property_id'])->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->foreign(['business_id', 'booking_id'])->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
-            $table->foreign(['business_id', 'revenue_recognition_policy_id'])->references(['business_id', 'id'])->on('revenue_recognition_policies')->restrictOnDelete();
+            $table->foreign(['business_id', 'revenue_recognition_policy_id'], 'revenue_entries_policy_fk')->references(['business_id', 'id'])->on('revenue_recognition_policies')->restrictOnDelete();
             $table->foreign(['business_id', 'financial_transaction_id'])->references(['business_id', 'id'])->on('financial_transactions')->restrictOnDelete();
             $table->foreign(['business_id', 'financial_document_id'])->references(['business_id', 'id'])->on('booking_financial_documents')->restrictOnDelete();
             $table->index(['business_id', 'recognized_on', 'revenue_category']);
@@ -282,7 +294,7 @@ return new class extends Migration
             $table->foreignUuid('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('processed_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('requested_at');
+            $table->dateTime('requested_at');
             $table->timestamp('reviewed_at')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('processed_at')->nullable();
@@ -324,7 +336,7 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'financial_account_id'])->references(['business_id', 'id'])->on('financial_accounts')->restrictOnDelete();
+            $table->foreign(['business_id', 'financial_account_id'], 'financial_reconciliations_account_fk')->references(['business_id', 'id'])->on('financial_accounts')->restrictOnDelete();
             $table->unique(['business_id', 'reference']);
             $table->unique(['business_id', 'id']);
             $table->index(['business_id', 'financial_account_id', 'period_ends_on'], 'financial_reconciliation_account_lookup');
@@ -349,10 +361,10 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'financial_reconciliation_id'])->references(['business_id', 'id'])->on('financial_reconciliations')->restrictOnDelete();
-            $table->foreign(['business_id', 'financial_transaction_id'])->references(['business_id', 'id'])->on('financial_transactions')->restrictOnDelete();
-            $table->index(['financial_reconciliation_id', 'match_status']);
-            $table->index(['business_id', 'external_reference']);
+            $table->foreign(['business_id', 'financial_reconciliation_id'], 'financial_recon_items_recon_fk')->references(['business_id', 'id'])->on('financial_reconciliations')->restrictOnDelete();
+            $table->foreign(['business_id', 'financial_transaction_id'], 'financial_recon_items_tx_fk')->references(['business_id', 'id'])->on('financial_transactions')->restrictOnDelete();
+            $table->index(['financial_reconciliation_id', 'match_status'], 'financial_recon_items_match_idx');
+            $table->index(['business_id', 'external_reference'], 'financial_recon_items_external_idx');
         });
 
         Schema::create('currency_conversions', function (Blueprint $table) {
@@ -367,13 +379,13 @@ return new class extends Migration
             $table->decimal('rate', 20, 10);
             $table->decimal('converted_amount', 19, 4);
             $table->char('target_currency', 3);
-            $table->timestamp('converted_at');
+            $table->dateTime('converted_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'financial_transaction_id'])->references(['business_id', 'id'])->on('financial_transactions')->restrictOnDelete();
+            $table->foreign(['business_id', 'financial_transaction_id'], 'currency_conversions_tx_fk')->references(['business_id', 'id'])->on('financial_transactions')->restrictOnDelete();
             $table->index(['source_type', 'source_id']);
             $table->index(['business_id', 'source_currency', 'target_currency', 'converted_at'], 'currency_conversion_history_lookup');
         });
@@ -394,14 +406,14 @@ return new class extends Migration
             $table->string('model_name', 120)->nullable();
             $table->string('model_version', 80)->nullable();
             $table->string('calculation_version', 80);
-            $table->timestamp('generated_at');
+            $table->dateTime('generated_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
             $table->foreign(['business_id', 'property_id'])->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
-            $table->index(['business_id', 'forecast_type', 'generated_at']);
+            $table->index(['business_id', 'forecast_type', 'generated_at'], 'financial_forecasts_type_date_idx');
             $table->index(['business_id', 'property_id', 'forecast_starts_on', 'forecast_ends_on'], 'financial_forecast_scope_lookup');
         });
 
@@ -420,7 +432,7 @@ return new class extends Migration
 
             $table->unique(['business_id', 'name']);
             $table->unique(['business_id', 'id']);
-            $table->index(['business_id', 'report_type', 'status']);
+            $table->index(['business_id', 'report_type', 'status'], 'financial_report_defs_type_idx');
         });
 
         Schema::create('financial_report_schedules', function (Blueprint $table) {
@@ -440,7 +452,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign(['business_id', 'financial_report_definition_id'])->references(['business_id', 'id'])->on('financial_report_definitions')->restrictOnDelete();
+            $table->foreign(['business_id', 'financial_report_definition_id'], 'financial_report_schedules_definition_fk')->references(['business_id', 'id'])->on('financial_report_definitions')->restrictOnDelete();
             $table->unique(['business_id', 'id']);
             $table->index(['business_id', 'next_run_at', 'status']);
         });
@@ -468,8 +480,8 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'financial_report_definition_id'])->references(['business_id', 'id'])->on('financial_report_definitions')->restrictOnDelete();
-            $table->foreign(['business_id', 'financial_report_schedule_id'])->references(['business_id', 'id'])->on('financial_report_schedules')->restrictOnDelete();
+            $table->foreign(['business_id', 'financial_report_definition_id'], 'financial_report_runs_definition_fk')->references(['business_id', 'id'])->on('financial_report_definitions')->restrictOnDelete();
+            $table->foreign(['business_id', 'financial_report_schedule_id'], 'financial_report_runs_schedule_fk')->references(['business_id', 'id'])->on('financial_report_schedules')->restrictOnDelete();
             $table->index(['business_id', 'run_status', 'created_at']);
             $table->index(['financial_report_definition_id', 'period_starts_on', 'period_ends_on'], 'financial_report_period_lookup');
         });

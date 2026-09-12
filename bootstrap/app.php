@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureActiveBusinessContext;
 use App\Http\Middleware\EnsureBusinessOwner;
+use App\Http\Middleware\EnsurePlatformAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'business.context' => EnsureActiveBusinessContext::class,
             'business.owner' => EnsureBusinessOwner::class,
+            'platform.admin' => EnsurePlatformAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

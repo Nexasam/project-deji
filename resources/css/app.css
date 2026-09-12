@@ -127,9 +127,9 @@ textarea.property-form-control { min-height: 7.5rem; resize: vertical; }
     will-change: opacity, transform;
 }
 
-.auth-story-frame:nth-child(1) { background-image: url('/hero1.jpg'); animation-delay: 0s; }
-.auth-story-frame:nth-child(2) { background-image: url('/hero2.jpg'); animation-delay: 8s; }
-.auth-story-frame:nth-child(3) { background-image: url('/hero3.jpg'); animation-delay: 16s; }
+.auth-story-frame:nth-child(1) { animation-delay: 0s; }
+.auth-story-frame:nth-child(2) { animation-delay: 8s; }
+.auth-story-frame:nth-child(3) { animation-delay: 16s; }
 
 .auth-story-shade {
     position: absolute;

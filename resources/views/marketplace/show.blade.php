@@ -25,7 +25,11 @@
                     <button class="col-span-2 rounded-xl bg-orange-500 py-3 font-bold text-white">Book and simulate payment</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="mt-8 block rounded-xl bg-orange-500 py-3 text-center font-bold text-white">Log in to book</a>
+                <div class="mt-8 rounded-2xl bg-gray-50 p-5 text-center">
+                    <p class="text-sm text-gray-600">Create an account to book securely and manage this stay whenever you return.</p>
+                    <a href="{{ route('register', ['redirect' => request()->getRequestUri()]) }}" class="mt-4 block rounded-xl bg-orange-500 py-3 font-bold text-white hover:bg-orange-600">Create account to book</a>
+                    <a href="{{ route('login', ['redirect' => request()->getRequestUri()]) }}" class="mt-3 inline-block text-sm font-semibold text-gray-700 hover:text-orange-600">Already have an account? Log in</a>
+                </div>
             @endauth
         </section>
     </div>

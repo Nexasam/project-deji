@@ -80,13 +80,13 @@ return new class extends Migration
             $table->json('action_taken')->nullable();
             $table->json('outcome')->nullable();
             $table->decimal('outcome_score', 5, 4)->nullable();
-            $table->timestamp('recorded_at');
+            $table->dateTime('recorded_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->index(['ai_recommendation_id', 'recorded_at']);
-            $table->index(['business_id', 'feedback_type', 'recorded_at']);
+            $table->index(['ai_recommendation_id', 'recorded_at'], 'ai_recommendation_feedback_date_idx');
+            $table->index(['business_id', 'feedback_type', 'recorded_at'], 'ai_recommendation_feedback_type_idx');
         });
         Schema::create('ai_prediction_snapshots', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -101,8 +101,8 @@ return new class extends Migration
             $table->decimal('confidence_score', 5, 4)->nullable();
             $table->json('factors')->nullable();
             $table->json('evidence')->nullable();
-            $table->timestamp('prediction_for');
-            $table->timestamp('generated_at');
+            $table->dateTime('prediction_for');
+            $table->dateTime('generated_at');
             $table->timestamp('valid_until')->nullable();
             $table->string('model_provider', 80)->nullable();
             $table->string('model_name', 120)->nullable();
@@ -111,8 +111,8 @@ return new class extends Migration
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->index(['business_id', 'prediction_type', 'prediction_for']);
-            $table->index(['subject_type', 'subject_id', 'prediction_for']);
+            $table->index(['business_id', 'prediction_type', 'prediction_for'], 'ai_predictions_business_type_idx');
+            $table->index(['subject_type', 'subject_id', 'prediction_for'], 'ai_predictions_subject_idx');
         });
         Schema::create('ai_knowledge_sources', function (Blueprint $table) {
             $table->uuid('id')->primary();

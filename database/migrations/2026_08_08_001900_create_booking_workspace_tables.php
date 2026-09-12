@@ -139,7 +139,7 @@ return new class extends Migration
                 $table->unique(['business_id', 'document_number']);
                 $table->unique(['business_id', 'id']);
                 $table->index(['business_id', 'booking_id', 'document_type', 'document_status'], 'booking_financial_document_lookup');
-                $table->index(['business_id', 'due_on', 'document_status']);
+                $table->index(['business_id', 'due_on', 'document_status'], 'booking_fin_docs_due_status_idx');
                 $table->foreign(
                     ['business_id', 'source_document_id'],
                     'booking_fin_docs_source_document_fk'
@@ -162,8 +162,8 @@ return new class extends Migration
                     $table->index(['business_id', 'booking_id', 'document_type', 'document_status'], 'booking_financial_document_lookup');
                 }
 
-                if (! Schema::hasIndex('booking_financial_documents', ['business_id', 'due_on', 'document_status'])) {
-                    $table->index(['business_id', 'due_on', 'document_status']);
+                if (! Schema::hasIndex('booking_financial_documents', 'booking_fin_docs_due_status_idx')) {
+                    $table->index(['business_id', 'due_on', 'document_status'], 'booking_fin_docs_due_status_idx');
                 }
 
                 if (! $foreignKeys->contains('name', 'booking_fin_docs_source_document_fk')) {
@@ -196,10 +196,27 @@ return new class extends Migration
                 $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
                 $table->timestamps();
 
-                $table->foreign(['business_id', 'financial_document_id'])
+                $table->foreign(['business_id', 'financial_document_id'], 'booking_fin_doc_items_parent_fk')
                     ->references(['business_id', 'id'])->on('booking_financial_documents')->restrictOnDelete();
-                $table->index(['financial_document_id', 'sort_order']);
-                $table->index(['business_id', 'item_type', 'created_at']);
+                $table->index(['financial_document_id', 'sort_order'], 'booking_fin_doc_items_sort_idx');
+                $table->index(['business_id', 'item_type', 'created_at'], 'booking_fin_doc_items_type_idx');
+            });
+        } else {
+            $foreignKeys = collect(Schema::getForeignKeys('booking_financial_document_items'));
+
+            Schema::table('booking_financial_document_items', function (Blueprint $table) use ($foreignKeys) {
+                if (! $foreignKeys->contains('name', 'booking_fin_doc_items_parent_fk')) {
+                    $table->foreign(['business_id', 'financial_document_id'], 'booking_fin_doc_items_parent_fk')
+                        ->references(['business_id', 'id'])->on('booking_financial_documents')->restrictOnDelete();
+                }
+
+                if (! Schema::hasIndex('booking_financial_document_items', 'booking_fin_doc_items_sort_idx')) {
+                    $table->index(['financial_document_id', 'sort_order'], 'booking_fin_doc_items_sort_idx');
+                }
+
+                if (! Schema::hasIndex('booking_financial_document_items', 'booking_fin_doc_items_type_idx')) {
+                    $table->index(['business_id', 'item_type', 'created_at'], 'booking_fin_doc_items_type_idx');
+                }
             });
         }
 
@@ -225,10 +242,10 @@ return new class extends Migration
 
                 $table->foreign(['business_id', 'booking_id'])
                     ->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
-                $table->foreign(['business_id', 'financial_document_id'])
+                $table->foreign(['business_id', 'financial_document_id'], 'booking_installments_fin_doc_fk')
                     ->references(['business_id', 'id'])->on('booking_financial_documents')->restrictOnDelete();
                 $table->unique(['booking_id', 'sequence']);
-                $table->index(['business_id', 'payment_status', 'due_at']);
+                $table->index(['business_id', 'payment_status', 'due_at'], 'booking_installments_status_due_idx');
             });
         }
 

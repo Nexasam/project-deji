@@ -34,15 +34,13 @@
     />
 
     {{-- Search Bar --}}
-    <x-search-bar />
+    <x-search-bar :filters="$filters" />
 
     {{-- Category Pills --}}
-    <x-category-pills />
-
-    {{-- Filter Bar --}}
-    <x-filter-bar />
+    <x-category-pills :filters="$filters" />
 
     <form action="{{ route('home') }}" method="GET" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 grid grid-cols-2 md:grid-cols-6 gap-3" aria-label="Search serviced apartments">
+        @foreach(['check_in', 'check_out', 'guests'] as $preservedFilter) @if(filled($filters[$preservedFilter] ?? null))<input type="hidden" name="{{ $preservedFilter }}" value="{{ $filters[$preservedFilter] }}">@endif @endforeach
         <input class="col-span-2 rounded-xl border-gray-300" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Search apartment or location">
         <select class="rounded-xl border-gray-300" name="category">
             @foreach(['all'=>'All stays','lekki'=>'Lekki','ikoyi'=>'Ikoyi','victoria-island'=>'Victoria Island','beachfront'=>'Beachfront','family'=>'Family stays','business'=>'Business stays'] as $value => $label)

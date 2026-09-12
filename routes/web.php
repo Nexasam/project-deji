@@ -2,15 +2,23 @@
 
 use App\Http\Controllers\Owner\BusinessOnboardingController;
 use App\Http\Controllers\Owner\OwnerBookingsController;
+use App\Http\Controllers\Owner\OwnerBookingDateController;
+use App\Http\Controllers\Owner\OwnerAvailabilityBlockController;
 use App\Http\Controllers\Owner\OwnerCalendarController;
 use App\Http\Controllers\Owner\OwnerDashboardController;
 use App\Http\Controllers\Owner\OwnerEntryController;
 use App\Http\Controllers\Owner\OwnerFinanceController;
+use App\Http\Controllers\Owner\OwnerFinanceEntryController;
 use App\Http\Controllers\Owner\OwnerOperationsController;
+use App\Http\Controllers\Owner\OwnerOperationalTaskController;
 use App\Http\Controllers\Owner\OwnerPropertyController;
+use App\Http\Controllers\Owner\OwnerExternalCalendarController;
+use App\Http\Controllers\PropertyCalendarFeedController;
 use App\Http\Controllers\Owner\PropertySetupController;
 use App\Http\Controllers\Owner\PropertyWizardController;
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\Admin\AdminPropertyController;
+use App\Http\Controllers\Admin\AdminAuthenticatedSessionController;
 use App\Http\Controllers\MarketplacePropertyController;
 use App\Http\Controllers\Guest\GuestBookingController;
 use App\Http\Controllers\Guest\MarketplaceCheckoutController;
@@ -19,11 +27,24 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', MarketplaceController::class)->name('home');
 Route::get('/stays/{slug}', MarketplacePropertyController::class)->name('marketplace.show');
+Route::get('/ical/{export}/{token}.ics', PropertyCalendarFeedController::class)->middleware('throttle:60,1')->name('property-calendar-feed');
 Route::post('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'store'])->middleware('auth')->name('marketplace.checkout.store');
 Route::middleware('auth')->prefix('guest')->name('guest.')->group(function () {
     Route::get('/bookings', [GuestBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [GuestBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{booking}/cancel', GuestBookingCancellationController::class)->name('bookings.cancel');
+});
+
+Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AdminAuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('/login', [AdminAuthenticatedSessionController::class, 'store'])->name('login.store');
+});
+
+Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/properties', [AdminPropertyController::class, 'index'])->name('properties.index');
+    Route::get('/properties/{property}', [AdminPropertyController::class, 'show'])->name('properties.show');
+    Route::post('/properties/{property}/publish', [AdminPropertyController::class, 'publish'])->name('properties.publish');
+    Route::post('/properties/{property}/unpublish', [AdminPropertyController::class, 'unpublish'])->name('properties.unpublish');
 });
 
 Route::prefix('owner')->name('owner.')->group(function () {
@@ -44,14 +65,28 @@ Route::prefix('owner')->name('owner.')->group(function () {
         Route::post('/properties/{property}/create/step{step}/skip', [PropertyWizardController::class, 'skip'])->whereNumber('step')->name('properties.wizard.skip');
         Route::delete('/properties/{property}/create/media/{media}', [PropertyWizardController::class, 'destroyMedia'])->name('properties.wizard.media.destroy');
         Route::delete('/properties/{property}/create/documents/{document}', [PropertyWizardController::class, 'destroyDocument'])->name('properties.wizard.documents.destroy');
+        Route::get('/properties/{property}/create/documents/{document}/preview', [PropertyWizardController::class, 'previewDocument'])->name('properties.wizard.documents.preview');
         Route::post('/properties/{property}/create/submit', [PropertyWizardController::class, 'submit'])->name('properties.wizard.submit');
         Route::get('/properties/{property}/create/success', [PropertyWizardController::class, 'success'])->name('properties.wizard.success');
         Route::post('/properties/{property}/marketplace-verification', [PropertySetupController::class, 'submitMarketplace'])->name('properties.marketplace-verification.submit');
+        Route::get('/properties/{property}', [OwnerPropertyController::class, 'show'])->name('properties.show');
+        Route::post('/properties/{property}/calendars', [OwnerExternalCalendarController::class, 'store'])->name('properties.calendars.store');
+        Route::post('/properties/{property}/calendars/{connection}/sync', [OwnerExternalCalendarController::class, 'sync'])->name('properties.calendars.sync');
+        Route::delete('/properties/{property}/calendars/{connection}', [OwnerExternalCalendarController::class, 'destroy'])->name('properties.calendars.destroy');
+        Route::post('/properties/{property}/calendar-export/regenerate', [OwnerExternalCalendarController::class, 'regenerate'])->name('properties.calendars.export.regenerate');
         Route::patch('/properties/{property}', [OwnerPropertyController::class, 'update'])->name('properties.update');
         Route::get('/bookings', OwnerBookingsController::class)->name('bookings');
+        Route::get('/bookings/{booking}', [OwnerBookingsController::class, 'show'])->name('bookings.show');
+        Route::patch('/bookings/{booking}/dates', [OwnerBookingDateController::class, 'update'])->name('bookings.dates.update');
         Route::get('/calendar', OwnerCalendarController::class)->name('calendar');
+        Route::post('/calendar/blocks', [OwnerAvailabilityBlockController::class, 'store'])->name('calendar.blocks.store');
+        Route::delete('/calendar/blocks/{block}', [OwnerAvailabilityBlockController::class, 'destroy'])->name('calendar.blocks.destroy');
         Route::get('/finance', OwnerFinanceController::class)->name('finance');
+        Route::post('/finance/payments', [OwnerFinanceEntryController::class, 'payment'])->name('finance.payments.store');
+        Route::post('/finance/expenses', [OwnerFinanceEntryController::class, 'expense'])->name('finance.expenses.store');
         Route::get('/operations', OwnerOperationsController::class)->name('operations');
+        Route::post('/operations/tasks', [OwnerOperationalTaskController::class,'store'])->name('operations.tasks.store');
+        Route::patch('/operations/tasks/{task}/transition', [OwnerOperationalTaskController::class,'transition'])->name('operations.tasks.transition');
 
         Route::view('/property/detail', 'property-detail')->name('property.detail');
         Route::view('/property/finance', 'property-finance')->name('property.finance');

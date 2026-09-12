@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Support\IntendedUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,8 +15,10 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        IntendedUrl::rememberFrom($request);
+
         return view('auth.login');
     }
 
@@ -28,7 +31,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('owner.entry', absolute: false));
+        $fallback = $request->user()->hasActiveGlobalRole('platform_super_admin')
+            ? route('admin.properties.index', absolute: false)
+            : route('owner.entry', absolute: false);
+
+        return redirect()->intended($fallback);
     }
 
     /**

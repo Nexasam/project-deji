@@ -3,6 +3,7 @@
 namespace App\Services\Marketplace;
 
 use App\Models\Property;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class MarketplacePropertyQuery
@@ -24,8 +25,24 @@ final class MarketplacePropertyQuery
             fn ($query) => $query->whereHas('marketplaceListing', fn ($listing) => $listing->whereJsonContains('stay_categories', $category))
         )->when($filters['min_price'] ?? null, fn ($query, $value) => $query->where('default_nightly_price', '>=', $value))
             ->when($filters['max_price'] ?? null, fn ($query, $value) => $query->where('default_nightly_price', '<=', $value))
+            ->when($filters['property_type'] ?? null, fn ($query, $value) => $query->where('property_type', $value))
             ->when($filters['beds'] ?? null, fn ($query, $value) => $query->where('beds', '>=', $value))
             ->when($filters['guests'] ?? null, fn ($query, $value) => $query->where('capacity', '>=', $value));
+
+        if (($filters['check_in'] ?? null) && ($filters['check_out'] ?? null)) {
+            $arrival = CarbonImmutable::parse($filters['check_in'])->toDateString();
+            $departure = CarbonImmutable::parse($filters['check_out'])->toDateString();
+            $query->whereDoesntHave('bookings', fn ($bookings) => $bookings
+                ->whereIn('status', ['reserved', 'awaiting_payment', 'confirmed', 'checked_in'])
+                ->where('payment_status', '!=', 'failed')
+                ->whereDate('arrival_date', '<', $departure)->whereDate('departure_date', '>', $arrival))
+                ->whereDoesntHave('availabilityDays', fn ($days) => $days
+                    ->where('active_key', 'active')->whereIn('availability_state', ['held', 'booked', 'blocked'])
+                    ->whereDate('availability_date', '>=', $arrival)->whereDate('availability_date', '<', $departure))
+                ->whereDoesntHave('availabilityBlocks', fn ($blocks) => $blocks
+                    ->where('status', 'active')->where('block_state', 'active')->where('blocks_booking', true)
+                    ->whereDate('starts_on', '<', $departure)->whereDate('ends_on', '>', $arrival));
+        }
 
         return $query->orderBy('name')->paginate(100)->withQueryString();
     }

@@ -58,7 +58,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('current_step_order')->nullable();
             $table->json('subject_snapshot');
             $table->text('request_reason')->nullable();
-            $table->timestamp('submitted_at');
+            $table->dateTime('submitted_at');
             $table->timestamp('due_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
@@ -96,8 +96,8 @@ return new class extends Migration
             $table->foreignUuid('approval_workflow_id')->nullable()->constrained('approval_workflows')->restrictOnDelete();
             $table->foreignUuid('delegator_user_id')->constrained('users')->restrictOnDelete();
             $table->foreignUuid('delegate_user_id')->constrained('users')->restrictOnDelete();
-            $table->timestamp('starts_at');
-            $table->timestamp('ends_at');
+            $table->dateTime('starts_at');
+            $table->dateTime('ends_at');
             $table->text('reason')->nullable();
             $table->timestamp('revoked_at')->nullable();
             $table->foreignUuid('revoked_by')->nullable()->constrained('users')->nullOnDelete();
@@ -117,7 +117,7 @@ return new class extends Migration
             $table->string('action_type', 40);
             $table->text('comments')->nullable();
             $table->json('metadata')->nullable();
-            $table->timestamp('acted_at');
+            $table->dateTime('acted_at');
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
@@ -149,7 +149,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('data_retention_policy_id')->constrained('data_retention_policies')->restrictOnDelete();
             $table->string('execution_status', 40)->default('pending');
-            $table->timestamp('cutoff_at');
+            $table->dateTime('cutoff_at');
             $table->timestamp('started_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->unsignedBigInteger('records_examined')->default(0);
@@ -173,7 +173,7 @@ return new class extends Migration
             $table->string('requester_name');
             $table->string('requester_email');
             $table->timestamp('identity_verified_at')->nullable();
-            $table->timestamp('received_at');
+            $table->dateTime('received_at');
             $table->timestamp('due_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->text('resolution_summary')->nullable();

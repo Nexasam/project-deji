@@ -27,4 +27,14 @@ class GuestBookingAuthorizationTest extends TestCase
     {
         $this->get('/guest/bookings')->assertRedirect('/login');
     }
+
+    public function test_authenticated_marketplace_navigation_links_to_my_bookings(): void
+    {
+        $guest = User::factory()->create(['name' => 'Sarah Guest']);
+
+        $this->actingAs($guest)->get('/')->assertOk()
+            ->assertSee('My bookings')
+            ->assertSee('Sarah Guest')
+            ->assertSee('Log out');
+    }
 }

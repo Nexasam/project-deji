@@ -32,4 +32,27 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('verification.notice', absolute: false));
     }
+
+    public function test_guest_registration_returns_to_the_selected_marketplace_stay(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $this->get('/register?redirect=/stays/banana-island-harbour-flat');
+
+        $this->post('/register', [
+            'name' => 'Returning Guest',
+            'email' => 'guest@example.com',
+            'password' => 'SecurePass123',
+            'password_confirmation' => 'SecurePass123',
+            'terms' => '1',
+        ])->assertRedirect('/stays/banana-island-harbour-flat');
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_external_redirects_are_not_stored_during_registration(): void
+    {
+        $this->get('/register?redirect=https://malicious.example');
+
+        $this->assertNull(session('url.intended'));
+    }
 }

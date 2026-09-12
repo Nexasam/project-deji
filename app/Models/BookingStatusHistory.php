@@ -12,6 +12,8 @@ class BookingStatusHistory extends Model
 {
     use HasUuids;
 
+    protected $table = 'booking_status_history';
+
     protected function casts(): array
     {
         return ['metadata' => 'array', 'occurred_at' => 'datetime'];

@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'completed_at', 'estimated_duration_minutes', 'sla_due_at', 'requires_verification',
     'verified_by', 'verified_at', 'verification_notes', 'notes', 'manual_creation_reason',
     'generation_source', 'is_recurring', 'recurrence_rule', 'next_recurrence_at',
-    'escalated_at', 'generation_metadata',
+    'escalated_at', 'generation_metadata', 'created_by', 'updated_by',
 ])]
 class OperationalTask extends Model
 {

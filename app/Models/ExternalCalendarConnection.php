@@ -39,4 +39,14 @@ class ExternalCalendarConnection extends Model
     {
         return $this->hasMany(ExternalCalendarSyncRun::class, 'external_calendar_connection_id');
     }
+
+    public function availabilityBlocks(): HasMany
+    {
+        return $this->hasMany(PropertyAvailabilityBlock::class, 'external_calendar_connection_id');
+    }
+
+    public function inboundFeedUrl(): ?string
+    {
+        return $this->credentials['feed_url'] ?? null;
+    }
 }

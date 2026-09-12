@@ -44,26 +44,28 @@
                     </section>
                 @else
                     <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                        <div><p class="text-sm font-semibold text-orange-600">{{ $properties->count() }} {{ Str::plural('property', $properties->count()) }}</p><h2 class="mt-1 text-3xl font-extrabold tracking-tight">Property portfolio</h2><p class="mt-2 text-sm text-slate-600">Live records belonging to {{ $business->name }}.</p></div>
+                        <div><p class="text-sm font-semibold text-orange-600">{{ $properties->count() }} {{ Str::plural('property', $properties->count()) }}</p><h2 class="mt-1 text-xl font-extrabold tracking-tight">Property portfolio</h2><p class="mt-2 text-sm text-slate-600">Live records belonging to {{ $business->name }}.</p></div>
                         <a href="{{ route('owner.properties.create') }}" class="rounded-xl bg-orange-600 px-5 py-3 text-center text-sm font-bold text-white hover:bg-orange-700">Add property</a>
                     </div>
 
-                    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         @foreach ($properties as $property)
                             <article data-testid="property-card" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                 <div class="flex items-start justify-between gap-2"><div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-sm font-extrabold text-orange-600">{{ str($property->name)->substr(0, 2)->upper() }}</div><span class="max-w-[7rem] truncate rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700">{{ str($property->publication_status->value)->title() }}</span></div>
-                                <h3 class="mt-3 truncate text-base font-extrabold" title="{{ $property->name }}">{{ $property->name }}</h3>
+                                <h3 class="mt-3 truncate text-base font-extrabold" title="{{ $property->name }}"><a href="{{ route('owner.properties.show', $property) }}" class="hover:text-orange-600">{{ $property->name }}</a></h3>
                                 <p class="mt-1 truncate text-xs text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }}</p>
                                 <dl class="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-xs"><div><dt class="text-[10px] text-slate-400">Guests</dt><dd class="mt-0.5 font-bold">{{ $property->capacity }}</dd></div><div><dt class="text-[10px] text-slate-400">Beds</dt><dd class="mt-0.5 font-bold">{{ $property->bedrooms }}</dd></div><div><dt class="text-[10px] text-slate-400">Baths</dt><dd class="mt-0.5 font-bold">{{ $property->bathrooms }}</dd></div></dl>
                                 <div class="mt-3 flex items-center justify-between gap-2"><span class="truncate text-[10px] font-semibold text-amber-700">{{ str($property->verification_status->value)->title() }}</span><span class="truncate text-[10px] text-slate-400">{{ $property->code }}</span></div>
+                                <div class="mt-3 grid gap-2 {{ $property->publication_status->value === 'draft' ? 'grid-cols-2' : '' }}">
+                                    <a href="{{ route('owner.properties.show', $property) }}" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-700 hover:bg-slate-50">View details</a>
                                 @if ($property->publication_status->value === 'draft')
-                                    <a href="{{ route('owner.properties.resume', $property) }}" class="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 text-xs font-extrabold text-white hover:bg-orange-700">
+                                    <a href="{{ route('owner.properties.resume', $property) }}" class="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 text-xs font-extrabold text-white hover:bg-orange-700">
                                         Continue setup
-                                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                     </a>
                                 @elseif ($property->publication_status->value === 'unpublished' && $property->verification_status->value === 'unverified')
-                                    <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}" class="mt-3">@csrf<button class="w-full rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-xs font-extrabold text-orange-700 hover:bg-orange-100">Submit for verification</button></form>
+                                    <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}">@csrf<button class="w-full rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-xs font-extrabold text-orange-700 hover:bg-orange-100">Submit for verification</button></form>
                                 @endif
+                                </div>
                             </article>
                         @endforeach
                     </div>

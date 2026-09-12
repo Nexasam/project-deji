@@ -237,6 +237,11 @@ class Property extends Model
         return $this->hasMany(ExternalCalendarConnection::class);
     }
 
+    public function calendarExports(): HasMany
+    {
+        return $this->hasMany(PropertyCalendarExport::class);
+    }
+
     public function revenueEntries(): HasMany
     {
         return $this->hasMany(RevenueEntry::class);

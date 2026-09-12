@@ -12,7 +12,7 @@
 <body class="public-surface min-h-screen bg-white text-slate-950 antialiased">
     <main class="grid min-h-screen lg:grid-cols-[minmax(360px,0.86fr)_minmax(540px,1.14fr)]">
         <section class="relative hidden overflow-hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col xl:p-14">
-            <div class="auth-story-media" aria-hidden="true"><span class="auth-story-frame"></span><span class="auth-story-frame"></span><span class="auth-story-frame"></span><span class="auth-story-shade"></span></div>
+            <div class="auth-story-media" aria-hidden="true"><span class="auth-story-frame" style="background-image:url('{{ asset('hero1.jpg') }}')"></span><span class="auth-story-frame" style="background-image:url('{{ asset('hero2.jpg') }}')"></span><span class="auth-story-frame" style="background-image:url('{{ asset('hero3.jpg') }}')"></span><span class="auth-story-shade"></span></div>
             <a href="{{ route('home') }}" class="relative z-10 inline-flex w-fit items-center gap-3" aria-label="Project Nexus home">
                 <img src="{{ asset('logo1.png') }}" alt="" class="size-11 object-contain">
                 <div><p class="text-base font-extrabold tracking-tight">Project Nexus</p><p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Verified Shortlet</p></div>

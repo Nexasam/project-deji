@@ -44,6 +44,25 @@ class OwnerPropertyController extends Controller
         ]);
     }
 
+    public function show(ActiveBusinessContext $context, string $property): View
+    {
+        $record = $context->business->properties()
+            ->with([
+                'amenities' => fn ($query) => $query->orderBy('category')->orderBy('name'),
+                'media' => fn ($query) => $query->where('status', 'active')->where('media_type', 'image')->orderByDesc('is_primary')->orderBy('sort_order'),
+                'marketplaceListing',
+                'externalCalendarConnections' => fn ($query) => $query->where('status', 'active')->with(['syncRuns' => fn ($runs) => $runs->latest()->limit(5)]),
+                'calendarExports' => fn ($query) => $query->where('active_key', 'active'),
+            ])
+            ->whereKey($property)
+            ->firstOrFail();
+
+        return view('owner.properties.show', [
+            'business' => $context->business,
+            'property' => $record,
+        ]);
+    }
+
     public function store(
         StorePropertyRequest $request,
         ActiveBusinessContext $context,

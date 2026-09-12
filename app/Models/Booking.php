@@ -112,7 +112,7 @@ class Booking extends Model
 
     public function statusHistory(): HasMany
     {
-        return $this->hasMany(BookingStatusHistory::class);
+        return $this->hasMany(BookingStatusHistory::class, 'booking_id');
     }
 
     public function dateChanges(): HasMany

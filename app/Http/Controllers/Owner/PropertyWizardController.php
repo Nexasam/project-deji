@@ -4,15 +4,16 @@ namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Amenity;
-use App\Models\Asset;
 use App\Models\Property;
-use App\Models\PropertyChannelConnection;
 use App\Models\PropertyLifecycleEvent;
 use App\Models\PropertyPromotion;
 use App\Models\PropertySetupStep;
 use App\Services\Property\SavePropertySetupService;
 use App\Services\Property\StorePropertyMediaService;
 use App\Services\Property\SyncPropertyAmenitiesService;
+use App\Services\Property\SyncPropertyAssetsService;
+use App\Services\Property\SyncPropertyChannelsService;
+use App\Services\Calendar\ManageExternalCalendarConnection;
 use App\Support\ActiveBusinessContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PropertyWizardController extends Controller
 {
@@ -70,7 +72,7 @@ class PropertyWizardController extends Controller
         return view($view, $this->data($context, $draft));
     }
 
-    public function store(Request $request, ActiveBusinessContext $context, string $property, int $step, SyncPropertyAmenitiesService $amenities, StorePropertyMediaService $media, SavePropertySetupService $setup): RedirectResponse
+    public function store(Request $request, ActiveBusinessContext $context, string $property, int $step, SyncPropertyAmenitiesService $amenities, StorePropertyMediaService $media, SavePropertySetupService $setup, SyncPropertyAssetsService $assets, SyncPropertyChannelsService $channels, ManageExternalCalendarConnection $calendars): RedirectResponse
     {
         abort_unless($step >= 2 && $step <= 9, 404);
         $draft = $this->draft($context, $property);
@@ -79,10 +81,10 @@ class PropertyWizardController extends Controller
             3 => $this->basics($request, $draft),
             4 => $this->amenities($request, $draft, $amenities),
             5 => $this->media($request, $draft, $media),
-            6 => $this->assets($request, $draft),
+            6 => $this->assets($request, $draft, $assets),
             7 => $this->documents($request, $draft, $setup),
             8 => $this->namePrice($request, $draft),
-            9 => $this->channels($request, $draft),
+            9 => $this->channels($request, $draft, $channels, $calendars),
         };
         $this->mark($draft, self::STEPS[$step - 1], $request, 'completed');
 
@@ -168,6 +170,21 @@ class PropertyWizardController extends Controller
         return $this->toStep($draft, 7)->with('status', 'Document removed.');
     }
 
+    public function previewDocument(ActiveBusinessContext $context, string $property, string $document): StreamedResponse
+    {
+        $draft = $this->draft($context, $property);
+        $record = $draft->documents()->with('versions')->whereKey($document)->firstOrFail();
+        $version = $record->versions->sortByDesc('version_number')->firstOrFail();
+
+        abort_unless(Storage::disk($version->storage_disk)->exists($version->storage_path), 404);
+
+        return Storage::disk($version->storage_disk)->response(
+            $version->storage_path,
+            $version->original_name,
+            ['Content-Type' => $version->mime_type, 'Content-Disposition' => 'inline; filename="'.basename($version->original_name).'"'],
+        );
+    }
+
     private function location(Request $r, Property $p): void
     {
         $d = $r->validate(['state' => 'required|string|max:120', 'city' => 'required|string|max:120', 'address_line' => 'required|string|max:500', 'latitude' => 'nullable|numeric|between:-90,90', 'longitude' => 'nullable|numeric|between:-180,180']);
@@ -176,7 +193,7 @@ class PropertyWizardController extends Controller
 
     private function basics(Request $r, Property $p): void
     {
-        $d = $r->validate(['property_type' => 'required|in:apartment,self,duplex,bungalow,boutique,villa', 'booking_mode' => 'required|in:entire,private,shared', 'capacity' => 'required|integer|min:1|max:1000', 'bedrooms' => 'required|integer|min:0|max:500', 'bathrooms' => 'required|numeric|min:0|max:500', 'floor_area_sqm' => 'nullable|numeric|min:0']);
+        $d = $r->validate(['property_type' => 'required|in:flat,duplex,apartment', 'booking_mode' => 'required|in:entire', 'capacity' => 'required|integer|min:1|max:1000', 'bedrooms' => 'required|integer|min:0|max:500', 'bathrooms' => 'required|numeric|min:0|max:500']);
         $p->update($d + ['updated_by' => $r->user()->id]);
     }
 
@@ -198,15 +215,11 @@ class PropertyWizardController extends Controller
         }
     }
 
-    private function assets(Request $r, Property $p): void
+    private function assets(Request $r, Property $p, SyncPropertyAssetsService $service): void
     {
         $d = $r->validate(['assets' => 'required|json']);
         $names = collect(json_decode($d['assets'], true) ?: [])->map(fn ($v) => trim((string) $v))->filter()->unique()->values();
-        $p->assets()->whereNotIn('name', $names)->delete();
-        foreach ($names as $name) {
-            $asset = Asset::query()->firstOrNew(['property_id' => $p->id, 'name' => $name]);
-            $asset->fill(['business_id' => $p->business_id, 'asset_code' => $asset->asset_code ?: 'AST-'.Str::upper(Str::random(10)), 'qr_identifier' => $asset->qr_identifier ?: (string) Str::uuid(), 'category' => 'furnishing', 'condition' => 'good', 'currency' => $p->pricing_currency, 'status' => 'active'])->save();
-        }
+        $service->sync($p, $names);
     }
 
     private function documents(Request $r, Property $p, SavePropertySetupService $s): void
@@ -233,16 +246,18 @@ class PropertyWizardController extends Controller
         }
     }
 
-    private function channels(Request $r, Property $p): void
+    private function channels(Request $r, Property $p, SyncPropertyChannelsService $service, ManageExternalCalendarConnection $calendars): void
     {
-        $d = $r->validate(['channels' => 'array', 'channels.*' => 'nullable|string|max:2048']);
-        foreach (($d['channels'] ?? []) as $provider => $reference) {
-            if (blank($reference)) {
-                $p->channelConnections()->where('provider', $provider)->delete();
-
-                continue;
+        $d = $r->validate([
+            'channels' => 'array', 'channels.*' => 'required|in:airbnb,bookingcom,whatsapp',
+            'calendar_urls' => 'array', 'calendar_urls.airbnb' => 'nullable|url:https|max:2048',
+            'calendar_urls.bookingcom' => 'nullable|url:https|max:2048',
+        ]);
+        $service->sync($p, $r->user(), array_values(array_unique($d['channels'] ?? [])));
+        foreach (['airbnb', 'bookingcom'] as $provider) {
+            if (in_array($provider, $d['channels'] ?? [], true) && filled($d['calendar_urls'][$provider] ?? null)) {
+                $calendars->save($p, $r->user(), $provider, $d['calendar_urls'][$provider]);
             }
-            PropertyChannelConnection::query()->updateOrCreate(['property_id' => $p->id, 'provider' => $provider], ['business_id' => $p->business_id, 'external_reference' => $reference, 'connection_status' => 'pending', 'status' => 'active', 'created_by' => $r->user()->id, 'updated_by' => $r->user()->id]);
         }
     }
 
@@ -264,6 +279,6 @@ class PropertyWizardController extends Controller
 
     private function data(ActiveBusinessContext $c, Property $p): array
     {
-        return ['business' => $c->business, 'property' => $p->load(['amenities', 'media', 'assets', 'documents.versions', 'channelConnections', 'promotions']), 'amenities' => Amenity::query()->where('status', 'active')->orderBy('category')->orderBy('name')->get(), 'selectedAmenityIds' => $p->amenities()->pluck('amenities.id')->all()];
+        return ['business' => $c->business, 'property' => $p->load(['amenities', 'media', 'assets', 'documents.versions', 'channelConnections', 'promotions', 'externalCalendarConnections', 'calendarExports']), 'amenities' => Amenity::query()->where('status', 'active')->orderBy('category')->orderBy('name')->get(), 'selectedAmenityIds' => $p->amenities()->pluck('amenities.id')->all()];
     }
 }

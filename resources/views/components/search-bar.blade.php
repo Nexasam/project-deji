@@ -1,16 +1,19 @@
+@props(['filters' => []])
 <div class="search-bar-outer">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 search-bar-wrap">
         <form
             id="search-form"
             class="search-bar"
-            x-data="searchBar()"
-            @submit.prevent="handleSearch"
+            action="{{ route('home') }}"
+            method="GET"
+            x-data="searchBar(@js($filters))"
         >
             {{-- Where Field --}}
             <div class="search-field search-field-where">
                 <label class="search-field-label">WHERE</label>
                 <input
                     id="search-where"
+                    name="q"
                     type="text"
                     placeholder="Lekki, Ikoyi, V.I…"
                     x-model="where"
@@ -29,6 +32,8 @@
                     <span x-text="datesDisplay || 'Add dates'"></span>
                 </div>
             </div>
+            <input type="hidden" name="check_in" :value="checkIn">
+            <input type="hidden" name="check_out" :value="checkOut">
 
             <div class="search-divider"></div>
 
@@ -44,6 +49,7 @@
                         :disabled="guests <= 1"
                     >−</button>
                     <span x-text="guests + ' guest' + (guests > 1 ? 's' : '')" class="guest-count"></span>
+                    <input type="hidden" name="guests" :value="guests">
                     <button
                         type="button"
                         @click="incrementGuests"
@@ -96,12 +102,12 @@
 
 @push('scripts')
 <script>
-function searchBar() {
+function searchBar(filters = {}) {
     return {
-        where: '',
-        guests: 2,
-        checkIn: '',
-        checkOut: '',
+        where: filters.q || '',
+        guests: Number(filters.guests || 2),
+        checkIn: filters.check_in || '',
+        checkOut: filters.check_out || '',
         datePickerOpen: false,
         datesDisplay: '',
 
@@ -116,9 +122,7 @@ function searchBar() {
             }
         },
 
-        handleSearch() {
-            window.showToast('Search coming soon!');
-        }
+        init() { this.applyDates(); }
     }
 }
 </script>

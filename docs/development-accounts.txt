@@ -1,0 +1,17 @@
+Development accounts
+====================
+
+Lagoon Stays owner
+Email: owner@lagoonstays.test
+Password: Password123!
+
+Coastline Residences owner
+Email: owner@coastlineresidences.test
+Password: Password123!
+
+Platform administrator
+URL: http://127.0.0.1:8000/admin/login
+Email: admin@verifiedshortlet.test
+Password: AdminPassword123!
+
+Development/demo use only. Do not reuse these credentials in production.

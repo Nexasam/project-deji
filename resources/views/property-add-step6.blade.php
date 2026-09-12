@@ -7,9 +7,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-100 font-sans antialiased" x-data="{ 
-    items: @js($property->assets->pluck('name')->all()),
-    customItems: [],
-    newItem: ''
+    items: @js($property->assets->where('status','active')->pluck('name')->values()->all()),
+    newItem: '',
+    addItem() { const value=this.newItem.trim(); if(value && !this.items.includes(value)) this.items.push(value); this.newItem=''; }
 }">
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
@@ -31,7 +31,7 @@
         <main class="flex-1 px-4 py-7">
             <form method="POST" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>6]) }}" class="w-full max-w-4xl mx-auto">
                 @csrf
-                <input type="hidden" name="assets" :value="JSON.stringify([...items, ...customItems])">
+                <input type="hidden" name="assets" :value="JSON.stringify(items)">
                 {{-- Title Section --}}
                 <div class="mb-5">
                     <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">INSIDE THE FLAT</p>
@@ -182,18 +182,20 @@
                                 x-model="newItem"
                                 placeholder="e.g Standing fan, rug, blender..."
                                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors"
-                                @keydown.enter="if(newItem.trim()) { customItems.push(newItem.trim()); newItem = ''; }"
+                                @keydown.enter.prevent="addItem()"
                             />
-                            <button type="button" @click="if(newItem.trim()) { customItems.push(newItem.trim()); newItem = ''; }"
+                            <button type="button" @click="addItem()" aria-label="Add extra item"
                                     class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
                                 </svg>
                             </button>
                         </div>
 
+                        <div class="mb-4 flex flex-wrap gap-2" x-show="items.length"><template x-for="item in items" :key="item"><span class="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-800"><span x-text="item.replaceAll('-', ' ')"></span><button type="button" @click="items=items.filter(value=>value!==item)" class="font-bold text-orange-500" :aria-label="`Remove ${item}`">×</button></span></template></div>
+
                         {{-- Add Another Item Button --}}
-                        <button type="button" @click="$el.previousElementSibling.querySelector('input').focus()" class="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 font-medium hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors">
+                        <button type="button" @click="$el.parentElement.querySelector('input[type=text]').focus()" class="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 font-medium hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors">
                             + Add another item
                         </button>
                     </div>

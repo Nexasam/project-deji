@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignUuid('held_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('hold_expires_at')->nullable();
             $table->string('active_key', 20)->nullable()->default('active');
-            $table->timestamp('allocated_at');
+            $table->dateTime('allocated_at');
             $table->timestamp('released_at')->nullable();
             $table->text('release_reason')->nullable();
             $table->string('status', 40)->default('active');
@@ -35,13 +35,13 @@ return new class extends Migration
                 ->references(['business_id', 'id'])->on('properties')->restrictOnDelete();
             $table->foreign(['business_id', 'booking_id'])
                 ->references(['business_id', 'id'])->on('bookings')->restrictOnDelete();
-            $table->foreign(['business_id', 'availability_block_id'])
+            $table->foreign(['business_id', 'availability_block_id'], 'property_avail_block_fk')
                 ->references(['business_id', 'id'])->on('property_availability_blocks')->restrictOnDelete();
             $table->unique(['property_id', 'availability_date', 'active_key'], 'property_active_availability_day_unique');
             $table->index(['business_id', 'property_id', 'availability_date', 'availability_state'], 'property_availability_calendar_lookup');
             $table->index(['availability_state', 'hold_expires_at', 'active_key'], 'availability_expired_hold_lookup');
             $table->index(['booking_id', 'active_key']);
-            $table->index(['availability_block_id', 'active_key']);
+            $table->index(['availability_block_id', 'active_key'], 'property_avail_block_active_idx');
         });
 
         Schema::create('external_calendar_sync_runs', function (Blueprint $table) {
@@ -68,7 +68,7 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'external_calendar_connection_id'])
+            $table->foreign(['business_id', 'external_calendar_connection_id'], 'external_sync_connection_fk')
                 ->references(['business_id', 'id'])->on('external_calendar_connections')->restrictOnDelete();
             $table->unique(['business_id', 'id']);
             $table->index(['business_id', 'external_calendar_connection_id', 'created_at'], 'external_sync_connection_history');

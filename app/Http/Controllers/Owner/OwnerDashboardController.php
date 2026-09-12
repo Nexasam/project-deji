@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Support\ActiveBusinessContext;
+use App\Services\Dashboard\OwnerDashboardSummary;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class OwnerDashboardController extends Controller
 {
-    public function __invoke(Request $request, ActiveBusinessContext $context): View
+    public function __invoke(Request $request, ActiveBusinessContext $context,OwnerDashboardSummary $summary): View
     {
         if ($request->query('view') === 'demo') {
             return view('owner.demo.dashboard', ['business' => $context->business]);
@@ -22,6 +23,7 @@ class OwnerDashboardController extends Controller
         return view('dashboard', [
             'business' => $context->business,
             'properties' => $properties,
+            'summary' => $summary->build($context->business),
         ]);
     }
 }

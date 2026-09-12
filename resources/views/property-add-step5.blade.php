@@ -6,7 +6,7 @@
     <title>Add Property - Step 5 - Verified Shortlet</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-100 font-sans antialiased" x-data="{previews:[],videoUrl:'',videoDuration:'',previewFiles(event){this.previews.forEach(item=>URL.revokeObjectURL(item.url));this.previews=Array.from(event.target.files).filter(file=>file.type.startsWith('image/')).map(file=>({name:file.name,url:URL.createObjectURL(file)}))}}">
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
         <header class="bg-white border-b border-gray-200">
@@ -45,16 +45,18 @@
                             <svg class="w-10 h-10 text-[#FF5A00] mb-3" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
                             </svg>
-                            <label class="text-sm font-semibold text-[#FF5A00] hover:underline cursor-pointer">Click to upload<input type="file" name="media[]" accept="image/*,video/mp4,video/quicktime" multiple class="sr-only"></label>
+                            <label class="text-sm font-semibold text-[#FF5A00] hover:underline cursor-pointer">Click to upload<input type="file" name="media[]" accept="image/*,video/mp4,video/quicktime" multiple class="sr-only" @change="previewFiles($event)"></label>
                             <p class="text-sm text-gray-600">PNG or JPG, up to 10 photos. First photo becomes the cover image.</p>
                         </div>
                     </div>
 
                     {{-- Photo Grid --}}
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                        <template x-for="preview in previews" :key="preview.url"><div class="relative overflow-hidden rounded-lg border-2 border-dashed border-orange-300 bg-orange-50"><img :src="preview.url" :alt="preview.name" class="h-36 w-full object-cover"><div class="absolute inset-x-0 bottom-0 truncate bg-black/65 px-2 py-1 text-xs font-semibold text-white" x-text="preview.name"></div><span class="absolute left-2 top-2 rounded bg-white/90 px-2 py-1 text-[10px] font-bold text-orange-700">READY TO UPLOAD</span></div></template>
                         @foreach($property->media->where('media_type', 'image') as $photo)
                             <div class="relative group rounded-lg overflow-hidden border-2 transition-all {{ $photo->is_primary ? 'border-[#FF5A00]' : 'border-gray-200' }}">
                                 <img src="{{ Storage::disk($photo->storage_disk)->url($photo->storage_path) }}" alt="{{ $photo->alt_text ?: 'Property photo' }}" class="w-full h-36 object-cover" />
+                                <div class="absolute inset-x-0 bottom-0 truncate bg-black/65 px-2 py-1 text-xs font-semibold text-white">{{ $photo->title }}</div>
                                 
                                 {{-- Cover Badge --}}
                                 @if($photo->is_primary)<div class="absolute top-2 left-2 bg-[#FF5A00] text-white text-xs font-bold px-2 py-1 rounded">

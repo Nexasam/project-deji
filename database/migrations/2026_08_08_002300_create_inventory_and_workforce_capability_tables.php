@@ -112,7 +112,7 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign(['business_id', 'inventory_item_id'])->references(['business_id', 'id'])->on('inventory_items')->restrictOnDelete();
             $table->foreign(['business_id', 'inventory_location_id'])->references(['business_id', 'id'])->on('inventory_locations')->restrictOnDelete();
-            $table->unique(['inventory_item_id', 'inventory_location_id']);
+            $table->unique(['inventory_item_id', 'inventory_location_id'], 'inventory_stock_item_location_unique');
             $table->index(['business_id', 'quantity_on_hand']);
         });
 
@@ -133,7 +133,7 @@ return new class extends Migration
             $table->string('currency', 3)->nullable();
             $table->string('reference', 120)->nullable();
             $table->text('reason')->nullable();
-            $table->timestamp('occurred_at');
+            $table->dateTime('occurred_at');
             $table->json('metadata')->nullable();
             $table->string('status', 40)->default('active');
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
@@ -155,7 +155,7 @@ return new class extends Migration
             $table->foreignUuid('booking_id')->nullable()->constrained('bookings')->restrictOnDelete();
             $table->foreignUuid('operational_task_id')->nullable()->constrained('operational_tasks')->restrictOnDelete();
             $table->string('assignment_type', 40)->default('custody');
-            $table->timestamp('assigned_at');
+            $table->dateTime('assigned_at');
             $table->timestamp('expected_return_at')->nullable();
             $table->timestamp('returned_at')->nullable();
             $table->foreignUuid('assigned_by')->nullable()->constrained('users')->nullOnDelete();

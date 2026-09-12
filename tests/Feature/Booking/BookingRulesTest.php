@@ -4,6 +4,7 @@ namespace Tests\Feature\Booking;
 
 use App\Models\Booking;
 use App\Models\Property;
+use App\Models\PropertyAvailabilityBlock;
 use App\Models\PropertyPromotion;
 use App\Services\Booking\BookingPricingService;
 use App\Services\Booking\PropertyAvailabilityService;
@@ -39,5 +40,22 @@ class BookingRulesTest extends TestCase
         $this->assertSame(7000000, $quote->discountMinor);
         $this->assertSame(3150000, $quote->serviceFeeMinor);
         $this->assertSame(66150000, $quote->totalMinor);
+    }
+
+    public function test_active_manual_block_prevents_booking_without_duplicating_availability_days(): void
+    {
+        $property = Property::factory()->create();
+        PropertyAvailabilityBlock::query()->create([
+            'business_id' => $property->business_id, 'property_id' => $property->id,
+            'source_type' => 'owner', 'blocks_booking' => true,
+            'starts_on' => '2026-10-10', 'ends_on' => '2026-10-13',
+            'validation_status' => 'valid', 'block_state' => 'active',
+            'reason' => 'Maintenance', 'status' => 'active',
+        ]);
+
+        $service = app(PropertyAvailabilityService::class);
+
+        $this->assertFalse($service->isAvailable($property, CarbonImmutable::parse('2026-10-12'), CarbonImmutable::parse('2026-10-14')));
+        $this->assertTrue($service->isAvailable($property, CarbonImmutable::parse('2026-10-13'), CarbonImmutable::parse('2026-10-15')));
     }
 }

@@ -95,9 +95,9 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'operational_task_id'])->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
-            $table->foreign(['business_id', 'depends_on_task_id'])->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
-            $table->unique(['operational_task_id', 'depends_on_task_id']);
+            $table->foreign(['business_id', 'operational_task_id'], 'task_dependencies_task_fk')->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
+            $table->foreign(['business_id', 'depends_on_task_id'], 'task_dependencies_predecessor_fk')->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
+            $table->unique(['operational_task_id', 'depends_on_task_id'], 'task_dependencies_pair_unique');
             $table->index(['business_id', 'depends_on_task_id', 'status'], 'task_dependencies_predecessor_index');
         });
 
@@ -120,7 +120,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign(['business_id', 'operational_task_id'])->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
+            $table->foreign(['business_id', 'operational_task_id'], 'task_attachments_task_fk')->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
             $table->index(['operational_task_id', 'attachment_type', 'status'], 'task_attachments_type_status_index');
         });
 
@@ -132,7 +132,7 @@ return new class extends Migration
             $table->string('assignment_role', 40)->default('primary');
             $table->string('assignment_status', 40)->default('assigned');
             $table->foreignUuid('assigned_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('assigned_at');
+            $table->dateTime('assigned_at');
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
             $table->text('rejection_reason')->nullable();
@@ -143,9 +143,9 @@ return new class extends Migration
             $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->foreign(['business_id', 'operational_task_id'])->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
+            $table->foreign(['business_id', 'operational_task_id'], 'task_assignments_task_fk')->references(['business_id', 'id'])->on('operational_tasks')->restrictOnDelete();
             $table->foreign(['business_id', 'employee_id'])->references(['business_id', 'id'])->on('employees')->restrictOnDelete();
-            $table->index(['operational_task_id', 'assignment_status']);
+            $table->index(['operational_task_id', 'assignment_status'], 'task_assignments_status_idx');
             $table->index(['business_id', 'employee_id', 'assignment_status'], 'task_assignments_employee_status_index');
         });
     }
