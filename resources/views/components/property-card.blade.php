@@ -18,6 +18,7 @@
     <div class="card-img-wrap">
         <img
             src="{{ $image }}"
+            onerror="this.onerror=null;this.src='/image.png'"
             alt="{{ $name }}"
             class="card-img"
             loading="lazy"

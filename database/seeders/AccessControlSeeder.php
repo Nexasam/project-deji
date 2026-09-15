@@ -156,11 +156,23 @@ class AccessControlSeeder extends Seeder
             'ai.view_predictions' => ['ai_insights', 'ai_prediction', 'view', 'sensitive', true],
             'ai.manage_knowledge' => ['ai_insights', 'ai_knowledge', 'manage', 'critical', true],
             'ai.automate' => ['ai_insights', 'ai_automation', 'execute', 'critical', true],
+            'platform.dashboard.view' => ['platform_admin', 'platform', 'dashboard_view', 'normal', false],
+            'platform.business.view' => ['platform_admin', 'platform', 'business_view', 'sensitive', true],
             'platform.business.manage' => ['platform_admin', 'platform', 'business_manage', 'critical', true],
             'platform.business.verify' => ['platform_admin', 'platform', 'business_verify', 'critical', true],
+            'platform.user.view' => ['platform_admin', 'platform', 'user_view', 'sensitive', true],
+            'platform.user.lock' => ['platform_admin', 'platform', 'user_lock', 'critical', true],
+            'platform.property.view' => ['platform_admin', 'platform', 'property_view', 'sensitive', true],
             'platform.property.verify' => ['platform_admin', 'platform', 'property_verify', 'critical', true],
+            'platform.booking.view' => ['platform_admin', 'platform', 'booking_view', 'sensitive', true],
+            'platform.review.view' => ['platform_admin', 'platform', 'review_view', 'sensitive', true],
+            'platform.review.moderate' => ['platform_admin', 'platform', 'review_moderate', 'critical', true],
+            'platform.dispute.view' => ['platform_admin', 'platform', 'dispute_view', 'sensitive', true],
+            'platform.dispute.manage' => ['platform_admin', 'platform', 'dispute_manage', 'critical', true],
             'platform.analytics.view' => ['platform_admin', 'platform', 'analytics_view', 'sensitive', true],
             'platform.configure' => ['platform_admin', 'platform', 'configure', 'critical', true],
+            'platform.audit.view' => ['platform_admin', 'platform', 'audit_view', 'critical', true],
+            'platform.health.view' => ['platform_admin', 'platform', 'health_view', 'sensitive', true],
             'platform.moderate' => ['platform_admin', 'platform', 'moderate', 'critical', true],
             'platform.impersonate' => ['platform_admin', 'platform', 'impersonate', 'critical', true],
         ];
@@ -187,6 +199,8 @@ class AccessControlSeeder extends Seeder
         $roles = [
             'guest' => ['Guest', RoleScope::Public->value, 100],
             'platform_super_admin' => ['Platform Super Administrator', RoleScope::Platform->value, 0],
+            'platform_verification_admin' => ['Verification & Moderation Administrator', RoleScope::Platform->value, 10],
+            'platform_support_admin' => ['Support & Disputes Administrator', RoleScope::Platform->value, 20],
             'business_owner' => ['Business Owner', RoleScope::Business->value, 10],
             'property_manager' => ['Property Manager', RoleScope::Business->value, 20],
             'reception_officer' => ['Reception / Reservations Officer', RoleScope::Business->value, 30],
@@ -250,6 +264,25 @@ class AccessControlSeeder extends Seeder
         $governance = ['governance.view_audit', 'governance.manage_retention', 'governance.manage_privacy'];
         $ai = ['ai.view', 'ai.accept', 'ai.reject', 'ai.configure', 'ai.chat', 'ai.view_predictions', 'ai.manage_knowledge', 'ai.automate'];
 
+        $verificationAdministration = [
+            'platform.dashboard.view',
+            'platform.business.view', 'platform.business.manage', 'platform.business.verify',
+            'platform.user.view',
+            'platform.property.view', 'platform.property.verify',
+            'platform.review.view', 'platform.review.moderate',
+            'platform.dispute.view',
+            'platform.analytics.view', 'platform.audit.view', 'platform.health.view',
+        ];
+        $supportAdministration = [
+            'platform.dashboard.view',
+            'platform.business.view',
+            'platform.user.view', 'platform.user.lock',
+            'platform.property.view', 'platform.booking.view',
+            'platform.review.view',
+            'platform.dispute.view', 'platform.dispute.manage',
+            'platform.analytics.view', 'platform.audit.view', 'platform.health.view',
+        ];
+
         $map = [
             'guest' => ['marketplace.search', 'marketplace.favourite', 'profile.update', 'review.create', 'booking.create', 'booking.view_history', 'payment.record'],
             'business_owner' => array_values(array_unique(array_merge(
@@ -274,6 +307,8 @@ class AccessControlSeeder extends Seeder
             'inspector' => ['property.view', 'property.view_health', 'property.manage_documents', 'task.view_assigned', 'task.complete', 'task.verify', 'inspection.perform', 'inspection.approve', 'maintenance.create', 'document.upload', 'document.download'],
             'customer_support' => ['business.view', 'property.view', 'property.preview_listing', 'booking.create', 'booking.modify', 'booking.cancel', 'booking.view_history', 'booking.manage_guests', 'booking.communicate', 'booking.manage_disputes', 'document.upload'],
             'platform_super_admin' => array_keys($permissionIds),
+            'platform_verification_admin' => $verificationAdministration,
+            'platform_support_admin' => $supportAdministration,
         ];
 
         foreach ($map as $roleKey => $permissionKeys) {
@@ -303,6 +338,8 @@ class AccessControlSeeder extends Seeder
             'inspector' => ['properties' => 'limited', 'calendar' => 'limited', 'operations' => 'full', 'settings' => 'limited'],
             'customer_support' => ['dashboard' => 'limited', 'properties' => 'limited', 'bookings' => 'full', 'calendar' => 'limited', 'settings' => 'limited'],
             'platform_super_admin' => array_fill_keys(array_keys($workspaceIds), 'full'),
+            'platform_verification_admin' => ['platform_admin' => 'full'],
+            'platform_support_admin' => ['platform_admin' => 'full'],
         ];
 
         foreach ($map as $roleKey => $workspaces) {

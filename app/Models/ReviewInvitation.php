@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['business_id', 'property_id', 'booking_id', 'guest_user_id', 'token_hash', 'sent_at', 'expires_at', 'used_at', 'status'])]
+#[Fillable(['business_id', 'property_id', 'booking_id', 'guest_user_id', 'token_hash', 'sent_at', 'expires_at', 'used_at', 'status', 'created_by', 'updated_by'])]
 class ReviewInvitation extends Model
 {
     use HasUuids;
@@ -20,5 +20,15 @@ class ReviewInvitation extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'guest_user_id');
     }
 }

@@ -38,9 +38,9 @@ final class SavePropertySetupService
     public function document(Property $property, User $actor, UploadedFile $file, array $data): void
     {
         DB::transaction(function () use ($property, $actor, $file, $data): void {
-            $path = $file->store("businesses/{$property->business_id}/properties/{$property->id}/documents", 'public');
+            $path = $file->store("businesses/{$property->business_id}/properties/{$property->id}/documents", 'local');
             $document = Document::query()->create(['business_id' => $property->business_id, 'owner_type' => Property::class, 'owner_id' => $property->id, 'title' => $data['title'], 'category' => $data['category'], 'confidentiality' => 'internal', 'verification_status' => 'unverified', 'current_version_number' => 1, 'status' => 'active']);
-            DocumentVersion::query()->create(['business_id' => $property->business_id, 'document_id' => $document->id, 'version_number' => 1, 'storage_disk' => 'public', 'storage_path' => $path, 'original_name' => $file->getClientOriginalName(), 'mime_type' => $file->getMimeType(), 'size_bytes' => $file->getSize(), 'checksum' => hash_file('sha256', $file->getRealPath()), 'uploaded_by' => $actor->id, 'status' => 'active']);
+            DocumentVersion::query()->create(['business_id' => $property->business_id, 'document_id' => $document->id, 'version_number' => 1, 'storage_disk' => 'local', 'storage_path' => $path, 'original_name' => $file->getClientOriginalName(), 'mime_type' => $file->getMimeType(), 'size_bytes' => $file->getSize(), 'checksum' => hash_file('sha256', $file->getRealPath()), 'uploaded_by' => $actor->id, 'status' => 'active']);
         });
     }
 

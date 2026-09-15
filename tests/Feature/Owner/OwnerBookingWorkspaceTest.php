@@ -61,6 +61,7 @@ class OwnerBookingWorkspaceTest extends TestCase
         [$owner, $business] = $this->ownerWithBusiness('Nexa Stays');
         $property = Property::factory()->for($business)->create(['name' => 'Admiralty Suite']);
         $this->booking($business, $property, 'VS-SEPTEMBER', 'confirmed', 'marketplace', '2026-09-09', '2026-09-12');
+        $this->booking($business, $property, 'VS-COMPLETED', 'completed', 'marketplace', '2026-09-02', '2026-09-05');
         $this->booking($business, $property, 'VS-CANCELLED', 'cancelled', 'marketplace', '2026-09-15', '2026-09-17');
         PropertyAvailabilityBlock::query()->create([
             'business_id' => $business->id,
@@ -79,9 +80,13 @@ class OwnerBookingWorkspaceTest extends TestCase
             ->assertOk()
             ->assertSee('September 2026')
             ->assertSee('VS-SEPTEMBER')
+            ->assertSee('VS-COMPLETED')
+            ->assertSee('data-booking-range-start="2026-09-02"', false)
+            ->assertSee('data-booking-range-end="2026-09-05"', false)
             ->assertSee('Planned maintenance')
             ->assertDontSee('VS-CANCELLED')
-            ->assertSee('Connection pending');
+            ->assertSee('No external calendars')
+            ->assertSee('iCal is optional');
     }
 
     public function test_owner_can_create_and_release_a_manual_availability_block(): void
@@ -102,6 +107,12 @@ class OwnerBookingWorkspaceTest extends TestCase
         $this->assertSame($business->id, $block->business_id);
         $this->assertSame('active', $block->block_state);
         $this->assertSame($owner->id, $block->validated_by);
+
+        $this->actingAs($owner)->get(route('owner.calendar', ['month' => '2026-09', 'property' => $property->id]))
+            ->assertOk()
+            ->assertSee('data-range-start="2026-09-20"', false)
+            ->assertSee('data-range-end="2026-09-22"', false)
+            ->assertSee('available again 22 Sep');
 
         $this->actingAs($owner)->delete(route('owner.calendar.blocks.destroy', $block), [
             'month' => '2026-09',

@@ -30,20 +30,30 @@ class AdminPropertyController extends Controller
 
     public function show(Property $property): View
     {
-        return view('admin.properties.show', ['property' => $property->load(['business', 'marketplaceListing', 'media'])]);
+        return view('admin.properties.show', ['property' => $property->load(['business', 'marketplaceListing', 'media', 'amenities', 'assets', 'documents.versions', 'channelConnections'])]);
     }
 
     public function publish(Request $request, Property $property, PropertyPublishingService $publisher): RedirectResponse
     {
-        $publisher->publish($property, $request->user());
+        $data = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']]);
+        $publisher->publish($property, $request->user(), $data['reason']);
 
         return redirect()->route('admin.properties.show', $property)->with('status', 'Property published to the marketplace.');
     }
 
     public function unpublish(Request $request, Property $property, PropertyPublishingService $publisher): RedirectResponse
     {
-        $publisher->unpublish($property, $request->user());
+        $data = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']]);
+        $publisher->unpublish($property, $request->user(), $data['reason']);
 
         return redirect()->route('admin.properties.show', $property)->with('status', 'Property removed from the marketplace.');
+    }
+
+    public function reject(Request $request, Property $property, PropertyPublishingService $publisher): RedirectResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']]);
+        $publisher->reject($property, $request->user(), $data['reason']);
+
+        return redirect()->route('admin.properties.show', $property)->with('status', 'Property rejected and returned to the owner for corrections.');
     }
 }

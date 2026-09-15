@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\PlatformPermissionService;
 use App\Support\IntendedUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,15 +26,18 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, PlatformPermissionService $permissions): RedirectResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        $fallback = $request->user()->hasActiveGlobalRole('platform_super_admin')
-            ? route('admin.properties.index', absolute: false)
-            : route('owner.entry', absolute: false);
+        $user = $request->user();
+        $fallback = match (true) {
+            $permissions->isPlatformAdministrator($user) => route('admin.dashboard', absolute: false),
+            $user->hasActiveGlobalRole('guest') => route('guest.bookings.index', absolute: false),
+            default => route('owner.entry', absolute: false),
+        };
 
         return redirect()->intended($fallback);
     }

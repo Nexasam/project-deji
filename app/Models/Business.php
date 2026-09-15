@@ -92,6 +92,11 @@ class Business extends Model
         return $this->hasMany(OperationalTask::class);
     }
 
+    public function guestServiceRequests(): HasMany
+    {
+        return $this->hasMany(GuestServiceRequest::class);
+    }
+
     public function workflowTemplates(): HasMany
     {
         return $this->hasMany(WorkflowTemplate::class);

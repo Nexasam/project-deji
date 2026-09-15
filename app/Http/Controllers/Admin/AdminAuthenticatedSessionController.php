@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\PlatformPermissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -16,11 +17,11 @@ class AdminAuthenticatedSessionController extends Controller
         return view('admin.login');
     }
 
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, PlatformPermissionService $permissions): RedirectResponse
     {
         $request->authenticate();
 
-        if (! $request->user()->hasActiveGlobalRole('platform_super_admin')) {
+        if (! $permissions->isPlatformAdministrator($request->user())) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -32,6 +33,6 @@ class AdminAuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.properties.index', absolute: false));
+        return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 }

@@ -9,9 +9,10 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 final class OwnerBookingWorkspace
 {
     /** @param array<string, mixed> $filters */
-    public function paginate(Business $business, array $filters): LengthAwarePaginator
+    public function paginate(Business $business, array $filters, ?array $propertyIds = null): LengthAwarePaginator
     {
         return $business->bookings()->with(['guest', 'property'])
+            ->when($propertyIds !== null, fn ($query) => $query->whereIn('property_id', $propertyIds))
             ->when($filters['property'] ?? null, fn ($query, $id) => $query->where('property_id', $id))
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['channel'] ?? null, fn ($query, $source) => $query->where('source', $source))
@@ -29,9 +30,9 @@ final class OwnerBookingWorkspace
     }
 
     /** @return array<string, int> */
-    public function stats(Business $business): array
+    public function stats(Business $business, ?array $propertyIds = null): array
     {
-        $query = $business->bookings();
+        $query = $business->bookings()->when($propertyIds !== null, fn ($query) => $query->whereIn('property_id', $propertyIds));
 
         return [
             'total' => (clone $query)->count(),
@@ -45,6 +46,6 @@ final class OwnerBookingWorkspace
 
     public function find(Business $business, string $booking): Booking
     {
-        return $business->bookings()->with(['guest', 'property', 'payments', 'cancellations', 'dateChanges' => fn ($query) => $query->latest('occurred_at')])->findOrFail($booking);
+        return $business->bookings()->with(['guest', 'property', 'payments', 'cancellations', 'checkIn', 'checkOut', 'serviceRequests.task', 'reviews.guest', 'reviews.response', 'statusHistory' => fn ($query) => $query->latest('occurred_at'), 'operationalTasks' => fn ($query) => $query->latest(), 'dateChanges' => fn ($query) => $query->latest('occurred_at')])->findOrFail($booking);
     }
 }

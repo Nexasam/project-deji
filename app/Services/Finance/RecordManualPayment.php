@@ -6,15 +6,18 @@ use App\Models\Booking;
 use App\Models\FinancialTransaction;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\Notifications\ProductNotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class RecordManualPayment
 {
+    public function __construct(private readonly ProductNotificationService $notifications) {}
+
     public function handle(Booking $booking, User $owner, array $data): Payment
     {
         return DB::transaction(function () use ($booking, $owner, $data): Payment {
-            $booking = Booking::query()->lockForUpdate()->findOrFail($booking->id);
+            $booking = Booking::query()->with(['guest', 'business', 'property'])->lockForUpdate()->findOrFail($booking->id);
             if (Payment::query()->where('business_id', $booking->business_id)->where('reference', $data['reference'])->exists()) {
                 throw ValidationException::withMessages(['reference' => 'This payment reference has already been recorded.']);
             }
@@ -47,6 +50,14 @@ final class RecordManualPayment
             $paid = (float) $booking->payments()->where('status', 'completed')->where('purpose', '!=', 'refund')->sum('amount')
                 - (float) $booking->payments()->where('status', 'completed')->where('purpose', 'refund')->sum('amount');
             $booking->update(['payment_status' => $paid >= (float) $booking->total_amount ? 'paid' : 'partially_paid']);
+            $this->notifications->user(
+                $booking->guest,
+                $booking->business,
+                'payment_recorded',
+                'Payment recorded',
+                $booking->currency.' '.number_format((float) $payment->amount, 2)." was recorded for {$booking->reference}.",
+                ['url' => route('guest.bookings.show', $booking), 'booking_id' => $booking->id, 'payment_id' => $payment->id],
+            );
 
             return $payment;
         });

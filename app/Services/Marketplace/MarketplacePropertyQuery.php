@@ -10,7 +10,17 @@ final class MarketplacePropertyQuery
 {
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $query = $this->eligible()->with(['marketplaceListing', 'media', 'amenities']);
+        $query = $this->eligible()->with([
+            'marketplaceListing', 'media', 'amenities', 'houseRules',
+            'promotions' => fn ($query) => $query->where('status', 'active')->where('publication_status', 'published')
+                ->where(fn ($query) => $query->whereNull('effective_at')->orWhere('effective_at', '<=', now()))
+                ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', now())),
+            'bookings' => fn ($query) => $query->whereIn('status', ['reserved', 'awaiting_payment', 'confirmed', 'checked_in'])->where('payment_status', '!=', 'failed'),
+            'availabilityBlocks' => fn ($query) => $query->where('status', 'active')->where('block_state', 'active')->where('blocks_booking', true),
+        ])->withCount(['reviews as published_reviews_count' => fn ($query) => $query
+            ->where('status', 'active')->where('moderation_status', 'approved')->whereNotNull('published_at')])
+            ->withAvg(['reviews as published_reviews_avg_rating' => fn ($query) => $query
+                ->where('status', 'active')->where('moderation_status', 'approved')->whereNotNull('published_at')], 'rating');
         $category = $filters['category'] ?? null;
         $query->when($filters['q'] ?? null, function ($query, string $term): void {
             $query->where(function ($query) use ($term): void {
@@ -44,23 +54,36 @@ final class MarketplacePropertyQuery
                     ->whereDate('starts_on', '<', $departure)->whereDate('ends_on', '>', $arrival));
         }
 
-        return $query->orderBy('name')->paginate(100)->withQueryString();
+        return $query->orderBy('name')->paginate(100)->withQueryString()->fragment('marketplace');
     }
 
     public function eligibleBySlug(string $slug): Property
     {
-        return $this->eligible()->with(['marketplaceListing', 'media', 'amenities'])
+        return $this->eligible()->with([
+            'marketplaceListing', 'media', 'amenities', 'houseRules',
+            'promotions' => fn ($query) => $query->where('status', 'active')->where('publication_status', 'published')
+                ->where(fn ($query) => $query->whereNull('effective_at')->orWhere('effective_at', '<=', now()))
+                ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', now())),
+            'bookings' => fn ($query) => $query->whereIn('status', ['reserved', 'awaiting_payment', 'confirmed', 'checked_in'])->where('payment_status', '!=', 'failed'),
+            'availabilityBlocks' => fn ($query) => $query->where('status', 'active')->where('block_state', 'active')->where('blocks_booking', true),
+            'reviews' => fn ($query) => $query->with(['guest', 'response'])
+                ->where('status', 'active')->where('moderation_status', 'approved')->whereNotNull('published_at')
+                ->latest('published_at'),
+        ])
             ->whereHas('marketplaceListing', fn ($query) => $query->where('slug', $slug))->firstOrFail();
     }
 
     private function eligible()
     {
         return Property::query()->where([
-            'property_type' => 'serviced_apartment', 'booking_mode' => 'entire',
+            'booking_mode' => 'entire',
             'verification_status' => 'verified', 'publication_status' => 'published',
-            'readiness_status' => 'ready', 'operational_status' => 'available', 'status' => 'active',
-        ])->whereHas('marketplaceListing', fn ($query) => $query->where([
-            'publication_status' => 'published', 'is_publication_eligible' => true, 'status' => 'active',
-        ]));
+            'readiness_status' => 'ready', 'status' => 'active',
+        ])->whereIn('operational_status', ['available', 'reserved', 'occupied', 'cleaning', 'inspection'])
+            ->whereIn('property_type', ['serviced_apartment', 'flat', 'duplex', 'apartment'])
+            ->whereHas('business', fn ($query) => $query->where('status', 'active'))
+            ->whereHas('marketplaceListing', fn ($query) => $query->where([
+                'publication_status' => 'published', 'is_publication_eligible' => true, 'status' => 'active',
+            ]));
     }
 }

@@ -1,6 +1,6 @@
 # Verified Shortlet MVP Release Candidate
 
-Date: 10 September 2026  
+Date: 10 September 2026
 Scope: Monday–Friday owner workspace plus serviced-apartment marketplace MVP
 
 ## Release status
@@ -73,7 +73,8 @@ Uploads are stored on private application storage where required; receipt and wi
 ## Known limitations
 
 - Paystack is represented by the real gateway boundary, but success is simulated until production credentials and webhooks are configured.
-- Airbnb, Booking.com, WhatsApp, iCal, Google Calendar, and Outlook synchronization remain connection-pending.
+- Airbnb and Booking.com support manual iCal import/export with scheduled polling; provider polling delays remain outside the application's control.
+- WhatsApp, Google Calendar, and Outlook synchronization remain connection-pending.
 - Multiple independently bookable units and “Another flat in a property” remain deferred.
 - AI concierge and pricing copy are presentation-only; no production AI provider is connected.
 - Disabled sidebar modules (advanced reports, documents, staffing/settings) are outside this MVP.

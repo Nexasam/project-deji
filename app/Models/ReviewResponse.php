@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['business_id', 'review_id', 'responded_by', 'content', 'moderation_status', 'submitted_at', 'published_at', 'status'])]
+#[Fillable(['business_id', 'review_id', 'responded_by', 'content', 'moderation_status', 'submitted_at', 'published_at', 'status', 'created_by', 'updated_by'])]
 class ReviewResponse extends Model
 {
     use HasUuids;

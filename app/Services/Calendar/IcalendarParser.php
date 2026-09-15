@@ -7,7 +7,7 @@ use InvalidArgumentException;
 
 final class IcalendarParser
 {
-    /** @return array<int, array{uid:string,starts_on:string,ends_on:string,cancelled:bool}> */
+    /** @return array<int, array{uid:?string,starts_on:?string,ends_on:?string,cancelled:bool,valid:bool,errors:list<string>}> */
     public function parse(string $body): array
     {
         if (! str_contains($body, 'BEGIN:VCALENDAR')) throw new InvalidArgumentException('The response is not an iCalendar feed.');
@@ -21,10 +21,28 @@ final class IcalendarParser
                 [$key, $value] = explode(':', $line, 2);
                 $values[strtoupper(explode(';', $key, 2)[0])] = trim($value);
             }
-            if (! isset($values['UID'], $values['DTSTART'], $values['DTEND'])) continue;
-            $start = $this->date($values['DTSTART']); $end = $this->date($values['DTEND']);
-            if ($end->lessThanOrEqualTo($start)) continue;
-            $events[] = ['uid' => $values['UID'], 'starts_on' => $start->toDateString(), 'ends_on' => $end->toDateString(), 'cancelled' => strtoupper($values['STATUS'] ?? '') === 'CANCELLED'];
+            $errors = [];
+            foreach (['UID', 'DTSTART', 'DTEND'] as $required) {
+                if (! isset($values[$required]) || $values[$required] === '') $errors[] = "Missing {$required}.";
+            }
+            $start = $end = null;
+            if ($errors === []) {
+                try {
+                    $start = $this->date($values['DTSTART']);
+                    $end = $this->date($values['DTEND']);
+                    if ($end->lessThanOrEqualTo($start)) $errors[] = 'DTEND must be after DTSTART.';
+                } catch (InvalidArgumentException $error) {
+                    $errors[] = $error->getMessage();
+                }
+            }
+            $events[] = [
+                'uid' => $values['UID'] ?? null,
+                'starts_on' => $start?->toDateString(),
+                'ends_on' => $end?->toDateString(),
+                'cancelled' => strtoupper($values['STATUS'] ?? '') === 'CANCELLED',
+                'valid' => $errors === [],
+                'errors' => $errors,
+            ];
         }
         return $events;
     }

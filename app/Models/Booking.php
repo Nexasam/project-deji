@@ -165,6 +165,11 @@ class Booking extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function reviewInvitations(): HasMany
+    {
+        return $this->hasMany(ReviewInvitation::class);
+    }
+
     public function bookingGuests(): HasMany
     {
         return $this->hasMany(BookingGuest::class);

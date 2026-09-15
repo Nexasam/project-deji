@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['business_id', 'operational_task_id', 'attachment_type', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'checksum', 'caption', 'metadata', 'status'])]
+#[Fillable(['business_id', 'operational_task_id', 'attachment_type', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'checksum', 'caption', 'metadata', 'status', 'created_by', 'updated_by'])]
 class OperationalTaskAttachment extends Model
 {
     use HasUuids, SoftDeletes;

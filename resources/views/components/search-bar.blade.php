@@ -4,7 +4,7 @@
         <form
             id="search-form"
             class="search-bar"
-            action="{{ route('home') }}"
+            action="{{ route('home').'#marketplace' }}"
             method="GET"
             x-data="searchBar(@js($filters))"
         >

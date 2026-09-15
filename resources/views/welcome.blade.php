@@ -39,7 +39,7 @@
     {{-- Category Pills --}}
     <x-category-pills :filters="$filters" />
 
-    <form action="{{ route('home') }}" method="GET" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 grid grid-cols-2 md:grid-cols-6 gap-3" aria-label="Search serviced apartments">
+    <form action="{{ route('home').'#marketplace' }}" method="GET" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 grid grid-cols-2 md:grid-cols-6 gap-3" aria-label="Search serviced apartments">
         @foreach(['check_in', 'check_out', 'guests'] as $preservedFilter) @if(filled($filters[$preservedFilter] ?? null))<input type="hidden" name="{{ $preservedFilter }}" value="{{ $filters[$preservedFilter] }}">@endif @endforeach
         <input class="col-span-2 rounded-xl border-gray-300" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Search apartment or location">
         <select class="rounded-xl border-gray-300" name="category">
@@ -71,16 +71,34 @@
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                 @foreach($properties as $property)
+                    @php
+                        $coverMedia = $property->media->firstWhere('is_primary', true) ?? $property->media->firstWhere('media_type', \App\Enums\PropertyMediaType::Image);
+                        $coverImage = $coverMedia?->external_url ?: ($coverMedia?->storage_path ? '/storage/'.ltrim($coverMedia->storage_path, '/') : '/image.png');
+                        $blockedIntervals = $property->bookings->map(fn($booking) => ['start' => $booking->arrival_date->toDateString(), 'end' => $booking->departure_date->toDateString()])
+                            ->concat($property->availabilityBlocks->map(fn($block) => ['start' => $block->starts_on->toDateString(), 'end' => $block->ends_on->toDateString()]))->values();
+                    @endphp
+                    <div class="relative" x-data="availabilityCalendar(@js($blockedIntervals), @js($property->marketplaceListing->public_title), @js(route('marketplace.show', $property->marketplaceListing->slug)))">
                     <a href="{{ route('marketplace.show', $property->marketplaceListing->slug) }}" class="block">
                         <x-property-card
-                            :image="optional($property->media->firstWhere('is_primary', true) ?? $property->media->first())->external_url"
+                            :image="$coverImage"
                             :name="$property->marketplaceListing->public_title"
                             :location="data_get($property->address, 'city').', '.data_get($property->address, 'state')"
                             :guests="$property->capacity"
                             :price="(float) $property->default_nightly_price"
-                            rating="New"
+                            :rating="$property->published_reviews_count ? number_format((float) $property->published_reviews_avg_rating, 1) : 'New'"
                         />
                     </a>
+                    <button type="button" @click="open=true" class="absolute right-2 top-12 z-10 flex size-9 items-center justify-center rounded-full bg-white text-orange-600 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:bg-orange-50" aria-label="View availability calendar for {{ $property->marketplaceListing->public_title }}" title="View availability">
+                        <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" stroke-width="2"/><path d="M16 3v4M8 3v4M3 10h18" stroke-width="2" stroke-linecap="round"/></svg>
+                    </button>
+                    <div x-show="open" x-cloak @keydown.escape.window="open=false" class="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" :aria-label="'Availability for '+title">
+                        <button type="button" @click="open=false" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" aria-label="Close calendar"></button>
+                        <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+                            <div class="sticky top-0 z-10 flex items-start justify-between border-b border-slate-100 bg-white px-5 py-4"><div><p class="text-xs font-bold uppercase tracking-wider text-orange-600">Availability calendar</p><h3 class="mt-1 text-xl font-extrabold" x-text="title"></h3></div><button type="button" @click="open=false" class="flex size-9 items-center justify-center rounded-full bg-slate-100 text-xl">×</button></div>
+                            <div class="p-5"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div class="flex flex-wrap gap-4 text-xs font-semibold"><span class="flex items-center gap-2"><i class="size-3 rounded bg-white ring-1 ring-slate-200"></i>Available</span><span class="flex items-center gap-2"><i class="size-3 rounded bg-red-100 ring-1 ring-red-200"></i>Booked / unavailable</span></div><label class="flex items-center gap-2 text-xs font-bold text-slate-600">Jump to <input type="month" :min="minimumMonth" :max="maximumMonth" x-model="jumpMonth" @change="jumpToMonth" class="rounded-lg border-slate-200 py-1.5 text-xs"></label></div><div class="mb-5 flex items-center justify-between rounded-xl bg-slate-50 p-2"><button type="button" @click="previous" :disabled="offset===0" class="rounded-lg px-3 py-2 text-sm font-bold text-slate-700 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30">← Previous</button><p class="text-center text-xs font-semibold text-slate-500">Browse up to 18 months ahead</p><button type="button" @click="next" :disabled="offset>=17" class="rounded-lg px-3 py-2 text-sm font-bold text-slate-700 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30">Next →</button></div><div class="grid gap-6 md:grid-cols-2"><template x-for="month in months" :key="month.key"><section class="rounded-xl border border-slate-100 p-3"><h4 class="mb-3 text-center text-sm font-extrabold" x-text="month.label"></h4><div class="grid grid-cols-7 gap-1 text-center"><template x-for="day in ['S','M','T','W','T','F','S']"><span class="py-1 text-[10px] font-bold text-slate-400" x-text="day"></span></template><template x-for="blank in month.offset"><span></span></template><template x-for="day in month.days" :key="day.date"><span class="flex aspect-square items-center justify-center rounded-lg text-xs" :class="day.past?'text-slate-300':(day.blocked?'bg-red-100 font-bold text-red-700 line-through':'bg-emerald-50 text-emerald-800')" x-text="day.number" :title="day.blocked?'Booked or unavailable':'Available'"></span></template></div></section></template></div><a :href="detailsUrl" class="mt-6 flex w-full items-center justify-center rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white hover:bg-orange-700">View property and choose dates</a></div>
+                        </div>
+                    </div>
+                    </div>
                 @endforeach
             </div>
             <div class="mt-8">{{ $properties->links() }}</div>
@@ -297,6 +315,39 @@
     {{-- Footer --}}
     <x-footer />
 @endsection
+
+@push('scripts')
+<script>
+function availabilityCalendar(intervals, title, detailsUrl) {
+    return {
+        open: false, title, detailsUrl, offset: 0, jumpMonth: '', months: [], minimumMonth: '', maximumMonth: '',
+        init() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            this.minimumMonth = this.monthValue(today);
+            this.maximumMonth = this.monthValue(new Date(today.getFullYear(), today.getMonth()+17, 1));
+            this.jumpMonth = this.minimumMonth;
+            this.buildMonths();
+        },
+        monthValue(date) { return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0'); },
+        buildMonths() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            this.months = [0,1].map(add => {
+                const first = new Date(today.getFullYear(), today.getMonth()+this.offset+add, 1);
+                const count = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+                return {key:first.toISOString(),label:first.toLocaleDateString('en-GB',{month:'long',year:'numeric'}),offset:first.getDay(),days:Array.from({length:count},(_,i)=>{
+                    const date = new Date(first.getFullYear(),first.getMonth(),i+1); const iso = [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+                    return {number:i+1,date:iso,past:date<today,blocked:intervals.some(range=>iso>=range.start&&iso<range.end)};
+                })};
+            });
+            this.jumpMonth = this.monthValue(new Date(today.getFullYear(),today.getMonth()+this.offset,1));
+        },
+        previous() { this.offset=Math.max(0,this.offset-1); this.buildMonths(); },
+        next() { this.offset=Math.min(16,this.offset+1); this.buildMonths(); },
+        jumpToMonth() { const [year,month]=this.jumpMonth.split('-').map(Number); const today=new Date(); this.offset=Math.max(0,Math.min(16,(year-today.getFullYear())*12+(month-1-today.getMonth()))); this.buildMonths(); }
+    }
+}
+</script>
+@endpush
 
 @push('scripts')
 <script>

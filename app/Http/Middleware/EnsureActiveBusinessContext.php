@@ -15,7 +15,7 @@ class EnsureActiveBusinessContext
         if (! $record || ! $record->business || ! $record->membership || ! $record->activeRoleAssignment) {
             return redirect()->route('owner.onboarding.business.create');
         }
-        if ($record->membership->status->value !== 'active' || $record->business->status->value !== 'active') {
+        if ($record->membership->status->value !== 'active' || $record->business->status->value === 'inactive') {
             abort(403);
         }
 
@@ -23,6 +23,9 @@ class EnsureActiveBusinessContext
         app()->instance(ActiveBusinessContext::class, $context);
         $request->attributes->set('businessContext', $context);
         view()->share('activeBusiness', $context->business);
+        view()->share('activeBusinessContext', $context);
+        view()->share('availableBusinessMemberships', $request->user()->businessMemberships()
+            ->with(['business', 'roles.role'])->where('status', 'active')->orderBy('created_at')->get());
 
         return $next($request);
     }

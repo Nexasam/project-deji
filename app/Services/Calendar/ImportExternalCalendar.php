@@ -2,18 +2,20 @@
 
 namespace App\Services\Calendar;
 
+use App\Models\Booking;
 use App\Models\ExternalCalendarConnection;
 use App\Models\ExternalCalendarSyncItem;
 use App\Models\ExternalCalendarSyncRun;
 use App\Models\PropertyAvailabilityBlock;
 use App\Models\PropertyChannelConnection;
 use App\Models\User;
+use App\Services\Notifications\ProductNotificationService;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 final class ImportExternalCalendar
 {
-    public function __construct(private readonly FetchExternalCalendar $fetcher, private readonly IcalendarParser $parser) {}
+    public function __construct(private readonly FetchExternalCalendar $fetcher, private readonly IcalendarParser $parser, private readonly ProductNotificationService $notifications) {}
 
     public function sync(ExternalCalendarConnection $connection, string $trigger = 'scheduled', ?User $actor = null): ExternalCalendarSyncRun
     {
@@ -28,39 +30,64 @@ final class ImportExternalCalendar
         } catch (Throwable $error) {
             $message = mb_substr($error->getMessage(), 0, 2000);
             $run->update(['sync_status' => 'failed', 'completed_at' => now(), 'failed_count' => 1, 'failure_reason' => $message]);
-            $connection->update(['sync_status' => 'failed', 'last_synced_at' => now(), 'last_error' => $message, 'consecutive_failure_count' => $connection->consecutive_failure_count + 1]);
+            $failureCount = $connection->consecutive_failure_count + 1;
+            $connection->update([
+                'sync_status' => $failureCount >= 3 ? 'failed' : $connection->sync_status,
+                'last_synced_at' => now(), 'last_error' => $message, 'consecutive_failure_count' => $failureCount,
+            ]);
+            if ($failureCount === 3) {
+                $connection->loadMissing(['business', 'property']);
+                $data = ['url' => route('owner.properties.show', $connection->property).'#calendar-sync', 'property_id' => $connection->property_id, 'connection_id' => $connection->id];
+                $title = 'Calendar sync repeatedly failed';
+                $body = ucfirst($connection->provider)." calendar for {$connection->property->name} failed three times. {$message}";
+                $this->notifications->businessOwners($connection->business, 'calendar_sync_failed', $title, $body, $data);
+                $this->notifications->platformAdmins($connection->business, 'calendar_sync_failed', $title, $body, $data);
+            }
             throw $error;
         }
 
         return DB::transaction(function () use ($connection, $run, $events, $actor) {
             $connection = ExternalCalendarConnection::query()->lockForUpdate()->findOrFail($connection->id);
-            $seen = []; $counts = ['created' => 0, 'updated' => 0, 'skipped' => 0];
+            $seen = [];
+            $counts = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'conflict' => 0, 'failed' => 0];
             foreach ($events as $event) {
+                if (! $event['valid']) {
+                    $counts['failed']++;
+                    $this->recordItem($connection, $run, $event, $actor, 'failed', 'invalid', 'failed', null);
+
+                    continue;
+                }
                 $seen[] = $event['uid'];
                 $block = PropertyAvailabilityBlock::query()->where('external_calendar_connection_id', $connection->id)->where('source_reference', $event['uid'])->first();
                 $operation = 'skipped';
                 if ($event['cancelled']) {
                     if ($block && $block->block_state === 'active') {
                         $block->update(['block_state' => 'released', 'released_at' => now(), 'status' => 'released', 'updated_by' => $actor?->id]);
-                        $operation = 'released'; $counts['updated']++;
-                    } else $counts['skipped']++;
+                        $operation = 'released';
+                        $counts['updated']++;
+                    } else {
+                        $counts['skipped']++;
+                    }
+                } elseif ($this->conflictsWithNativeBooking($connection, $event)) {
+                    $counts['conflict']++;
+                    $this->recordItem($connection, $run, $event, $actor, 'conflict', 'validated', 'conflict', $block);
+
+                    continue;
                 } elseif (! $block) {
                     $block = PropertyAvailabilityBlock::query()->create($this->blockData($connection, $event, $actor));
-                    $operation = 'created'; $counts['created']++;
+                    $operation = 'created';
+                    $counts['created']++;
                 } else {
                     $changed = $block->starts_on->toDateString() !== $event['starts_on'] || $block->ends_on->toDateString() !== $event['ends_on'] || $block->block_state !== 'active';
                     if ($changed) {
                         $block->update($this->blockData($connection, $event, $actor) + ['released_at' => null]);
-                        $operation = 'updated'; $counts['updated']++;
-                    } else $counts['skipped']++;
+                        $operation = 'updated';
+                        $counts['updated']++;
+                    } else {
+                        $counts['skipped']++;
+                    }
                 }
-                ExternalCalendarSyncItem::query()->create([
-                    'business_id' => $connection->business_id, 'sync_run_id' => $run->id, 'external_event_id' => $event['uid'],
-                    'operation' => $operation, 'validation_status' => 'validated', 'result_status' => 'complete',
-                    'source_type' => 'property_availability_block', 'source_id' => $block?->id,
-                    'payload_hash' => hash('sha256', json_encode($event)), 'payload' => $event, 'processed_at' => now(),
-                    'status' => 'active', 'created_by' => $actor?->id, 'updated_by' => $actor?->id,
-                ]);
+                $this->recordItem($connection, $run, $event, $actor, $operation, 'validated', 'complete', $block);
             }
             $missing = PropertyAvailabilityBlock::query()->where('external_calendar_connection_id', $connection->id)->where('block_state', 'active')
                 ->when($seen, fn ($query) => $query->whereNotIn('source_reference', $seen))->get();
@@ -71,11 +98,43 @@ final class ImportExternalCalendar
             $run->update([
                 'sync_status' => 'complete', 'completed_at' => now(), 'received_count' => count($events),
                 'created_count' => $counts['created'], 'updated_count' => $counts['updated'], 'skipped_count' => $counts['skipped'],
+                'conflict_count' => $counts['conflict'], 'failed_count' => $counts['failed'],
             ]);
             $connection->update(['sync_status' => 'connected', 'last_synced_at' => now(), 'last_imported_at' => now(), 'last_error' => null, 'consecutive_failure_count' => 0]);
             PropertyChannelConnection::query()->where('property_id', $connection->property_id)->where('provider', $connection->provider)->update(['connection_status' => 'connected', 'updated_by' => $actor?->id]);
+            if ($counts['conflict'] > 0) {
+                $connection->loadMissing(['business', 'property']);
+                $data = ['url' => route('owner.properties.show', $connection->property).'#calendar-sync', 'property_id' => $connection->property_id, 'connection_id' => $connection->id, 'conflict_count' => $counts['conflict']];
+                $title = 'External calendar conflict detected';
+                $body = "{$counts['conflict']} imported event(s) conflict with native bookings at {$connection->property->name}. No booking was silently cancelled.";
+                $this->notifications->businessOwners($connection->business, 'calendar_conflict', $title, $body, $data);
+                $this->notifications->platformAdmins($connection->business, 'calendar_conflict', $title, $body, $data);
+            }
+
             return $run->fresh();
         });
+    }
+
+    private function conflictsWithNativeBooking(ExternalCalendarConnection $connection, array $event): bool
+    {
+        return Booking::query()->where('business_id', $connection->business_id)->where('property_id', $connection->property_id)
+            ->whereIn('status', ['reserved', 'awaiting_payment', 'confirmed', 'checked_in'])
+            ->where('payment_status', '!=', 'failed')
+            ->whereDate('arrival_date', '<', $event['ends_on'])
+            ->whereDate('departure_date', '>', $event['starts_on'])->exists();
+    }
+
+    private function recordItem(ExternalCalendarConnection $connection, ExternalCalendarSyncRun $run, array $event, ?User $actor, string $operation, string $validationStatus, string $resultStatus, ?PropertyAvailabilityBlock $block): void
+    {
+        ExternalCalendarSyncItem::query()->create([
+            'business_id' => $connection->business_id, 'sync_run_id' => $run->id, 'external_event_id' => $event['uid'],
+            'operation' => $operation, 'validation_status' => $validationStatus, 'result_status' => $resultStatus,
+            'source_type' => $block ? 'property_availability_block' : null, 'source_id' => $block?->id,
+            'payload_hash' => hash('sha256', json_encode($event)), 'payload' => $event,
+            'validation_errors' => $event['errors'] ?: null,
+            'failure_reason' => $resultStatus === 'conflict' ? 'Dates conflict with an existing native booking.' : null,
+            'processed_at' => now(), 'status' => 'active', 'created_by' => $actor?->id, 'updated_by' => $actor?->id,
+        ]);
     }
 
     private function blockData(ExternalCalendarConnection $connection, array $event, ?User $actor): array

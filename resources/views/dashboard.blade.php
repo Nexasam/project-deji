@@ -54,6 +54,8 @@
                     @endforeach
                 </section>
 
+                <section class="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5"><div><p class="text-xs font-bold uppercase tracking-wider text-orange-600">Live workboard</p><h2 class="mt-1 text-xl font-extrabold">Today’s operations</h2></div><div class="flex gap-2"><a href="{{ route('notifications.index') }}" class="rounded-full bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-700">{{ $summary['today']['unread_alerts'] }} Unread alerts</a><a href="{{ route('owner.finance',['from'=>today()->toDateString(),'to'=>today()->toDateString()]) }}" class="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">{{ $summary['today']['payments_count'] }} Payments today</a></div></div><div class="grid divide-y divide-slate-100 lg:grid-cols-3 lg:divide-x lg:divide-y-0"><div class="p-5"><h3 class="text-sm font-extrabold">Arrivals · {{ $summary['today']['arrivals']->count() }}</h3><div class="mt-3 space-y-2">@forelse($summary['today']['arrivals'] as $booking)<a href="{{ route('owner.bookings.show',$booking) }}" class="block rounded-xl bg-slate-50 p-3 text-sm"><strong>{{ $booking->guest->name }}</strong><span class="mt-1 block text-xs text-slate-500">{{ $booking->property->name }} · {{ $booking->reference }}</span></a>@empty<p class="text-sm text-slate-400">No arrivals today.</p>@endforelse</div><h3 class="mt-5 text-sm font-extrabold">Departures · {{ $summary['today']['departures']->count() }}</h3><div class="mt-3 space-y-2">@forelse($summary['today']['departures'] as $booking)<a href="{{ route('owner.bookings.show',$booking) }}" class="block rounded-xl bg-slate-50 p-3 text-sm"><strong>{{ $booking->guest->name }}</strong><span class="mt-1 block text-xs text-slate-500">{{ $booking->property->name }} · {{ $booking->reference }}</span></a>@empty<p class="text-sm text-slate-400">No departures today.</p>@endforelse</div></div><div class="p-5 lg:col-span-2"><div class="flex items-center justify-between"><h3 class="text-sm font-extrabold">Cleaning, inspection & maintenance</h3><a href="{{ route('owner.operations') }}" class="text-xs font-bold text-orange-600">All operations →</a></div><div class="mt-3 grid gap-2 sm:grid-cols-2">@forelse($summary['today']['tasks'] as $task)<a href="{{ route('owner.operations',['q'=>$task->reference]) }}" class="rounded-xl border border-slate-100 p-3"><div class="flex justify-between gap-2"><strong class="text-sm">{{ $task->title }}</strong><span class="text-[10px] font-bold uppercase text-orange-600">{{ str($task->task_type->value)->replace('_',' ') }}</span></div><span class="mt-1 block text-xs text-slate-500">{{ $task->property->name }} · {{ $task->due_at->format('H:i') }}</span></a>@empty<p class="text-sm text-slate-400">No operational work is due today.</p>@endforelse</div><div class="mt-5 rounded-xl bg-emerald-50 p-4"><p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Payments today</p><p class="mt-1 text-xl font-extrabold text-emerald-900">{{ $business->currency==='NGN'?'₦':$business->currency.' ' }}{{ number_format($summary['today']['payments_total'],2) }}</p></div></div></div></section>
+
                 @if ($properties->isEmpty())
                     <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
                         <div class="grid items-center gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1fr_360px] lg:px-14 lg:py-16">
@@ -103,24 +105,30 @@
 
                         <div data-testid="dashboard-property-grid" class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             @foreach ($properties as $property)
-                                <article data-testid="dashboard-property-card" class="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-sm font-extrabold text-orange-600">{{ str($property->name)->substr(0, 2)->upper() }}</div>
-                                        <div class="flex flex-wrap justify-end gap-1.5">
-                                            <span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700">{{ str($property->publication_status->value)->title() }}</span>
-                                            <span class="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">{{ str($property->verification_status->value)->title() }}</span>
+                                @php
+                                    $coverMedia = $property->media->firstWhere('is_primary', true) ?? $property->media->first();
+                                    $coverImage = $coverMedia?->external_url ?: ($coverMedia?->storage_path ? '/storage/'.ltrim($coverMedia->storage_path, '/') : '/image.png');
+                                @endphp
+                                <article data-testid="dashboard-property-card" class="flex min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                                    <div class="relative h-32 overflow-hidden bg-slate-100">
+                                        <img src="{{ $coverImage }}" alt="{{ $coverMedia?->alt_text ?: $property->name }}" loading="lazy" class="h-full w-full object-cover transition duration-300 hover:scale-105" onerror="this.onerror=null;this.src='/image.png'">
+                                        <div class="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+                                            <span class="rounded-md bg-slate-900/80 px-2 py-1 text-[9px] font-bold text-white backdrop-blur-sm">{{ str($property->publication_status->value)->title() }}</span>
+                                            <span class="rounded-md bg-white/90 px-2 py-1 text-[9px] font-bold text-amber-700 backdrop-blur-sm">{{ str($property->verification_status->value)->title() }}</span>
                                         </div>
                                     </div>
-                                    <h3 class="mt-3 truncate font-extrabold text-slate-950" title="{{ $property->name }}"><a href="{{ route('owner.properties.show', $property) }}" class="hover:text-orange-600">{{ $property->name }}</a></h3>
-                                    <p class="mt-1 truncate text-xs text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }} · {{ str($property->property_type)->replace('_', ' ')->title() }}</p>
-                                    <p class="mt-2 truncate font-mono text-[10px] text-slate-400" title="{{ $property->code }}">{{ $property->code }}</p>
-                                    <div class="mt-auto grid gap-2 pt-4 {{ $property->publication_status->value === 'draft' ? 'grid-cols-2' : '' }}">
-                                        <a href="{{ route('owner.properties.show', $property) }}" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">View details</a>
-                                        @if ($property->publication_status->value === 'draft')
-                                            <a href="{{ route('owner.properties.resume', $property) }}" class="inline-flex w-full items-center justify-center rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700">Continue setup</a>
-                                        @elseif ($property->publication_status->value === 'unpublished' && $property->verification_status->value === 'unverified')
-                                            <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}">@csrf<button class="w-full rounded-lg bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 hover:bg-orange-100">Submit to marketplace</button></form>
-                                        @endif
+                                    <div class="flex flex-1 flex-col p-4">
+                                        <h3 class="truncate font-extrabold text-slate-950" title="{{ $property->name }}"><a href="{{ route('owner.properties.show', $property) }}" class="hover:text-orange-600">{{ $property->name }}</a></h3>
+                                        <p class="mt-1 truncate text-xs text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }} · {{ str($property->property_type)->replace('_', ' ')->title() }}</p>
+                                        <p class="mt-2 truncate font-mono text-[10px] text-slate-400" title="{{ $property->code }}">{{ $property->code }}</p>
+                                        <div class="mt-auto grid gap-2 pt-4 {{ $property->publication_status->value === 'draft' ? 'grid-cols-2' : '' }}">
+                                            <a href="{{ route('owner.properties.show', $property) }}" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">View details</a>
+                                            @if ($property->publication_status->value === 'draft')
+                                                <a href="{{ route('owner.properties.resume', $property) }}" class="inline-flex w-full items-center justify-center rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700">Continue setup</a>
+                                            @elseif ($property->publication_status->value === 'unpublished' && $property->verification_status->value === 'unverified')
+                                                <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}">@csrf<button class="w-full rounded-lg bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 hover:bg-orange-100">Submit to marketplace</button></form>
+                                            @endif
+                                        </div>
                                     </div>
                                 </article>
                             @endforeach

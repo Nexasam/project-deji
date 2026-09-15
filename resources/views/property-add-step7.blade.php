@@ -6,7 +6,7 @@
     <title>Add Property - Step 7 - Verified Shortlet</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-100 font-sans antialiased" x-data="{files:[],selectFiles(event){this.files=Array.from(event.target.files).map(file=>({name:file.name,size:Math.max(1,Math.round(file.size/1024)),type:file.type,url:file.type.startsWith('image/')?URL.createObjectURL(file):null}))}}">
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
         <header class="bg-white border-b border-gray-200">
@@ -27,6 +27,8 @@
         <main class="flex-1 px-4 py-7">
             <form method="POST" enctype="multipart/form-data" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>7]) }}" class="w-full max-w-4xl mx-auto">
                 @csrf
+                @if($errors->any())<div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ $errors->first() }}</div>@endif
+                @if(session('status'))<div class="mb-4 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-700">{{ session('status') }}</div>@endif
                 {{-- Title Section --}}
                 <div class="mb-5">
                     <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">PAPERWORK</p>
@@ -50,9 +52,21 @@
                                 <span class="font-bold">Click to upload</span> or drag and drop
                             </p>
                             <p class="text-gray-500 text-sm">PDF, DOC or image files, up to 10</p>
-                            <input type="file" name="documents[]" multiple accept=".pdf,.doc,.docx,image/*" class="sr-only">
+                            <input type="file" name="documents[]" multiple accept=".pdf,.doc,.docx,image/*" class="sr-only" @change="selectFiles($event)">
                         </div>
                     </label>
+
+                    <div x-show="files.length" class="mb-4 space-y-3">
+                        <p class="text-xs font-bold uppercase tracking-wide text-orange-700">Ready to upload</p>
+                        <template x-for="file in files" :key="file.name">
+                            <div class="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-3">
+                                <img x-show="file.url" :src="file.url" :alt="file.name" class="h-12 w-12 rounded object-cover">
+                                <div x-show="!file.url" class="flex h-12 w-12 items-center justify-center rounded bg-white text-xs font-bold text-orange-700">FILE</div>
+                                <div class="min-w-0"><p class="truncate text-sm font-semibold text-gray-900" x-text="file.name"></p><p class="text-xs text-gray-500" x-text="file.size + ' KB'"></p></div>
+                            </div>
+                        </template>
+                        <button type="submit" name="stay_on_step" value="1" class="w-full rounded-lg border border-[#FF5A00] bg-orange-50 px-5 py-2.5 text-sm font-bold text-[#FF5A00] hover:bg-orange-100">Upload selected documents</button>
+                    </div>
 
                     {{-- Uploaded Documents List --}}
                     <div class="space-y-3">
@@ -84,7 +98,7 @@
                 {{-- Navigation Buttons --}}
                 <div class="flex items-center justify-between">
                     <a href="{{ route('owner.properties.wizard.step', ['property'=>$property,'step'=>6]) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <div class="flex gap-3"><button type="submit" formaction="{{ route('owner.properties.wizard.skip', ['property'=>$property,'step'=>7]) }}" class="text-sm underline">Skip</button><button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md">Next Step</button></div>
+                    <div class="flex gap-3"><button type="submit" formaction="{{ route('owner.properties.wizard.skip', ['property'=>$property,'step'=>7]) }}" class="text-sm underline">Skip</button><button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md">Continue to next step</button></div>
                 </div>
             </form>
             @foreach($property->documents as $document)

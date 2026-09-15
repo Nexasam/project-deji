@@ -6,6 +6,8 @@ use Illuminate\Validation\ValidationException;
 
 final class ValidateExternalCalendarUrl
 {
+    public function __construct(private readonly ResolvePublicCalendarHost $hosts) {}
+
     public function validate(string $provider, string $url): string
     {
         $url = trim($url);
@@ -18,6 +20,12 @@ final class ValidateExternalCalendarUrl
         if (($parts['scheme'] ?? '') !== 'https' || ! $validHost || filter_var($host, FILTER_VALIDATE_IP)
             || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment'])) {
             throw ValidationException::withMessages(['feed_url' => 'Enter a valid HTTPS calendar export URL from the selected provider.']);
+        }
+
+        try {
+            $this->hosts->resolve($host);
+        } catch (\RuntimeException) {
+            throw ValidationException::withMessages(['feed_url' => 'The calendar provider host must resolve to a public address.']);
         }
 
         return $url;

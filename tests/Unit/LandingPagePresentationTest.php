@@ -75,7 +75,31 @@ class LandingPagePresentationTest extends TestCase
         $this->assertStringContainsString('xl:grid-cols-4', $view);
         $this->assertStringNotContainsString('xl:grid-cols-5', $view);
         $this->assertStringContainsString('data-testid="property-card"', $view);
-        $this->assertStringContainsString('rounded-xl border border-slate-200 bg-white p-4', $view);
+        $this->assertStringContainsString('overflow-hidden rounded-lg border border-slate-200 bg-white', $view);
+    }
+
+    public function test_marketplace_cards_fall_back_to_uploaded_storage_images(): void
+    {
+        $landing = file_get_contents(dirname(__DIR__, 2).'/resources/views/welcome.blade.php');
+        $detail = file_get_contents(dirname(__DIR__, 2).'/resources/views/marketplace/show.blade.php');
+
+        $this->assertStringContainsString("'/storage/'.ltrim(\$coverMedia->storage_path", $landing);
+        $this->assertStringContainsString(':image="$coverImage"', $landing);
+        $this->assertStringContainsString("'/storage/'.ltrim(\$coverMedia->storage_path", $detail);
+        $this->assertStringContainsString("target.src='/image.png'", $detail);
+    }
+
+    public function test_marketplace_booking_confirmation_shows_a_complete_live_quote(): void
+    {
+        $view = file_get_contents(dirname(__DIR__, 2).'/resources/views/marketplace/show.blade.php');
+
+        $this->assertStringContainsString('get guestCount()', $view);
+        $this->assertStringContainsString('get subtotal()', $view);
+        $this->assertStringContainsString('get discount()', $view);
+        $this->assertStringContainsString('get serviceFee()', $view);
+        $this->assertStringContainsString('Total amount', $view);
+        $this->assertStringContainsString('guestCount>capacity', $view);
+        $this->assertStringContainsString("'Confirm & book · '+formatMoney(total)", $view);
     }
 
     public function test_dashboard_real_properties_use_a_four_column_card_grid(): void

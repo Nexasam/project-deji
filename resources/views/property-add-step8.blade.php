@@ -8,6 +8,7 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased" x-data="{ 
     propertyName: @js(old('name', $property->name === 'Untitled property' ? '' : $property->name)),
+    marketplaceTitle: @js(old('marketplace_title', $property->marketplaceListing?->public_title ?? ($property->name === 'Untitled property' ? '' : $property->name))),
     description: @js(old('description', $property->description)),
     nightlyRate: @js(old('default_nightly_price', $property->default_nightly_price)),
     discount: @js(old('discount_percentage', optional($property->promotions->firstWhere('name', 'Longer stay discount'))->discount_value)),
@@ -61,6 +62,14 @@
                             </svg>
                             <p>Names must be unique within your portfolio — pair the property with a unit, e.g. "Bluewater 2A", so it never clashes with another flat you manage.</p>
                         </div>
+                    </div>
+
+                    <div class="mb-6 rounded-xl border border-orange-200 bg-orange-50 p-4">
+                        <label class="block text-gray-900 font-bold text-base mb-2">Marketplace title</label>
+                        <input type="text" name="marketplace_title" x-model="marketplaceTitle" placeholder="e.g. Stylish 2-bedroom apartment in Lekki" required maxlength="255" class="w-full px-4 py-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] bg-white text-gray-900" />
+                        <p class="mt-2 text-xs leading-5 text-gray-600">This is the public headline guests will see in search results. It can be more descriptive than your internal property name.</p>
+                        <label class="mt-4 block text-sm font-bold text-gray-800">Short marketplace summary <span class="font-normal text-gray-500">(optional)</span></label>
+                        <textarea name="short_summary" rows="2" maxlength="500" placeholder="A quick highlight for guests…" class="mt-2 w-full rounded-lg border-orange-200 bg-white px-4 py-3 text-sm focus:border-[#FF5A00] focus:ring-[#FF5A00]">{{ old('short_summary', $property->marketplaceListing?->short_summary) }}</textarea>
                     </div>
 
                     {{-- Description --}}

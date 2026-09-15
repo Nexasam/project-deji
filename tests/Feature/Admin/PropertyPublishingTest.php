@@ -33,7 +33,7 @@ class PropertyPublishingTest extends TestCase
         $this->post(route('admin.login.store'), [
             'email' => $admin->email,
             'password' => 'AdminPassword123!',
-        ])->assertRedirect(route('admin.properties.index', absolute: false));
+        ])->assertRedirect(route('admin.dashboard', absolute: false));
     }
 
     public function test_non_admin_cannot_sign_in_through_admin_login(): void
@@ -70,7 +70,7 @@ class PropertyPublishingTest extends TestCase
         $admin = $this->platformAdmin();
         $property = $this->pendingProperty();
 
-        $this->actingAs($admin)->post(route('admin.properties.publish', $property))
+        $this->actingAs($admin)->post(route('admin.properties.publish', $property), ['reason' => 'All listing details have been reviewed and approved.'])
             ->assertRedirect(route('admin.properties.show', $property))
             ->assertSessionHas('status', 'Property published to the marketplace.');
 
@@ -94,9 +94,9 @@ class PropertyPublishingTest extends TestCase
         $this->seed(AccessControlSeeder::class);
         $admin = $this->platformAdmin();
         $property = $this->pendingProperty();
-        $this->actingAs($admin)->post(route('admin.properties.publish', $property));
+        $this->actingAs($admin)->post(route('admin.properties.publish', $property), ['reason' => 'All listing details have been reviewed and approved.']);
 
-        $this->actingAs($admin)->post(route('admin.properties.unpublish', $property))
+        $this->actingAs($admin)->post(route('admin.properties.unpublish', $property), ['reason' => 'The listing needs to be temporarily removed for review.'])
             ->assertRedirect(route('admin.properties.show', $property));
 
         $property->refresh();
@@ -108,6 +108,34 @@ class PropertyPublishingTest extends TestCase
         $this->get(route('home'))->assertDontSee($listing->public_title);
     }
 
+    public function test_platform_admin_can_reject_a_property_with_a_reason(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->platformAdmin();
+        $property = $this->pendingProperty();
+
+        $this->actingAs($admin)->post(route('admin.properties.reject', $property), [
+            'reason' => 'Please replace the blurry cover photo before publishing.',
+        ])->assertRedirect(route('admin.properties.show', $property));
+
+        $property->refresh();
+        $this->assertSame('rejected', $property->verification_status->value);
+        $this->assertSame('unpublished', $property->publication_status->value);
+        $this->assertSame('Please replace the blurry cover photo before publishing.', data_get($property->marketplaceListing->publication_eligibility_details, 'rejection_reason'));
+    }
+
+    public function test_rejection_requires_a_useful_reason(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->platformAdmin();
+        $property = $this->pendingProperty();
+
+        $this->actingAs($admin)->from(route('admin.properties.show', $property))
+            ->post(route('admin.properties.reject', $property), ['reason' => 'No'])
+            ->assertSessionHasErrors('reason');
+        $this->assertSame('pending', $property->fresh()->verification_status->value);
+    }
+
     public function test_property_without_marketplace_listing_cannot_be_published(): void
     {
         $this->seed(AccessControlSeeder::class);
@@ -116,7 +144,7 @@ class PropertyPublishingTest extends TestCase
         $property = Property::factory()->for($business)->create(['publication_status' => 'pending']);
 
         $this->actingAs($admin)->from(route('admin.properties.show', $property))
-            ->post(route('admin.properties.publish', $property))
+            ->post(route('admin.properties.publish', $property), ['reason' => 'All listing details have been reviewed and approved.'])
             ->assertRedirect(route('admin.properties.show', $property))
             ->assertSessionHasErrors('property');
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['business_id', 'booking_id', 'identity_status', 'balance_status', 'security_deposit_status', 'access_method', 'access_reference', 'checklist', 'blocking_issues', 'completed_by', 'completed_at', 'status'])]
+#[Fillable(['business_id', 'booking_id', 'identity_status', 'balance_status', 'security_deposit_status', 'access_method', 'access_reference', 'checklist', 'blocking_issues', 'completed_by', 'completed_at', 'status', 'created_by', 'updated_by'])]
 class BookingCheckIn extends Model
 {
     use HasUuids;

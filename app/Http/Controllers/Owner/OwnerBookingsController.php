@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
+use App\Services\Access\BusinessPermissionService;
 use App\Services\Booking\OwnerBookingWorkspace;
 use App\Support\ActiveBusinessContext;
 use Illuminate\Http\Request;
@@ -10,7 +11,7 @@ use Illuminate\View\View;
 
 class OwnerBookingsController extends Controller
 {
-    public function __invoke(Request $request, ActiveBusinessContext $context, OwnerBookingWorkspace $workspace): View
+    public function __invoke(Request $request, ActiveBusinessContext $context, OwnerBookingWorkspace $workspace, BusinessPermissionService $permissions): View
     {
         $business = $context->business;
         $filters = $request->validate([
@@ -19,9 +20,10 @@ class OwnerBookingsController extends Controller
             'channel' => ['nullable', 'in:marketplace,airbnb,booking_dot_com,whatsapp,referral,walk_in,corporate,phone,travel_agent,manual'],
             'from' => ['nullable', 'date'], 'to' => ['nullable', 'date', 'after_or_equal:from'], 'sort' => ['nullable', 'in:newest,arrival'],
         ]);
-        $stats = $workspace->stats($business);
-        $bookings = $workspace->paginate($business, $filters);
-        $properties = $business->properties()->orderBy('name')->get(['id', 'name']);
+        $propertyIds = $permissions->permittedPropertyIds($context);
+        $stats = $workspace->stats($business, $propertyIds);
+        $bookings = $workspace->paginate($business, $filters, $propertyIds);
+        $properties = $business->properties()->when($propertyIds !== null, fn ($query) => $query->whereIn('id', $propertyIds))->orderBy('name')->get(['id', 'name']);
 
         return view('owner.bookings', compact('business', 'stats', 'bookings', 'properties', 'filters'));
     }

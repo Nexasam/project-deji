@@ -19,7 +19,7 @@
         @foreach($categories as $i => $category)
             @php($categoryValue = ['All stays'=>'all','Lekki'=>'lekki','Ikoyi'=>'ikoyi','Victoria Island'=>'victoria-island','Beachfront'=>'beachfront','Family stays'=>'family','Business stays'=>'business'][$category['label']])
             <a
-                href="{{ route('home', array_filter([...$filters, 'category' => $categoryValue], fn ($value) => filled($value))) }}"
+                href="{{ route('home', array_filter([...$filters, 'category' => $categoryValue], fn ($value) => filled($value))).'#marketplace' }}"
                 class="cat-pill {{ ($filters['category'] ?? 'all') === $categoryValue ? 'active' : '' }}"
                 data-cat="{{ $category['label'] }}"
             >

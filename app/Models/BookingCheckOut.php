@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['business_id', 'booking_id', 'actual_departure_at', 'access_return_status', 'room_condition', 'damage_status', 'damage_notes', 'deposit_release_status', 'deposit_release_amount', 'handover_notes', 'completed_by', 'completed_at', 'status'])]
+#[Fillable(['business_id', 'booking_id', 'actual_departure_at', 'access_return_status', 'room_condition', 'damage_status', 'damage_notes', 'deposit_release_status', 'deposit_release_amount', 'handover_notes', 'completed_by', 'completed_at', 'status', 'created_by', 'updated_by'])]
 class BookingCheckOut extends Model
 {
     use HasUuids;

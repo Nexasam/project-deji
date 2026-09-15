@@ -20,6 +20,8 @@
         {{-- Desktop auth --}}
         <div class="nav-desktop items-center gap-6">
             @auth
+            @php($navbarUnread = auth()->user()->notifications()->whereNull('read_at')->count())
+            <a href="{{ route('notifications.index') }}" class="relative inline-flex h-10 items-center justify-center text-[15px] font-medium text-gray-700 hover:text-orange-600">Alerts @if($navbarUnread)<span class="ml-1 rounded-full bg-orange-600 px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $navbarUnread }}</span>@endif</a>
             <a href="{{ route('guest.bookings.index') }}" class="inline-flex h-10 items-center justify-center text-[15px] font-medium text-gray-700 hover:text-orange-600 transition-colors">
                 My bookings
             </a>
@@ -97,6 +99,7 @@
                 Help
             </a>
             @auth
+            <a href="{{ route('notifications.index') }}">Notifications</a>
             <a href="{{ route('guest.bookings.index') }}">My bookings</a>
             <span class="px-4 py-3 text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}" class="w-full">

@@ -17,7 +17,7 @@ class OwnerMvpJourneyTest extends TestCase
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
         $guest=User::factory()->create();
-        $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout',['arrival_date'=>'2027-04-10','departure_date'=>'2027-04-12','adult_count'=>1,'child_count'=>0,'idempotency_key'=>'owner-mvp-journey'])->assertRedirect();
+        $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout',['arrival_date'=>'2027-04-10','departure_date'=>'2027-04-12','adult_count'=>1,'child_count'=>0,'guest_phone'=>'+2348012345678','quoted_total'=>199500,'idempotency_key'=>'owner-mvp-journey'])->assertRedirect();
         $booking=Booking::query()->sole();
         $owner=User::query()->where('email','owner@lagoonstays.test')->firstOrFail();
         $property=Property::query()->where('name','Admiralty Waterfront Residence')->firstOrFail();

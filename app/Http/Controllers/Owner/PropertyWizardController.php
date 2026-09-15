@@ -88,6 +88,14 @@ class PropertyWizardController extends Controller
         };
         $this->mark($draft, self::STEPS[$step - 1], $request, 'completed');
 
+        if (in_array($step, [5, 7], true) && $request->boolean('stay_on_step')) {
+            $message = $step === 5
+                ? 'Photos uploaded successfully. You can add another batch or continue.'
+                : 'Documents uploaded successfully. You can add another batch or continue.';
+
+            return $this->toStep($draft, $step)->with('status', $message);
+        }
+
         return $this->toStep($draft, $step + 1);
     }
 
@@ -207,9 +215,15 @@ class PropertyWizardController extends Controller
 
     private function media(Request $r, Property $p, StorePropertyMediaService $s): void
     {
-        $r->validate(['media' => 'array', 'media.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,mov|max:20480']);
+        $r->validate(['media' => 'array|max:10', 'media.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,mov|max:20480']);
         if ($r->hasFile('media')) {
-            $s->store($p, $r->user(), $r->file('media'));
+            $files = $r->file('media');
+            $newImageCount = collect($files)->filter(fn ($file) => str_starts_with((string) $file->getMimeType(), 'image/'))->count();
+            $existingImageCount = $p->media()->where('media_type', 'image')->count();
+            if ($existingImageCount + $newImageCount > 10) {
+                throw ValidationException::withMessages(['media' => 'A property can have up to 10 photos. Remove a photo before adding another.']);
+            }
+            $s->store($p, $r->user(), $files);
         } if (! $p->media()->where('media_type', 'image')->exists()) {
             throw ValidationException::withMessages(['media' => 'Upload at least one image.']);
         }
@@ -224,7 +238,10 @@ class PropertyWizardController extends Controller
 
     private function documents(Request $r, Property $p, SavePropertySetupService $s): void
     {
-        $r->validate(['documents' => 'array', 'documents.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:20480']);
+        $r->validate(['documents' => 'array|max:10', 'documents.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:20480']);
+        if ($p->documents()->count() + count($r->file('documents', [])) > 10) {
+            throw ValidationException::withMessages(['documents' => 'A property can have up to 10 documents. Remove one before adding another.']);
+        }
         foreach ($r->file('documents', []) as $file) {
             $s->document($p, $r->user(), $file, ['title' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), 'category' => 'property_record']);
         }
@@ -232,8 +249,14 @@ class PropertyWizardController extends Controller
 
     private function namePrice(Request $r, Property $p): void
     {
-        $d = $r->validate(['name' => 'required|string|max:255', 'description' => 'nullable|string|max:5000', 'default_nightly_price' => 'required|numeric|min:1', 'discount_percentage' => 'nullable|numeric|min:1|max:100', 'minimum_stay_nights' => 'nullable|required_with:discount_percentage|integer|min:2|max:365']);
+        $d = $r->validate(['name' => 'required|string|max:255', 'marketplace_title' => 'nullable|string|max:255', 'short_summary' => 'nullable|string|max:500', 'description' => 'nullable|string|max:5000', 'default_nightly_price' => 'required|numeric|min:1', 'discount_percentage' => 'nullable|numeric|min:1|max:100', 'minimum_stay_nights' => 'nullable|required_with:discount_percentage|integer|min:2|max:365']);
+        $marketplaceTitle = filled($d['marketplace_title'] ?? null) ? $d['marketplace_title'] : $d['name'];
         $p->update(collect($d)->only(['name', 'description', 'default_nightly_price'])->all() + ['information_completed_at' => now(), 'updated_by' => $r->user()->id]);
+        $listing = $p->marketplaceListing()->firstOrNew();
+        $listing->fill(['business_id' => $p->business_id, 'public_title' => $marketplaceTitle, 'short_summary' => $d['short_summary'] ?? null, 'public_description' => $d['description'] ?? null, 'publication_status' => 'draft', 'is_publication_eligible' => false, 'status' => 'active', 'updated_by' => $r->user()->id]);
+        $listing->slug ??= Str::slug($marketplaceTitle).'-'.Str::lower(Str::random(6));
+        $listing->created_by ??= $r->user()->id;
+        $listing->save();
         $promotion = PropertyPromotion::withTrashed()->firstOrNew(['property_id' => $p->id, 'name' => 'Longer stay discount']);
         if (filled($d['discount_percentage'] ?? null)) {
             $promotion->fill(['business_id' => $p->business_id, 'promotion_type' => 'length_of_stay', 'discount_type' => 'percentage', 'discount_value' => $d['discount_percentage'], 'minimum_stay_nights' => $d['minimum_stay_nights'], 'currency' => $p->pricing_currency, 'publication_status' => 'draft', 'status' => 'active', 'created_by' => $promotion->created_by ?: $r->user()->id, 'updated_by' => $r->user()->id]);

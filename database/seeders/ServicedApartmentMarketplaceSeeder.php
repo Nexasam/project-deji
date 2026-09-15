@@ -25,6 +25,7 @@ class ServicedApartmentMarketplaceSeeder extends Seeder
                 $owner = User::query()->updateOrCreate(['email' => $operator['email']], [
                     'name' => $operator['owner'], 'password' => 'Password123!',
                     'email_verified_at' => now(), 'timezone' => 'Africa/Lagos', 'status' => 'active',
+                    'failed_login_attempts' => 0, 'locked_until' => null,
                 ]);
                 $business = Business::query()->where('email', $operator['email'])->first()
                     ?? app(BusinessOnboardingService::class)->onboard($owner, [

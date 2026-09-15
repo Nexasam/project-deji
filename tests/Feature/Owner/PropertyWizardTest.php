@@ -150,6 +150,41 @@ class PropertyWizardTest extends TestCase
             ->assertOk()->assertSee($media->storage_path, false)->assertSee('client-lounge');
     }
 
+    public function test_owner_can_upload_photos_in_multiple_batches_and_remain_on_step_five(): void
+    {
+        Storage::fake('public');
+        [$user, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create(['publication_status' => 'draft']);
+        $url = "/owner/properties/{$property->id}/create/step5";
+
+        $this->actingAs($user)->post($url, [
+            'media' => [UploadedFile::fake()->image('first.jpg')],
+            'stay_on_step' => '1',
+        ])->assertRedirect($url);
+
+        $this->post($url, [
+            'media' => [UploadedFile::fake()->image('second.jpg')],
+            'stay_on_step' => '1',
+        ])->assertRedirect($url);
+
+        $this->assertSame(2, $property->media()->count());
+        $this->get($url)->assertOk()->assertSee('/storage/', false)->assertSee('first')->assertSee('second');
+    }
+
+    public function test_step_five_rejects_more_than_ten_total_photos(): void
+    {
+        Storage::fake('public');
+        [$user, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create(['publication_status' => 'draft']);
+        $url = "/owner/properties/{$property->id}/create/step5";
+        $files = collect(range(1, 10))->map(fn ($number) => UploadedFile::fake()->image("photo-{$number}.jpg"))->all();
+
+        $this->actingAs($user)->post($url, ['media' => $files])->assertRedirect("/owner/properties/{$property->id}/create/step6");
+        $this->post($url, ['media' => [UploadedFile::fake()->image('extra.jpg')], 'stay_on_step' => '1'])
+            ->assertSessionHasErrors('media');
+        $this->assertSame(10, $property->media()->count());
+    }
+
     public function test_custom_assets_are_persisted_and_removed_selections_become_inactive(): void
     {
         [$user, $business] = $this->owner();
@@ -168,6 +203,7 @@ class PropertyWizardTest extends TestCase
     public function test_owner_can_preview_their_uploaded_document_but_other_business_cannot(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         [$user, $business] = $this->owner();
         [$otherOwner] = $this->owner('Other Stays');
         $property = Property::factory()->for($business)->create(['publication_status' => 'draft']);
@@ -175,11 +211,50 @@ class PropertyWizardTest extends TestCase
             'documents' => [UploadedFile::fake()->createWithContent('inspection.pdf', '%PDF-1.4 preview')],
         ]);
         $document = $property->documents()->sole();
+        $version = $document->versions()->sole();
+
+        $this->assertSame('local', $version->storage_disk);
+        Storage::disk('local')->assertExists($version->storage_path);
+        Storage::disk('public')->assertMissing($version->storage_path);
 
         $this->get(route('owner.properties.wizard.documents.preview', [$property, $document]))
             ->assertOk()->assertHeader('content-disposition');
         $this->actingAs($otherOwner)->get(route('owner.properties.wizard.documents.preview', [$property, $document]))
             ->assertNotFound();
+    }
+
+    public function test_guests_and_unauthenticated_users_cannot_preview_private_property_documents(): void
+    {
+        Storage::fake('local');
+        [$owner, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create(['publication_status' => 'draft']);
+        $this->actingAs($owner)->post("/owner/properties/{$property->id}/create/step7", [
+            'documents' => [UploadedFile::fake()->createWithContent('ownership.pdf', '%PDF-1.4 private')],
+        ]);
+        $document = $property->documents()->sole();
+        $url = route('owner.properties.wizard.documents.preview', [$property, $document]);
+
+        auth()->logout();
+        $this->get($url)->assertRedirect(route('login'));
+        $this->actingAs(User::factory()->create())->get($url)->assertRedirect(route('owner.onboarding.business.create'));
+    }
+
+    public function test_owner_can_upload_documents_and_remain_on_step_seven_to_preview_them(): void
+    {
+        Storage::fake('local');
+        [$user, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create(['publication_status' => 'draft']);
+        $url = "/owner/properties/{$property->id}/create/step7";
+
+        $this->actingAs($user)->post($url, [
+            'documents' => [UploadedFile::fake()->createWithContent('inspection.pdf', '%PDF-1.4 preview')],
+            'stay_on_step' => '1',
+        ])->assertRedirect($url);
+
+        $document = $property->documents()->sole();
+        $this->get($url)->assertOk()->assertSee('inspection')->assertSee('Preview');
+        $this->get(route('owner.properties.wizard.documents.preview', [$property, $document]))
+            ->assertOk()->assertHeader('content-type', 'application/pdf');
     }
 
     public function test_selected_channels_are_saved_as_pending_database_connections(): void
@@ -198,19 +273,42 @@ class PropertyWizardTest extends TestCase
         $this->assertSame(1, PropertyChannelConnection::query()->where('property_id', $property->id)->where('status', 'active')->count());
     }
 
+    public function test_channel_step_explains_export_links_and_can_be_skipped(): void
+    {
+        [$user, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create(['publication_status' => 'draft']);
+        $url = "/owner/properties/{$property->id}/create/step9";
+
+        $this->actingAs($user)->get($url)->assertOk()
+            ->assertSee('Which link should I paste?')
+            ->assertSee('Do not paste your public listing or property page URL.')
+            ->assertSee('Set up later')
+            ->assertSee('Airbnb calendar export URL')
+            ->assertSee('Booking.com calendar export URL');
+
+        $this->post("{$url}/skip")->assertRedirect("/owner/properties/{$property->id}/create/step10");
+    }
+
     public function test_review_page_shows_saved_amenities_assets_documents_images_and_channels(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         [$user, $business] = $this->owner();
         $property = Property::factory()->for($business)->create(['publication_status' => 'draft', 'name' => 'Complete Review Flat']);
-        $this->actingAs($user)->post("/owner/properties/{$property->id}/create/step5", ['media' => [UploadedFile::fake()->image('review-room.jpg')]]);
+        $this->actingAs($user)->post("/owner/properties/{$property->id}/create/step5", ['media' => [
+            UploadedFile::fake()->image('review-room.jpg'),
+            UploadedFile::fake()->create('walkthrough.mp4', 100, 'video/mp4'),
+        ]]);
         $this->post("/owner/properties/{$property->id}/create/step6", ['assets' => '["Standing fan"]']);
         $this->post("/owner/properties/{$property->id}/create/step7", ['documents' => [UploadedFile::fake()->createWithContent('lease.pdf', '%PDF-1.4 lease')]]);
         $this->post("/owner/properties/{$property->id}/create/step9", ['channels' => ['airbnb']]);
 
         $this->get("/owner/properties/{$property->id}/create/step10")
             ->assertOk()->assertSee('Complete Review Flat')->assertSee('Standing fan')
-            ->assertSee('lease')->assertSee('review-room')->assertSee('Airbnb');
+            ->assertSee('lease')->assertSee('review-room')->assertSee('Airbnb')
+            ->assertSee('/storage/', false)->assertSee('COVER PHOTO')->assertSee('VIDEO')
+            ->assertSee('<video', false)->assertSee('1 photo')->assertSee('1 video')->assertSee('1 file attached')
+            ->assertSee('Ready to submit?')->assertSee('Go back and edit')->assertSee('Yes, submit listing');
     }
 
     private function owner(string $name = 'Nexa Stays'): array

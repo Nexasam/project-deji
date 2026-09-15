@@ -19,5 +19,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AmenitySeeder::class);
         $this->call(WorkflowTemplateSeeder::class);
         $this->call(ServicedApartmentMarketplaceSeeder::class);
+        $this->call(PresentationDemoSeeder::class);
     }
 }

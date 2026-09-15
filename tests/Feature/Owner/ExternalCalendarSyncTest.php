@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Owner;
 
+use App\Models\Booking;
 use App\Models\Business;
 use App\Models\ExternalCalendarConnection;
 use App\Models\Property;
@@ -11,14 +12,24 @@ use App\Models\User;
 use App\Services\Business\BusinessOnboardingService;
 use App\Services\Calendar\ImportExternalCalendar;
 use App\Services\Calendar\ManageExternalCalendarConnection;
+use App\Services\Calendar\ResolvePublicCalendarHost;
 use Database\Seeders\AccessControlSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ExternalCalendarSyncTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $resolver = \Mockery::mock(ResolvePublicCalendarHost::class);
+        $resolver->shouldReceive('resolve')->andReturn(['93.184.216.34']);
+        $this->app->instance(ResolvePublicCalendarHost::class, $resolver);
+    }
 
     public function test_owner_can_save_a_supported_feed_and_receives_an_encrypted_export_token(): void
     {
@@ -50,6 +61,19 @@ class ExternalCalendarSyncTest extends TestCase
         }
 
         $this->assertDatabaseCount('external_calendar_connections', 0);
+    }
+
+    public function test_connection_rejects_a_provider_host_that_resolves_to_a_private_address(): void
+    {
+        [$owner, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create();
+        $resolver = \Mockery::mock(ResolvePublicCalendarHost::class);
+        $resolver->shouldReceive('resolve')->once()->andThrow(new \RuntimeException('non-public'));
+        $this->app->instance(ResolvePublicCalendarHost::class, $resolver);
+
+        $this->actingAs($owner)->post(route('owner.properties.calendars.store', $property), [
+            'provider' => 'airbnb', 'feed_url' => 'https://www.airbnb.com/calendar/ical/123.ics',
+        ])->assertSessionHasErrors('feed_url');
     }
 
     public function test_sync_imports_updates_and_releases_external_blocks_idempotently(): void
@@ -91,10 +115,56 @@ class ExternalCalendarSyncTest extends TestCase
         ]);
         Http::fake(['*' => Http::response('unavailable', 503)]);
 
-        try { app(ImportExternalCalendar::class)->sync($connection, 'manual', $owner); } catch (\Throwable) {}
+        try {
+            app(ImportExternalCalendar::class)->sync($connection, 'manual', $owner);
+        } catch (\Throwable) {
+        }
 
         $this->assertDatabaseHas('property_availability_blocks', ['source_reference' => 'existing', 'block_state' => 'active']);
         $this->assertDatabaseHas('external_calendar_sync_runs', ['sync_status' => 'failed']);
+        $this->assertDatabaseHas('external_calendar_connections', ['id' => $connection->id, 'sync_status' => 'pending', 'consecutive_failure_count' => 1]);
+    }
+
+    public function test_connection_is_marked_failed_only_after_three_consecutive_failures(): void
+    {
+        [$owner, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create();
+        $connection = app(ManageExternalCalendarConnection::class)->save($property, $owner, 'airbnb', 'https://www.airbnb.com/calendar/ical/123.ics');
+        Http::fake(['*' => Http::response('unavailable', 503)]);
+
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                app(ImportExternalCalendar::class)->sync($connection->fresh(), 'manual', $owner);
+            } catch (\Throwable) {
+            }
+        }
+
+        $this->assertDatabaseHas('external_calendar_connections', ['id' => $connection->id, 'sync_status' => 'failed', 'consecutive_failure_count' => 3]);
+        $this->assertDatabaseHas('notifications', ['user_id' => $owner->id, 'type' => 'calendar_sync_failed']);
+    }
+
+    public function test_invalid_events_and_native_booking_conflicts_are_recorded_without_creating_blocks(): void
+    {
+        [$owner, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create();
+        Booking::factory()->for($business)->for($property)->create([
+            'arrival_date' => '2026-10-10', 'departure_date' => '2026-10-13',
+            'status' => 'confirmed', 'payment_status' => 'paid',
+        ]);
+        $connection = app(ManageExternalCalendarConnection::class)->save($property, $owner, 'airbnb', 'https://www.airbnb.com/calendar/ical/123.ics');
+        Http::fake(['*' => Http::response(
+            "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:conflict-1\r\nDTSTART;VALUE=DATE:20261011\r\nDTEND;VALUE=DATE:20261014\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nUID:invalid-1\r\nDTSTART;VALUE=DATE:20261020\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+            200,
+        )]);
+
+        $run = app(ImportExternalCalendar::class)->sync($connection, 'manual', $owner);
+
+        $this->assertSame(1, $run->conflict_count);
+        $this->assertSame(1, $run->failed_count);
+        $this->assertDatabaseCount('property_availability_blocks', 0);
+        $this->assertDatabaseHas('external_calendar_sync_items', ['external_event_id' => 'conflict-1', 'result_status' => 'conflict']);
+        $this->assertDatabaseHas('external_calendar_sync_items', ['external_event_id' => 'invalid-1', 'validation_status' => 'invalid', 'result_status' => 'failed']);
+        $this->assertDatabaseHas('notifications', ['user_id' => $owner->id, 'type' => 'calendar_conflict']);
     }
 
     public function test_an_owner_cannot_manage_another_business_property(): void
@@ -142,6 +212,21 @@ class ExternalCalendarSyncTest extends TestCase
             ->assertSee('No API key is needed.');
     }
 
+    public function test_stale_calendar_command_alerts_owner_once(): void
+    {
+        Carbon::setTestNow('2026-09-13 12:00:00');
+        [$owner, $business] = $this->owner();
+        $property = Property::factory()->for($business)->create();
+        $connection = app(ManageExternalCalendarConnection::class)->save($property, $owner, 'airbnb', 'https://www.airbnb.com/calendar/ical/123.ics');
+        $connection->forceFill(['last_synced_at' => now()->subHours(2), 'sync_status' => 'connected'])->save();
+
+        $this->artisan('calendars:notify-stale')->assertSuccessful();
+        $this->artisan('calendars:notify-stale')->assertSuccessful();
+
+        $this->assertSame('stale_alerted', $connection->fresh()->sync_status);
+        $this->assertSame(1, $owner->notifications()->where('type', 'calendar_sync_stale')->count());
+    }
+
     /** @return array{User, Business} */
     private function owner(string $name = 'Nexa Stays'): array
     {
@@ -151,6 +236,7 @@ class ExternalCalendarSyncTest extends TestCase
             'name' => $name, 'country_code' => 'NG', 'business_type' => 'serviced_apartments',
             'timezone' => 'Africa/Lagos', 'currency' => 'NGN',
         ]);
+
         return [$user, $business];
     }
 
@@ -161,6 +247,7 @@ class ExternalCalendarSyncTest extends TestCase
         foreach ($events as [$uid, $start, $end]) {
             $body .= "BEGIN:VEVENT\r\nUID:{$uid}\r\nDTSTART;VALUE=DATE:{$start}\r\nDTEND;VALUE=DATE:{$end}\r\nEND:VEVENT\r\n";
         }
+
         return $body."END:VCALENDAR\r\n";
     }
 }

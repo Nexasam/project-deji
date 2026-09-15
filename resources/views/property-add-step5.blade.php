@@ -28,6 +28,7 @@
             <form method="POST" enctype="multipart/form-data" action="{{ route('owner.properties.wizard.store', ['property'=>$property,'step'=>5]) }}" class="w-full max-w-4xl mx-auto">
                 @csrf
                 @if($errors->any())<div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ $errors->first() }}</div>@endif
+                @if(session('status'))<div class="mb-4 rounded-lg bg-green-50 p-3 text-sm font-medium text-green-700">{{ session('status') }}</div>@endif
                 {{-- Title Section --}}
                 <div class="mb-5">
                     <p class="text-[#FF5A00] text-xs font-bold uppercase tracking-wider mb-1.5">SHOW IT OFF</p>
@@ -55,7 +56,7 @@
                         <template x-for="preview in previews" :key="preview.url"><div class="relative overflow-hidden rounded-lg border-2 border-dashed border-orange-300 bg-orange-50"><img :src="preview.url" :alt="preview.name" class="h-36 w-full object-cover"><div class="absolute inset-x-0 bottom-0 truncate bg-black/65 px-2 py-1 text-xs font-semibold text-white" x-text="preview.name"></div><span class="absolute left-2 top-2 rounded bg-white/90 px-2 py-1 text-[10px] font-bold text-orange-700">READY TO UPLOAD</span></div></template>
                         @foreach($property->media->where('media_type', 'image') as $photo)
                             <div class="relative group rounded-lg overflow-hidden border-2 transition-all {{ $photo->is_primary ? 'border-[#FF5A00]' : 'border-gray-200' }}">
-                                <img src="{{ Storage::disk($photo->storage_disk)->url($photo->storage_path) }}" alt="{{ $photo->alt_text ?: 'Property photo' }}" class="w-full h-36 object-cover" />
+                                <img src="{{ '/storage/'.ltrim($photo->storage_path, '/') }}" alt="{{ $photo->alt_text ?: 'Property photo' }}" class="w-full h-36 object-cover" />
                                 <div class="absolute inset-x-0 bottom-0 truncate bg-black/65 px-2 py-1 text-xs font-semibold text-white">{{ $photo->title }}</div>
                                 
                                 {{-- Cover Badge --}}
@@ -81,6 +82,10 @@
                         </svg>
                         <span class="font-semibold">{{ $property->media->where('media_type', 'image')->count() }} photos added — nice!</span>
                     </div>
+
+                    <button type="submit" name="stay_on_step" value="1" class="mb-6 w-full rounded-lg border border-[#FF5A00] bg-orange-50 px-5 py-2.5 text-sm font-bold text-[#FF5A00] hover:bg-orange-100">
+                        Upload selected photos
+                    </button>
 
                     {{-- Video Section --}}
                     <div class="border-t border-gray-200 pt-6">
@@ -123,7 +128,7 @@
                 {{-- Navigation Buttons --}}
                 <div class="flex items-center justify-between">
                     <a href="{{ route('owner.properties.wizard.step', ['property'=>$property,'step'=>4]) }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline">Back</a>
-                    <button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Next Step</button>
+                    <button type="submit" class="bg-[#FF5A00] hover:bg-[#E55000] text-white font-bold py-2.5 px-8 rounded-lg text-sm transition-colors shadow-md inline-block">Continue to next step</button>
                 </div>
             </form>
             @foreach($property->media->where('media_type', 'image') as $photo)

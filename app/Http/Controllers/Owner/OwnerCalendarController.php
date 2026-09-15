@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
+use App\Services\Access\BusinessPermissionService;
 use App\Services\Calendar\OwnerCalendarWorkspace;
 use App\Support\ActiveBusinessContext;
 use Carbon\CarbonImmutable;
@@ -11,12 +12,18 @@ use Illuminate\View\View;
 
 class OwnerCalendarController extends Controller
 {
-    public function __invoke(Request $request, ActiveBusinessContext $context, OwnerCalendarWorkspace $workspace): View
+    public function __invoke(Request $request, ActiveBusinessContext $context, OwnerCalendarWorkspace $workspace, BusinessPermissionService $permissions): View
     {
+        if ($request->query('view') === 'demo') {
+            return view('owner.demo.calendar', [
+                'business' => $context->business,
+            ]);
+        }
+
         $filters = $request->validate(['month' => ['nullable', 'date_format:Y-m'], 'property' => ['nullable', 'uuid']]);
         $month = CarbonImmutable::createFromFormat('!Y-m', $filters['month'] ?? now()->format('Y-m'));
 
-        return view('calendar', $workspace->month($context->business, $month, $filters['property'] ?? null) + [
+        return view('calendar', $workspace->month($context->business, $month, $filters['property'] ?? null, $permissions->permittedPropertyIds($context)) + [
             'business' => $context->business,
         ]);
     }

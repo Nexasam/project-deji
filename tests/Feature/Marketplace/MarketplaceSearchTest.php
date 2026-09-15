@@ -4,6 +4,7 @@ namespace Tests\Feature\Marketplace;
 
 use App\Models\Property;
 use App\Models\PropertyAvailabilityDay;
+use App\Models\User;
 use Database\Seeders\ServicedApartmentMarketplaceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,7 +65,10 @@ class MarketplaceSearchTest extends TestCase
     public function test_public_detail_requires_an_eligible_listing(): void
     {
         $property = Property::query()->where('code', 'LAG-001')->firstOrFail();
-        $this->get('/stays/lekki-admiralty-waterfront')->assertOk()->assertSee($property->name);
+        $guest = User::factory()->create();
+        $this->actingAs($guest)->get('/stays/lekki-admiralty-waterfront')->assertOk()->assertSee($property->name)
+            ->assertSee('Choose your stay dates')->assertSee('Confirm your stay')
+            ->assertSee('Confirm & book', false)->assertSee('x-for="(media,index) in gallery"', false);
 
         $property->update(['verification_status' => 'unverified']);
         $this->get('/stays/lekki-admiralty-waterfront')->assertNotFound();
@@ -87,12 +91,21 @@ class MarketplaceSearchTest extends TestCase
     public function test_primary_search_form_submits_real_marketplace_filters(): void
     {
         $this->get('/')->assertOk()
-            ->assertSee('action="http://localhost"', false)
+            ->assertSee('action="http://localhost#marketplace"', false)
             ->assertSee('name="q"', false)
             ->assertSee('name="check_in"', false)
             ->assertSee('name="check_out"', false)
             ->assertSee('name="guests"', false)
             ->assertDontSee('Search coming soon!');
+    }
+
+    public function test_filters_return_to_results_and_cards_offer_availability_calendars(): void
+    {
+        $this->get('/?category=lekki')->assertOk()
+            ->assertSee('#marketplace', false)
+            ->assertSee('View availability calendar for', false)
+            ->assertSee('Availability calendar')
+            ->assertSee('Booked / unavailable');
     }
 
     public function test_date_filter_excludes_a_property_with_an_allocated_night(): void

@@ -12,8 +12,9 @@ class GuestBookingCancellationController extends Controller
 {
     public function __invoke(Request $request, string $booking, CancelMarketplaceBooking $cancel): RedirectResponse
     {
+        $data = $request->validate(['reason' => ['nullable', 'string', 'max:1000']]);
         $booking = Booking::where('guest_user_id', $request->user()->id)->findOrFail($booking);
-        $cancel->handle($request->user(), $booking, $request->string('reason')->toString());
+        $cancel->handle($request->user(), $booking, $data['reason'] ?? null);
 
         return redirect()->route('guest.bookings.show', $booking);
     }

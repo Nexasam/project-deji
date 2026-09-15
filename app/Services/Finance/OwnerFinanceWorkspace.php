@@ -7,13 +7,15 @@ use Illuminate\Support\Collection;
 
 final class OwnerFinanceWorkspace
 {
-    public function build(Business $business, array $filters): array
+    public function build(Business $business, array $filters, ?array $propertyIds = null): array
     {
         $payments = $business->payments()->with('booking.property')->whereIn('status', ['completed', 'pending', 'processing'])
+            ->when($propertyIds !== null, fn ($q) => $q->whereHas('booking', fn ($b) => $b->whereIn('property_id', $propertyIds)))
             ->when($filters['property'] ?? null, fn ($q, $id) => $q->whereHas('booking', fn ($b) => $b->where('property_id', $id)))
             ->when($filters['from'] ?? null, fn ($q, $date) => $q->whereDate('transaction_at', '>=', $date))
             ->when($filters['to'] ?? null, fn ($q, $date) => $q->whereDate('transaction_at', '<=', $date))->get();
         $expenses = $business->expenses()->with('property')->where('status', 'active')
+            ->when($propertyIds !== null, fn ($q) => $q->whereIn('property_id', $propertyIds))
             ->when($filters['property'] ?? null, fn ($q, $id) => $q->where('property_id', $id))
             ->when($filters['from'] ?? null, fn ($q, $date) => $q->whereDate('incurred_on', '>=', $date))
             ->when($filters['to'] ?? null, fn ($q, $date) => $q->whereDate('incurred_on', '<=', $date))->get();
@@ -43,8 +45,12 @@ final class OwnerFinanceWorkspace
     {
         $rows = $payments->map(fn ($p) => ['date' => $p->transaction_at, 'property' => $p->booking?->property?->name ?? 'Unassigned', 'type' => $p->purpose->value === 'refund' ? 'refund' : 'payment', 'description' => $p->purpose->value === 'refund' ? 'Refund '.$p->reference : 'Booking '.$p->booking?->reference, 'reference' => $p->reference, 'status' => $p->status->value, 'amount' => (float) $p->amount, 'positive' => $p->purpose->value !== 'refund'])
             ->concat($expenses->map(fn ($e) => ['date' => $e->incurred_on, 'property' => $e->property?->name ?? 'General business', 'type' => 'expense', 'description' => $e->description, 'reference' => $e->reference, 'status' => $e->approval_status, 'amount' => (float) $e->amount, 'positive' => false]));
-        if ($type) $rows = $rows->where('type', $type);
-        if ($search) $rows = $rows->filter(fn ($row) => str_contains(strtolower($row['description'].' '.$row['reference'].' '.$row['property']), strtolower($search)));
+        if ($type) {
+            $rows = $rows->where('type', $type);
+        }
+        if ($search) {
+            $rows = $rows->filter(fn ($row) => str_contains(strtolower($row['description'].' '.$row['reference'].' '.$row['property']), strtolower($search)));
+        }
 
         return $rows->sortByDesc('date')->values();
     }

@@ -146,3 +146,7 @@ Automated tests must cover:
 - Google/Outlook calendar-specific APIs.
 - Automatic conflict resolution or cancellation.
 - Channel-specific pricing, content, messaging, and payment synchronization.
+
+## Relationship to the original SRS
+
+The focused core-flow comparison against `PROJECT NEXUS (2).pdf` is recorded in [Project Nexus Core Stay Lifecycle Audit](2026-09-12-core-stay-lifecycle-audit.md). It deliberately limits MVP scope to the operational chain surrounding one stay.

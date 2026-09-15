@@ -53,4 +53,9 @@ class BusinessMembership extends Model
     {
         return $this->hasOne(Employee::class);
     }
+
+    public function permissionOverrides(): HasMany
+    {
+        return $this->hasMany(MembershipPermissionOverride::class);
+    }
 }

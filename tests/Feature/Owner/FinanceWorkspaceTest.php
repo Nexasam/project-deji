@@ -5,7 +5,6 @@ namespace Tests\Feature\Owner;
 use App\Models\Booking;
 use App\Models\Business;
 use App\Models\Expense;
-use App\Models\FinancialTransaction;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\User;
@@ -53,6 +52,7 @@ class FinanceWorkspaceTest extends TestCase
         $this->assertSame('125000.0000', $payment->amount);
         $this->assertSame('paid', $booking->fresh()->payment_status->value);
         $this->assertDatabaseHas('financial_transactions', ['payment_id' => $payment->id, 'direction' => 'inflow', 'transaction_status' => 'settled']);
+        $this->assertDatabaseHas('notifications', ['user_id' => $booking->guest_user_id, 'type' => 'payment_recorded']);
 
         $this->actingAs($owner)->post(route('owner.finance.payments.store'), [
             'booking_id' => $booking->id, 'reference' => 'BANK-001', 'amount' => '10',
