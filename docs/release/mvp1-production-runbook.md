@@ -218,6 +218,8 @@ stdout_logfile=/absolute/path/to/project-nexa-26/storage/logs/worker.log
 
 After installation, start it with the process supervisor and verify that `php artisan queue:monitor database:default --max=100` succeeds. Review `php artisan queue:failed` after each deployment. Retry only after correcting the cause with `php artisan queue:retry <id>`.
 
+On shared hosting without a persistent process supervisor, use the provider's supported background-process mechanism. If persistent workers are unavailable, a cron invocation of `php artisan queue:work database --stop-when-empty --tries=3 --backoff=60 --timeout=120` can drain queued work periodically, subject to the hosting plan's cron-frequency and process limits. Do not leave an SSH-launched worker as the production strategy because it stops when the shell or host terminates it.
+
 Email failures update `notification_deliveries` but do not remove the in-app notification. This is intentional.
 
 ## Database backup and restore rehearsal
