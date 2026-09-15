@@ -19,6 +19,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserBusinessContext;
 use App\Models\UserRole;
+use App\Services\Calendar\ManageExternalCalendarConnection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -39,6 +40,8 @@ class PresentationDemoSeeder extends Seeder
         $admiralty = $this->property($lagoon, 'LAG-001');
 
         DB::transaction(function () use ($coastline, $lagoon, $chevron, $admiralty): void {
+            app(ManageExternalCalendarConnection::class)->ensureExport($chevron);
+            app(ManageExternalCalendarConnection::class)->ensureExport($admiralty);
             $this->reviewProperty($coastline);
             $this->guest();
             $verificationAdmin = $this->platformAdministrator('Nneka Verification Admin', 'verification.admin@verifiedshortlet.test', 'platform_verification_admin');

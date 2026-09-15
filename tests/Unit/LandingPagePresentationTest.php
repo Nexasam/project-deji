@@ -102,6 +102,13 @@ class LandingPagePresentationTest extends TestCase
         $this->assertStringContainsString("'Confirm & book · '+formatMoney(total)", $view);
     }
 
+    public function test_public_layout_exposes_csrf_token_for_marketplace_ajax_requests(): void
+    {
+        $layout = file_get_contents(dirname(__DIR__, 2).'/resources/views/layouts/app.blade.php');
+
+        $this->assertStringContainsString('<meta name="csrf-token" content="{{ csrf_token() }}">', $layout);
+    }
+
     public function test_dashboard_real_properties_use_a_four_column_card_grid(): void
     {
         $view = file_get_contents(dirname(__DIR__, 2).'/resources/views/dashboard.blade.php');

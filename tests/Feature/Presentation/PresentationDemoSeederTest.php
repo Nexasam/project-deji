@@ -5,6 +5,7 @@ namespace Tests\Feature\Presentation;
 use App\Models\BookingDispute;
 use App\Models\Business;
 use App\Models\Property;
+use App\Models\PropertyCalendarExport;
 use App\Models\Review;
 use App\Models\User;
 use Database\Seeders\AccessControlSeeder;
@@ -64,6 +65,7 @@ class PresentationDemoSeederTest extends TestCase
 
         $cleaner = $users->firstWhere('email', 'cleaner.demo@verifiedshortlet.test');
         $chevron = Property::query()->where('code', 'CSR-003')->firstOrFail();
+        $this->assertSame(1, PropertyCalendarExport::query()->where('property_id', $chevron->id)->where('active_key', 'active')->count());
         $this->assertDatabaseHas('property_staff_assignments', [
             'employee_id' => $cleaner->resolvedBusinessContext()->membership->employee->id,
             'property_id' => $chevron->id,
