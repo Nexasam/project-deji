@@ -45,6 +45,7 @@ DB_PORT=3306
 DB_DATABASE=<staging_database>
 DB_USERNAME=<staging_database_user>
 DB_PASSWORD=<strong_database_password>
+DB_ENGINE=InnoDB
 
 SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
@@ -152,6 +153,7 @@ DB_PORT=3306
 DB_DATABASE=<database-name>
 DB_USERNAME=<least-privilege-user>
 DB_PASSWORD=<secret>
+DB_ENGINE=InnoDB
 
 SESSION_DRIVER=database
 CACHE_STORE=database
