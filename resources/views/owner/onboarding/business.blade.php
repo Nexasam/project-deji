@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Set up your business – Project Nexus')
+@section('title', 'Set up your business - Verified Shortlet')
 
 @section('content')
-<main class="min-h-screen bg-slate-50 px-5 py-12" style="font-family: Manrope, sans-serif">
+<main class="min-h-screen bg-slate-50 px-5 py-12">
     <div class="mx-auto max-w-2xl rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200 md:p-12">
         <p class="text-sm font-bold uppercase tracking-widest text-orange-600">Owner setup</p>
         <h1 class="mt-3 text-3xl font-bold text-slate-950">Tell us about your business</h1>

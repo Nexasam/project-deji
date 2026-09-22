@@ -35,7 +35,7 @@ class AuthenticatedSessionController extends Controller
         $user = $request->user();
         $fallback = match (true) {
             $permissions->isPlatformAdministrator($user) => route('admin.dashboard', absolute: false),
-            $user->hasActiveGlobalRole('guest') => route('guest.bookings.index', absolute: false),
+            $user->hasActiveGlobalRole('guest') => route('guest.dashboard', absolute: false),
             default => route('owner.entry', absolute: false),
         };
 

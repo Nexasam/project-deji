@@ -143,8 +143,8 @@
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="property-grid">
                         @foreach ($properties as $property)
                             @php
-                                $publicationColors = ['published' => 'bg-emerald-500 text-white', 'pending' => 'bg-amber-500 text-white', 'unpublished' => 'bg-red-500 text-white', 'draft' => 'bg-slate-500 text-white'];
-                                $verificationColors = ['verified' => 'bg-emerald-50 text-emerald-700', 'pending' => 'bg-amber-50 text-amber-700', 'rejected' => 'bg-red-50 text-red-700', 'unverified' => 'bg-slate-100 text-slate-600'];
+                                $publicationColors = ['published' => 'bg-emerald-600 text-white shadow-emerald-900/20', 'pending' => 'bg-amber-500 text-slate-950 shadow-amber-900/20', 'unpublished' => 'bg-red-600 text-white shadow-red-900/20', 'draft' => 'bg-slate-700 text-white shadow-slate-900/20'];
+                                $statusSubcopy = ['published' => 'Live', 'pending' => 'In review', 'unpublished' => 'Offline', 'draft' => 'Setup'];
                                 $publication = $property->publication_status->value;
                                 $verification = $property->verification_status->value;
                                 $coverMedia = $property->media->firstWhere('is_primary', true) ?? $property->media->first();
@@ -153,12 +153,20 @@
                             <article data-testid="property-card" class="overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
                                 <div class="relative h-36 overflow-hidden bg-slate-100">
                                     <img src="{{ $coverImage }}" alt="{{ $coverMedia?->alt_text ?: $property->name }}" loading="lazy" class="h-full w-full object-cover transition duration-300 hover:scale-105" onerror="this.onerror=null;this.src='/image.png'">
-                                    <span class="absolute left-3 top-3 rounded-md px-2 py-1 text-[9px] font-extrabold uppercase tracking-wider {{ $publicationColors[$publication] ?? $publicationColors['draft'] }}">{{ str($publication)->title() }}</span>
-                                    <span class="absolute right-3 top-3 rounded-md px-2 py-1 text-[9px] font-bold {{ $verificationColors[$verification] ?? $verificationColors['unverified'] }}">{{ str($verification)->title() }}</span>
+                                    <span class="absolute left-3 top-3 rounded-full px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-wider shadow-lg {{ $publicationColors[$publication] ?? $publicationColors['draft'] }}">{{ str($publication)->title() }}</span>
+                                    @if($verification === 'verified')
+                                        <span class="absolute right-3 top-3 rounded-full border border-white/50 bg-white/95 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-wider text-orange-700 shadow-lg">Superhost</span>
+                                    @elseif(in_array($verification, ['pending', 'rejected'], true))
+                                        <span class="absolute right-3 top-3 rounded-full border border-white/50 bg-white/95 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-wider {{ $verification === 'pending' ? 'text-amber-700' : 'text-red-700' }}">{{ $verification === 'pending' ? 'Reviewing' : 'Needs fixes' }}</span>
+                                    @endif
                                 </div>
                                 <div class="p-4">
                                     <h3 class="truncate text-sm font-bold" title="{{ $property->name }}"><a href="{{ route('owner.properties.show', $property) }}" class="hover:text-orange-600">{{ $property->name }}</a></h3>
                                     <p class="mt-1 truncate text-[11px] text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }} · {{ str($property->property_type)->replace('_', ' ')->title() }}</p>
+                                    <div class="mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold">
+                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">{{ $statusSubcopy[$publication] ?? str($publication)->title() }}</span>
+                                        <span class="rounded-full {{ $verification === 'verified' ? 'bg-orange-50 text-orange-700' : ($verification === 'pending' ? 'bg-amber-50 text-amber-700' : ($verification === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-500')) }} px-2.5 py-1">{{ $verification === 'verified' ? 'Superhost eligible' : str($verification)->replace('_',' ')->title() }}</span>
+                                    </div>
                                     <dl class="mt-4 grid grid-cols-3 gap-2 border-y border-slate-100 py-3">
                                         @foreach ([['Guests', $property->capacity], ['Beds', $property->bedrooms], ['Baths', $property->bathrooms]] as [$label, $value])
                                             <div><dt class="text-[10px] text-slate-400">{{ $label }}</dt><dd class="mt-0.5 text-xs font-bold">{{ $value }}</dd></div>

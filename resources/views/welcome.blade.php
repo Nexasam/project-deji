@@ -8,12 +8,45 @@
     {{-- Toast Notification --}}
     <x-toast />
 
-    {{-- AI Insights Modal --}}
-    <x-modal id="insights-modal" title="AI Insights">
-        <p>This property has been verified through our AI-powered inspection process.</p>
-        <p>Key highlights include excellent maintenance standards, accurate photo representation, and responsive host communication.</p>
-        <p>Recent guests rated the cleanliness at 4.8/5 and noted the property matches the listing description perfectly.</p>
-    </x-modal>
+    {{-- AI Insights Preview --}}
+    <div x-data="{ open:false, insight:{} }" @open-property-insights.window="insight=$event.detail; open=true" x-show="open" x-cloak @keydown.escape.window="open=false" class="fixed inset-0 z-[90] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="property-insights-title">
+        <button type="button" @click="open=false" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" aria-label="Close AI insights"></button>
+        <article class="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[.16em] text-orange-600">AI Insights preview</p>
+                    <h2 id="property-insights-title" class="mt-1 text-2xl font-extrabold text-slate-950" x-text="insight.title || 'Property insights'"></h2>
+                    <p class="mt-1 text-xs text-slate-500">Generated from verified marketplace data. Full AI assistant coming later.</p>
+                </div>
+                <button type="button" @click="open=false" class="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl text-slate-600">×</button>
+            </div>
+            <div class="p-5">
+                <div class="flex items-center gap-4 border-b border-slate-100 pb-5">
+                    <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-lg font-black text-orange-700" x-text="(insight.host || 'Verified host').replace('Hosted by ','').slice(0,2).toUpperCase()"></div>
+                    <div>
+                        <p class="font-extrabold text-slate-950" x-text="insight.host || 'Hosted by Verified host'"></p>
+                        <p class="mt-1 text-sm text-slate-500" x-text="insight.hostMeta || 'Verified Shortlet host'"></p>
+                    </div>
+                </div>
+                <div class="mt-5 space-y-5">
+                    <template x-for="item in [
+                        {icon:'⌁', title:insight.locationTitle, body:insight.locationBody},
+                        {icon:'↳', title:insight.accessTitle, body:insight.accessBody},
+                        {icon:'★', title:insight.qualityTitle, body:insight.qualityBody},
+                        {icon:'₦', title:insight.pricingTitle, body:insight.pricingBody}
+                    ]" :key="item.title">
+                        <div class="flex gap-4">
+                            <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-base font-black text-slate-700" x-text="item.icon"></div>
+                            <div>
+                                <p class="font-extrabold text-slate-950" x-text="item.title"></p>
+                                <p class="mt-1 text-sm leading-6 text-slate-500" x-text="item.body"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </article>
+    </div>
 
     {{-- Navigation --}}
     <x-navbar />
@@ -39,66 +72,101 @@
     {{-- Category Pills --}}
     <x-category-pills :filters="$filters" />
 
-    <form action="{{ route('home').'#marketplace' }}" method="GET" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 grid grid-cols-2 md:grid-cols-6 gap-3" aria-label="Search serviced apartments">
-        @foreach(['check_in', 'check_out', 'guests'] as $preservedFilter) @if(filled($filters[$preservedFilter] ?? null))<input type="hidden" name="{{ $preservedFilter }}" value="{{ $filters[$preservedFilter] }}">@endif @endforeach
-        <input class="col-span-2 rounded-xl border-gray-300" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Search apartment or location">
-        <select class="rounded-xl border-gray-300" name="category">
-            @foreach(['all'=>'All stays','lekki'=>'Lekki','ikoyi'=>'Ikoyi','victoria-island'=>'Victoria Island','beachfront'=>'Beachfront','family'=>'Family stays','business'=>'Business stays'] as $value => $label)
-                <option value="{{ $value }}" @selected(($filters['category'] ?? 'all') === $value)>{{ $label }}</option>
-            @endforeach
-        </select>
-        <input class="rounded-xl border-gray-300" type="number" min="0" name="min_price" value="{{ $filters['min_price'] ?? '' }}" placeholder="Min price">
-        <input class="rounded-xl border-gray-300" type="number" min="0" name="max_price" value="{{ $filters['max_price'] ?? '' }}" placeholder="Max price">
-        <select class="rounded-xl border-gray-300" name="beds">
-            <option value="">Any beds</option>
-            @foreach(range(1, 5) as $beds)<option value="{{ $beds }}" @selected((string)($filters['beds'] ?? '') === (string)$beds)>{{ $beds }}+ beds</option>@endforeach
-        </select>
-        <button class="col-span-2 md:col-span-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold py-3">Search stays</button>
-    </form>
+    <section class="mx-auto mt-4 max-w-7xl px-4 sm:mt-6 sm:px-6 lg:px-8" aria-label="Refine marketplace search">
+        <details class="marketplace-advanced-filters">
+            <summary class="marketplace-advanced-summary">
+                <span>
+                    <strong>More filters</strong>
+                    <small>Search, stay type, price and beds</small>
+                </span>
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+        <form action="{{ route('home').'#marketplace' }}" method="GET" class="marketplace-advanced-form rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+            @foreach(['check_in', 'check_out', 'guests'] as $preservedFilter) @if(filled($filters[$preservedFilter] ?? null))<input type="hidden" name="{{ $preservedFilter }}" value="{{ $filters[$preservedFilter] }}">@endif @endforeach
+            <div class="grid gap-3 md:grid-cols-[minmax(220px,1.5fr)_minmax(150px,.85fr)_repeat(3,minmax(120px,.7fr))_auto] md:items-end">
+                <label class="block">
+                    <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400">Search</span>
+                    <input class="h-11 w-full rounded-xl border-gray-200 text-sm focus:border-orange-500 focus:ring-orange-500" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Apartment, city or area">
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400">Stay type</span>
+                    <select class="h-11 w-full rounded-xl border-gray-200 text-sm focus:border-orange-500 focus:ring-orange-500" name="category">
+                        @foreach(['all'=>'All stays','lekki'=>'Lekki','ikoyi'=>'Ikoyi','victoria-island'=>'Victoria Island','beachfront'=>'Beachfront','family'=>'Family','business'=>'Business'] as $value => $label)
+                            <option value="{{ $value }}" @selected(($filters['category'] ?? 'all') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400">Min price</span>
+                    <input class="h-11 w-full rounded-xl border-gray-200 text-sm focus:border-orange-500 focus:ring-orange-500" type="number" min="0" name="min_price" value="{{ $filters['min_price'] ?? '' }}" placeholder="Any">
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400">Max price</span>
+                    <input class="h-11 w-full rounded-xl border-gray-200 text-sm focus:border-orange-500 focus:ring-orange-500" type="number" min="0" name="max_price" value="{{ $filters['max_price'] ?? '' }}" placeholder="Any">
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400">Beds</span>
+                    <select class="h-11 w-full rounded-xl border-gray-200 text-sm focus:border-orange-500 focus:ring-orange-500" name="beds">
+                        <option value="">Any</option>
+                        @foreach(range(1, 5) as $beds)<option value="{{ $beds }}" @selected((string)($filters['beds'] ?? '') === (string)$beds)>{{ $beds }}+</option>@endforeach
+                    </select>
+                </label>
+                <button class="h-11 rounded-xl bg-orange-500 px-5 text-sm font-bold text-white hover:bg-orange-600">Search</button>
+            </div>
+        </form>
+        </details>
+    </section>
 
     {{-- Backend-powered marketplace inventory --}}
-    <section id="marketplace" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-        <div class="flex items-end justify-between gap-4 mb-6">
+    <section id="marketplace" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+        <div class="mb-5 flex items-end justify-between gap-4">
             <div>
-                <p class="text-xs font-bold uppercase tracking-widest text-orange-500">Live marketplace</p>
-                <h2 class="text-2xl font-extrabold text-gray-900 mt-1">
+                <p class="text-xs font-bold uppercase tracking-widest text-orange-500">Find the right place</p>
+                <h2 class="mt-1 text-2xl font-extrabold text-gray-900">
                     {{ $properties->total() }} serviced {{ Str::plural('apartment', $properties->total()) }}
                 </h2>
+                <p class="mt-1 text-sm text-gray-500">Simple verified stays, clear pricing and live availability.</p>
             </div>
         </div>
         @if($properties->isEmpty())
             <div class="rounded-2xl bg-gray-50 border border-gray-200 p-10 text-center text-gray-600">No serviced apartments match these filters.</div>
         @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-                @foreach($properties as $property)
-                    @php
-                        $coverMedia = $property->media->firstWhere('is_primary', true) ?? $property->media->firstWhere('media_type', \App\Enums\PropertyMediaType::Image);
-                        $coverImage = $coverMedia?->external_url ?: ($coverMedia?->storage_path ? '/storage/'.ltrim($coverMedia->storage_path, '/') : '/image.png');
-                        $blockedIntervals = $property->bookings->map(fn($booking) => ['start' => $booking->arrival_date->toDateString(), 'end' => $booking->departure_date->toDateString()])
-                            ->concat($property->availabilityBlocks->map(fn($block) => ['start' => $block->starts_on->toDateString(), 'end' => $block->ends_on->toDateString()]))->values();
-                    @endphp
-                    <div class="relative" x-data="availabilityCalendar(@js($blockedIntervals), @js($property->marketplaceListing->public_title), @js(route('marketplace.show', $property->marketplaceListing->slug)))">
-                    <a href="{{ route('marketplace.show', $property->marketplaceListing->slug) }}" class="block">
-                        <x-property-card
-                            :image="$coverImage"
-                            :name="$property->marketplaceListing->public_title"
-                            :location="data_get($property->address, 'city').', '.data_get($property->address, 'state')"
-                            :guests="$property->capacity"
-                            :price="(float) $property->default_nightly_price"
-                            :rating="$property->published_reviews_count ? number_format((float) $property->published_reviews_avg_rating, 1) : 'New'"
-                        />
-                    </a>
-                    <button type="button" @click="open=true" class="absolute right-2 top-12 z-10 flex size-9 items-center justify-center rounded-full bg-white text-orange-600 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:bg-orange-50" aria-label="View availability calendar for {{ $property->marketplaceListing->public_title }}" title="View availability">
-                        <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" stroke-width="2"/><path d="M16 3v4M8 3v4M3 10h18" stroke-width="2" stroke-linecap="round"/></svg>
-                    </button>
-                    <div x-show="open" x-cloak @keydown.escape.window="open=false" class="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" :aria-label="'Availability for '+title">
-                        <button type="button" @click="open=false" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" aria-label="Close calendar"></button>
-                        <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
-                            <div class="sticky top-0 z-10 flex items-start justify-between border-b border-slate-100 bg-white px-5 py-4"><div><p class="text-xs font-bold uppercase tracking-wider text-orange-600">Availability calendar</p><h3 class="mt-1 text-xl font-extrabold" x-text="title"></h3></div><button type="button" @click="open=false" class="flex size-9 items-center justify-center rounded-full bg-slate-100 text-xl">×</button></div>
-                            <div class="p-5"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div class="flex flex-wrap gap-4 text-xs font-semibold"><span class="flex items-center gap-2"><i class="size-3 rounded bg-white ring-1 ring-slate-200"></i>Available</span><span class="flex items-center gap-2"><i class="size-3 rounded bg-red-100 ring-1 ring-red-200"></i>Booked / unavailable</span></div><label class="flex items-center gap-2 text-xs font-bold text-slate-600">Jump to <input type="month" :min="minimumMonth" :max="maximumMonth" x-model="jumpMonth" @change="jumpToMonth" class="rounded-lg border-slate-200 py-1.5 text-xs"></label></div><div class="mb-5 flex items-center justify-between rounded-xl bg-slate-50 p-2"><button type="button" @click="previous" :disabled="offset===0" class="rounded-lg px-3 py-2 text-sm font-bold text-slate-700 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30">← Previous</button><p class="text-center text-xs font-semibold text-slate-500">Browse up to 18 months ahead</p><button type="button" @click="next" :disabled="offset>=17" class="rounded-lg px-3 py-2 text-sm font-bold text-slate-700 hover:bg-white disabled:cursor-not-allowed disabled:opacity-30">Next →</button></div><div class="grid gap-6 md:grid-cols-2"><template x-for="month in months" :key="month.key"><section class="rounded-xl border border-slate-100 p-3"><h4 class="mb-3 text-center text-sm font-extrabold" x-text="month.label"></h4><div class="grid grid-cols-7 gap-1 text-center"><template x-for="day in ['S','M','T','W','T','F','S']"><span class="py-1 text-[10px] font-bold text-slate-400" x-text="day"></span></template><template x-for="blank in month.offset"><span></span></template><template x-for="day in month.days" :key="day.date"><span class="flex aspect-square items-center justify-center rounded-lg text-xs" :class="day.past?'text-slate-300':(day.blocked?'bg-red-100 font-bold text-red-700 line-through':'bg-emerald-50 text-emerald-800')" x-text="day.number" :title="day.blocked?'Booked or unavailable':'Available'"></span></template></div></section></template></div><a :href="detailsUrl" class="mt-6 flex w-full items-center justify-center rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white hover:bg-orange-700">View property and choose dates</a></div>
+            @php
+                $propertyCollection = $properties->getCollection();
+                $marketplaceRows = collect([
+                    ['title' => 'Popular verified stays in Lagos', 'subtitle' => 'Guest-ready homes with live availability.', 'items' => $propertyCollection->take(10)],
+                    ['title' => 'Great stays for your next trip', 'subtitle' => 'Comfortable apartments across Lekki, Ikoyi and Victoria Island.', 'items' => $propertyCollection->skip(3)->take(10)],
+                    ['title' => 'Best value longer stays', 'subtitle' => 'Homes where selected dates can unlock host discounts.', 'items' => $propertyCollection->filter(fn($property) => $property->promotions->isNotEmpty())->take(10)],
+                    ['title' => 'Family and group stays', 'subtitle' => 'More space for guests travelling together.', 'items' => $propertyCollection->filter(fn($property) => $property->capacity >= 4)->take(10)],
+                ])->filter(fn($row) => $row['items']->isNotEmpty())->values();
+            @endphp
+
+            <div class="space-y-12">
+                @foreach($marketplaceRows as $index => $row)
+                    <section x-data="{ scrollBy(direction) { this.$refs.rail.scrollBy({ left: direction * 860, behavior: 'smooth' }) } }" aria-labelledby="marketplace-row-{{ $index }}">
+                        <div class="marketplace-row-header mb-4 flex items-start justify-between gap-4">
+                            <div class="marketplace-row-heading min-w-0 flex-1">
+                                <a id="marketplace-row-{{ $index }}" href="#marketplace-row-{{ $index }}" class="marketplace-row-title group inline-flex items-center gap-2 text-xl font-extrabold text-slate-950 sm:text-2xl">
+                                    {{ $row['title'] }}
+                                    <span class="flex size-7 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-700 transition group-hover:bg-slate-950 group-hover:text-white">→</span>
+                                </a>
+                                <p class="mt-1 text-sm text-slate-500">{{ $row['subtitle'] }}</p>
+                            </div>
+                            <div class="marketplace-row-controls flex items-center gap-2">
+                                <button type="button" @click="scrollBy(-1)" class="marketplace-row-nav" aria-label="Scroll {{ $row['title'] }} left">
+                                    <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                <button type="button" @click="scrollBy(1)" class="marketplace-row-nav" aria-label="Scroll {{ $row['title'] }} right">
+                                    <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    </div>
+                        <div x-ref="rail" class="marketplace-row-rail -mx-4 flex snap-x gap-4 overflow-x-auto scroll-smooth px-4 pb-3 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+                            @foreach($row['items'] as $property)
+                                <x-marketplace-property-tile :property="$property" :filters="$filters" class="snap-start" />
+                            @endforeach
+                        </div>
+                    </section>
                 @endforeach
             </div>
             <div class="mt-8">{{ $properties->links() }}</div>

@@ -18,7 +18,7 @@ class GuestCancellationTest extends TestCase
         Carbon::setTestNow('2026-11-01 10:00');
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
         $guest = User::factory()->create();
-        $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', ['arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12', 'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 199500, 'idempotency_key' => 'cancel-me']);
+        $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', ['arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12', 'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 190000, 'idempotency_key' => 'cancel-me']);
         $booking = Booking::sole();
         $this->post("/guest/bookings/{$booking->id}/cancel", ['reason' => 'Plans changed'])->assertRedirect(route('guest.bookings.show', $booking));
         $booking->refresh();
@@ -42,7 +42,7 @@ class GuestCancellationTest extends TestCase
         $guest = User::factory()->create();
         $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', [
             'arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12',
-            'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 199500, 'idempotency_key' => 'late-checkin-cancel',
+            'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 190000, 'idempotency_key' => 'late-checkin-cancel',
         ]);
         $booking = Booking::query()->sole();
         $booking->property->marketplaceListing()->update(['check_in_time' => '18:00']);

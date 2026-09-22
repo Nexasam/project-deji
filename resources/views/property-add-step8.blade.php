@@ -84,31 +84,41 @@
                     </div>
 
                     {{-- Pricing Row --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        {{-- Nightly Rate --}}
-                        <div>
+                    <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-[1.1fr_.9fr]">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
                             <label class="block text-gray-900 font-bold text-base mb-3">Nightly rate (₦)</label>
-                            <input 
+                            <input
                             type="number"
                                 name="default_nightly_price"
                                 x-model="nightlyRate"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
                             />
+                            <p class="mt-2 text-xs leading-5 text-gray-600">Enter the base nightly price. Service fees remain included manually in this amount.</p>
                         </div>
-
-                        {{-- Weekly/Monthly Discount --}}
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="block text-gray-900 font-bold text-base mb-3">
-                                Longer-stay discount <span class="font-normal text-gray-600">(optional)</span>
-                            </label>
-                            <span></span>
-                            <input 
-                                type="number" name="discount_percentage" min="1" max="100" step="0.01"
-                                x-model="discount"
-                                placeholder="10% off"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
-                            />
-                            <input type="number" name="minimum_stay_nights" min="2" max="365" x-model="minimumStay" placeholder="7 nights" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900" />
+                        <div class="rounded-xl border border-orange-200 bg-orange-50 p-4">
+                            <label class="block text-gray-900 font-bold text-base mb-3">Longer-stay discount <span class="font-normal text-gray-600">(optional)</span></label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input
+                                    type="number"
+                                    name="discount_percentage"
+                                    min="1"
+                                    max="100"
+                                    step="0.01"
+                                    x-model="discount"
+                                    placeholder="10% off"
+                                    class="w-full px-4 py-3 border border-orange-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
+                                />
+                                <input
+                                    type="number"
+                                    name="minimum_stay_nights"
+                                    min="2"
+                                    max="365"
+                                    x-model="minimumStay"
+                                    placeholder="7 nights"
+                                    class="w-full px-4 py-3 border border-orange-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5A00] focus:border-[#FF5A00] transition-colors text-gray-900"
+                                />
+                            </div>
+                            <p class="mt-2 text-xs leading-5 text-gray-600">Example: 10% off when guests stay 7 nights or more. This appears in marketplace totals when guests search with dates.</p>
                         </div>
                     </div>
 

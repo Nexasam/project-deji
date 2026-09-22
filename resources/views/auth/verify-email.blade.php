@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Verify your email – Project Nexus')
+@section('title', 'Verify your email - Verified Shortlet')
 
 @section('content')
     <main class="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-5 py-10 sm:px-8">
@@ -14,7 +14,7 @@
                         <path d="m8.5 11 3.5 2 3.5-2M12 13v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </span>
-                <span class="text-xl font-extrabold tracking-tight text-slate-950">Project Nexus</span>
+                <span class="text-xl font-extrabold tracking-tight text-slate-950">Verified Shortlet</span>
             </a>
 
             <div class="rounded-3xl border border-slate-200 bg-white px-6 py-9 text-center shadow-xl shadow-slate-200/60 sm:px-10 sm:py-11">

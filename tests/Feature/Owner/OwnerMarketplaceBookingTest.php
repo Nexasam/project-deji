@@ -15,7 +15,7 @@ class OwnerMarketplaceBookingTest extends TestCase
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
         $guest = User::factory()->create();
-        $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', ['arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12', 'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 199500, 'idempotency_key' => 'owner-view']);
+        $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', ['arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12', 'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 190000, 'idempotency_key' => 'owner-view']);
         $lagoon = User::where('email', 'owner@lagoonstays.test')->firstOrFail();
         $coastline = User::where('email', 'owner@coastlineresidences.test')->firstOrFail();
         $this->actingAs($lagoon)->get('/owner/bookings')->assertOk()->assertSee('Admiralty Waterfront Residence')->assertSee($guest->name);

@@ -27,6 +27,9 @@ final class CreateMarketplaceBooking
         if ($property->business->status->value !== 'active') {
             throw ValidationException::withMessages(['property' => 'This property is not accepting new bookings at the moment.']);
         }
+        if ($guest->businessMemberships()->where('business_id', $property->business_id)->where('status', 'active')->exists()) {
+            throw ValidationException::withMessages(['property' => 'You cannot book a property that belongs to your own business workspace.']);
+        }
 
         if ($old = Booking::where('guest_user_id', $guest->id)->where('external_reference', $data['idempotency_key'])->first()) {
             return $old;
@@ -36,6 +39,9 @@ final class CreateMarketplaceBooking
             $property = Property::with('business')->lockForUpdate()->findOrFail($property->id);
             if ($property->business->status->value !== 'active') {
                 throw ValidationException::withMessages(['property' => 'This property is not accepting new bookings at the moment.']);
+            }
+            if ($guest->businessMemberships()->where('business_id', $property->business_id)->where('status', 'active')->exists()) {
+                throw ValidationException::withMessages(['property' => 'You cannot book a property that belongs to your own business workspace.']);
             }
             $arrival = CarbonImmutable::parse($data['arrival_date']);
             $departure = CarbonImmutable::parse($data['departure_date']);

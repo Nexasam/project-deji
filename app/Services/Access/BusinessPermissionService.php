@@ -4,6 +4,7 @@ namespace App\Services\Access;
 
 use App\Models\Permission;
 use App\Models\Property;
+use App\Models\BusinessRolePermissionSetting;
 use App\Models\User;
 use App\Support\ActiveBusinessContext;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,6 +35,10 @@ final class BusinessPermissionService
             return $this->decisions[$cacheKey] = false;
         }
 
+        if ($user->hasActiveBusinessRole('business_owner', $context->membership->id)) {
+            return $this->decisions[$cacheKey] = true;
+        }
+
         $overrides = $context->membership->permissionOverrides()
             ->where('permission_id', $permission->id)
             ->where('status', 'active')->whereNull('revoked_at')
@@ -49,16 +54,40 @@ final class BusinessPermissionService
             return $this->decisions[$cacheKey] = false;
         }
 
-        $roleAllows = $user->roleAssignments()
+        $roleIds = $user->roleAssignments()
             ->where('business_membership_id', $context->membership->id)
             ->where('status', 'active')->whereNull('revoked_at')
             ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-            ->whereHas('role', fn ($role) => $role->where('status', 'active')
-                ->whereHas('permissions', fn ($permissions) => $permissions
-                    ->where('permissions.id', $permission->id)->where('role_permissions.status', 'active')))
-            ->exists();
+            ->whereHas('role', fn ($role) => $role->where('status', 'active'))
+            ->pluck('role_id');
 
-        $allowed = $roleAllows || $overrides->contains(fn ($override) => $override->effect === 'allow');
+        $roleSettings = BusinessRolePermissionSetting::query()
+            ->where('business_id', $context->business->id)
+            ->whereIn('role_id', $roleIds)
+            ->where('permission_id', $permission->id)
+            ->where('status', 'active')
+            ->pluck('effect');
+
+        if ($roleSettings->contains('deny')) {
+            return $this->decisions[$cacheKey] = false;
+        }
+
+        if ($roleSettings->contains('allow')) {
+            $allowed = true;
+        } elseif ($permissionKey === 'business.view') {
+            $allowed = false;
+        } else {
+            $allowed = $user->roleAssignments()
+                ->where('business_membership_id', $context->membership->id)
+                ->where('status', 'active')->whereNull('revoked_at')
+                ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->whereHas('role', fn ($role) => $role->where('status', 'active')
+                    ->whereHas('permissions', fn ($permissions) => $permissions
+                        ->where('permissions.id', $permission->id)->where('role_permissions.status', 'active')))
+                ->exists();
+        }
+
+        $allowed = $allowed || $overrides->contains(fn ($override) => $override->effect === 'allow');
         if ($allowed && $property && $this->hasPropertyScope($context)) {
             $allowed = $this->assignedPropertyIds($context)->contains($property->id);
         }

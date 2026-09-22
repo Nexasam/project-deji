@@ -12,4 +12,9 @@ class MarketplaceController extends Controller
     {
         return view('welcome', ['properties' => $marketplace->paginate($request->validated()), 'filters' => $request->validated()]);
     }
+
+    public function index2(MarketplaceSearchRequest $request, MarketplacePropertyQuery $marketplace): View
+    {
+        return view('index2', ['properties' => $marketplace->paginate($request->validated()), 'filters' => $request->validated()]);
+    }
 }

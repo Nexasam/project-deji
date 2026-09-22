@@ -18,7 +18,10 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertSee('Phone number')
+            ->assertSee('Dashboard');
     }
 
     public function test_profile_information_can_be_updated(): void
@@ -30,6 +33,7 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'phone_number' => '+234 801 234 5678',
             ]);
 
         $response
@@ -40,7 +44,47 @@ class ProfileTest extends TestCase
 
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
+        $this->assertSame('+2348012345678', $user->phone_number);
         $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_profile_phone_number_must_be_valid(): void
+    {
+        $user = User::factory()->create();
+
+        $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone_number' => '123',
+            ])
+            ->assertSessionHasErrors('phone_number')
+            ->assertRedirect('/profile');
+    }
+
+    public function test_guest_can_complete_add_phone_from_dashboard_flow(): void
+    {
+        $user = User::factory()->create(['phone_number' => null]);
+
+        $this->actingAs($user)
+            ->get(route('guest.dashboard'))
+            ->assertOk()
+            ->assertSee('Add your phone number');
+
+        $this->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone_number' => '+234 801 234 5678',
+        ])->assertSessionHasNoErrors()
+            ->assertRedirect(route('profile.edit'));
+
+        $this->assertSame('+2348012345678', $user->refresh()->phone_number);
+
+        $this->get(route('guest.dashboard'))
+            ->assertOk()
+            ->assertDontSee('Add your phone number');
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void

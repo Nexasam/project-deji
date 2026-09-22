@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Reset password – {{ config('app.name', 'Project Nexus') }}</title>
+    <title>Reset password - {{ config('app.name', 'Verified Shortlet') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -13,21 +13,21 @@
     <main class="grid min-h-screen lg:grid-cols-[minmax(360px,0.86fr)_minmax(540px,1.14fr)]">
         <section class="relative hidden overflow-hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col xl:p-14">
             <div class="auth-story-media" aria-hidden="true"><span class="auth-story-frame" style="background-image:url('{{ asset('hero1.jpg') }}')"></span><span class="auth-story-frame" style="background-image:url('{{ asset('hero2.jpg') }}')"></span><span class="auth-story-frame" style="background-image:url('{{ asset('hero3.jpg') }}')"></span><span class="auth-story-shade"></span></div>
-            <a href="{{ route('home') }}" class="relative z-10 inline-flex w-fit items-center gap-3" aria-label="Project Nexus home">
+            <a href="{{ route('home') }}" class="relative z-10 inline-flex w-fit items-center gap-3" aria-label="Verified Shortlet home">
                 <img src="{{ asset('logo1.png') }}" alt="" class="size-11 object-contain">
-                <div><p class="text-base font-extrabold tracking-tight">Project Nexus</p><p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Verified Shortlet</p></div>
+                <div><p class="text-base font-extrabold tracking-tight">Verified Shortlet</p><p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Trusted stays</p></div>
             </a>
             <div class="relative z-10 my-auto max-w-lg py-16">
                 <h1 class="text-4xl font-extrabold leading-[1.12] tracking-[-0.035em] xl:text-5xl">One platform. Every hospitality journey.</h1>
                 <p class="mt-6 max-w-md text-base leading-7 text-slate-200">Recover secure access to your guest or owner workspace without losing your account context.</p>
             </div>
-            <p class="relative z-10 text-xs text-slate-500">Secure access to your Project Nexus workspace.</p>
+            <p class="relative z-10 text-xs text-slate-500">Secure access to your Verified Shortlet workspace.</p>
         </section>
 
         <section class="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8 lg:px-12 xl:px-20">
             <div class="w-full max-w-md">
                 <div class="mb-10 flex items-center justify-between lg:hidden">
-                    <a href="{{ route('home') }}" class="flex items-center gap-2.5"><img src="{{ asset('logo1.png') }}" alt="" class="size-10 object-contain"><span class="font-extrabold">Project Nexus</span></a>
+                    <a href="{{ route('home') }}" class="flex items-center gap-2.5"><img src="{{ asset('logo1.png') }}" alt="" class="size-10 object-contain"><span class="font-extrabold">Verified Shortlet</span></a>
                     <a href="{{ route('home') }}" class="text-sm font-bold text-slate-500 hover:text-orange-600">Back home</a>
                 </div>
 

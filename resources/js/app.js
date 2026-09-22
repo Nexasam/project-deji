@@ -22,6 +22,16 @@ Alpine.store('modals', {
     }
 });
 
+Alpine.store('favourites', {
+    count: Number(document.documentElement.dataset.favouritesCount || 0),
+    increment() {
+        this.count += 1;
+    },
+    decrement() {
+        this.count = Math.max(0, this.count - 1);
+    },
+});
+
 // Start Alpine
 Alpine.start();
 

@@ -98,7 +98,7 @@ class PropertyWizardTest extends TestCase
         $this->assertSame('pending', $property->publication_status->value);
         $this->assertSame(1, $property->lifecycleEvents()->where('event_type', 'marketplace_verification_submitted')->count());
         $this->assertSame(1, $property->channelConnections()->count());
-        $this->assertSame('10.0000', PropertyPromotion::query()->where('property_id', $property->id)->value('discount_value'));
+        $this->assertSame('10.0000', PropertyPromotion::query()->where('property_id', $property->id)->where('name', 'Longer stay discount')->value('discount_value'));
     }
 
     public function test_owner_can_remove_wizard_media(): void

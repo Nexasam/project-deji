@@ -23,7 +23,8 @@ class GuestBookingPresentationTest extends TestCase
         $this->assertStringContainsString('Stay details', $view);
         $this->assertStringContainsString('About the property', $view);
         $this->assertStringContainsString('Payment summary', $view);
-        $this->assertStringContainsString('Service fee', $view);
+        $this->assertStringContainsString('Stay subtotal', $view);
+        $this->assertStringNotContainsString('Service fee', $view);
         $this->assertStringContainsString('cancelOpen=true', $view);
         $this->assertStringContainsString('within 48 hours of check-in', $view);
         $this->assertStringContainsString('Yes, cancel booking', $view);

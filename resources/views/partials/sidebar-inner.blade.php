@@ -52,6 +52,12 @@
     </select>
 </form>
 @endif
+<div class="border-b border-gray-200 px-3 py-3">
+    <a href="{{ route('guest.dashboard') }}" class="flex items-center justify-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-extrabold text-orange-700 hover:bg-orange-100">
+        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Guest dashboard
+    </a>
+</div>
 
 {{-- Nav --}}
 <nav class="flex-1 p-3 overflow-y-auto">
@@ -87,6 +93,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
         Bookings
+    </a>@endif
+
+    @if($sidebarCan('booking.communicate'))<a href="{{ route('owner.messages.index') }}"
+       class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors relative
+              {{ $active === 'messages' ? 'text-[#FF5A00] bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h8M8 14h5m8-2a9 9 0 11-4.2-7.6L21 3l-1.4 4.2A8.96 8.96 0 0121 12z"/>
+        </svg>
+        Messages
     </a>@endif
 
     @if($sidebarCan('calendar.view'))<a href="{{ route('owner.calendar') }}"

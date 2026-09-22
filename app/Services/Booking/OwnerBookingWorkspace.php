@@ -46,6 +46,6 @@ final class OwnerBookingWorkspace
 
     public function find(Business $business, string $booking): Booking
     {
-        return $business->bookings()->with(['guest', 'property', 'payments', 'cancellations', 'checkIn', 'checkOut', 'serviceRequests.task', 'reviews.guest', 'reviews.response', 'statusHistory' => fn ($query) => $query->latest('occurred_at'), 'operationalTasks' => fn ($query) => $query->latest(), 'dateChanges' => fn ($query) => $query->latest('occurred_at')])->findOrFail($booking);
+        return $business->bookings()->with(['guest', 'property', 'payments', 'cancellations', 'checkIn', 'checkOut', 'serviceRequests.task', 'reviews.guest', 'reviews.response', 'interactions' => fn ($query) => $query->whereIn('interaction_type', ['message', 'owner_guest_review'])->where('is_internal', false)->latest('occurred_at'), 'statusHistory' => fn ($query) => $query->latest('occurred_at'), 'operationalTasks' => fn ($query) => $query->latest(), 'dateChanges' => fn ($query) => $query->latest('occurred_at')])->findOrFail($booking);
     }
 }

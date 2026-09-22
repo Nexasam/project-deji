@@ -5,11 +5,18 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Manrope', 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-.public-surface { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+html {
+    font-family: 'Manrope', 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+body,
+.public-surface {
+    font-family: 'Manrope', 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
 
 /* Owner property setup: intentionally scoped so dashboard forms can adopt it gradually. */
 .property-form-section {
@@ -49,12 +56,13 @@
     padding: 0.75rem 0.95rem;
     color: #0f172a;
     font-size: 0.9375rem;
+    font-weight: 400;
     line-height: 1.5rem;
     outline: none;
     transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
 }
 
-.property-form-control::placeholder { color: #94a3b8; }
+.property-form-control::placeholder { color: #94a3b8; font-weight: 400; }
 .property-form-control:hover { border-color: #8797aa; background: #fff; }
 .property-form-control:focus {
     border-color: #f97316;

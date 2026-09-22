@@ -56,6 +56,11 @@ class Role extends Model
             ->withTimestamps();
     }
 
+    public function businessPermissionSettings(): HasMany
+    {
+        return $this->hasMany(BusinessRolePermissionSetting::class);
+    }
+
     public function workspaces(): BelongsToMany
     {
         return $this->belongsToMany(Workspace::class, 'role_workspaces')

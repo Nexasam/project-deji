@@ -9,22 +9,64 @@
             <img src="/logo.png" alt="Verified Shortlet" style="height:58px;width:auto;"/>
         </a>
 
+        @php
+            $isExploreActive = request()->routeIs('home') || request()->routeIs('marketplace.show');
+            $isDashboardActive = request()->routeIs('guest.dashboard');
+            $isBookingsActive = request()->routeIs('guest.bookings.*');
+            $isMessagesActive = request()->routeIs('guest.messages.*') || request()->routeIs('guest.bookings.messages.*');
+            $isFavouritesActive = request()->routeIs('guest.favourites.*');
+            $isMarketplaceContext = request()->routeIs('home') || request()->routeIs('marketplace.show');
+            $isGuestWorkspaceContext = request()->routeIs('guest.*');
+            $guestNavClass = fn (bool $active) => 'inline-flex h-10 items-center justify-center rounded-full px-3 text-[15px] transition-colors '.($active ? 'bg-orange-50 font-semibold text-orange-700' : 'font-normal text-gray-700 hover:bg-gray-50 hover:text-orange-600');
+            $favouritesCount = auth()->check() ? auth()->user()->favourites()->count() : 0;
+        @endphp
+
         {{-- Desktop nav --}}
         <nav class="nav-desktop items-center gap-10">
-            <a href="#" class="nav-link active">Explore stays</a>
+            <a href="{{ route('home') }}" class="nav-link {{ $isExploreActive ? 'active' : '' }}">Explore stays</a>
+            @if($isMarketplaceContext)
             <a href="#" class="nav-link">Why verified?</a>
             <a href="#" class="nav-link">Become a host</a>
+            @endif
+            @guest
             <a href="#" class="nav-link">Help</a>
+            @endguest
         </nav>
 
         {{-- Desktop auth --}}
         <div class="nav-desktop items-center gap-6">
             @auth
-            @php($navbarUnread = auth()->user()->notifications()->whereNull('read_at')->count())
-            <a href="{{ route('notifications.index') }}" class="relative inline-flex h-10 items-center justify-center text-[15px] font-medium text-gray-700 hover:text-orange-600">Alerts @if($navbarUnread)<span class="ml-1 rounded-full bg-orange-600 px-1.5 py-0.5 text-[10px] font-bold text-white">{{ $navbarUnread }}</span>@endif</a>
-            <a href="{{ route('guest.bookings.index') }}" class="inline-flex h-10 items-center justify-center text-[15px] font-medium text-gray-700 hover:text-orange-600 transition-colors">
-                My bookings
+            {{-- Alerts are available in workspace screens; hidden here to keep guest navigation compact. --}}
+            @if($isMarketplaceContext)
+            <a href="{{ route('guest.dashboard') }}" class="{{ $guestNavClass($isDashboardActive) }}" @if($isDashboardActive) aria-current="page" @endif>
+                Dashboard
             </a>
+            @endif
+            @if($isGuestWorkspaceContext)
+            <a href="{{ route('guest.dashboard') }}" class="{{ $guestNavClass($isDashboardActive) }}" @if($isDashboardActive) aria-current="page" @endif>
+                Dashboard
+            </a>
+            <a href="{{ route('guest.bookings.index') }}" class="{{ $guestNavClass($isBookingsActive) }}" @if($isBookingsActive) aria-current="page" @endif>
+                Bookings
+            </a>
+            @endif
+            @if($isMarketplaceContext || $isGuestWorkspaceContext)
+            <a href="{{ route('guest.favourites.index') }}" class="{{ $guestNavClass($isFavouritesActive) }}" @if($isFavouritesActive) aria-current="page" @endif>
+                Favourites
+                <span x-show="$store.favourites.count > 0" x-cloak x-text="$store.favourites.count" class="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-orange-600 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white"></span>
+            </a>
+            @endif
+            @if($isGuestWorkspaceContext)
+            <a href="{{ route('guest.messages.index') }}" class="{{ $guestNavClass($isMessagesActive) }}" @if($isMessagesActive) aria-current="page" @endif>
+                Messages
+            </a>
+            @php($hasOwnerAccess = auth()->user()->businessMemberships()->where('status', 'active')->exists())
+            @if($hasOwnerAccess)
+            <a href="{{ route('owner.entry') }}" class="inline-flex h-10 items-center justify-center rounded-full border border-orange-200 bg-orange-50 px-4 text-[14px] font-semibold text-orange-700 hover:bg-orange-100 transition-colors">
+                Business
+            </a>
+            @endif
+            @endif
             <span class="max-w-36 truncate text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
@@ -74,12 +116,27 @@
         :aria-hidden="!mobileMenuOpen"
     >
         <div class="mobile-menu-inner">
-            <a href="#">
+            <a href="{{ route('home') }}" class="{{ $isExploreActive ? 'active' : '' }}">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
                 </svg>
                 Explore stays
             </a>
+            @if($isMarketplaceContext)
+            <a href="#">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                Why verified?
+            </a>
+            <a href="#">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Become a host
+            </a>
+            @endif
+            @guest
             <a href="#">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:10px;opacity:.5;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
@@ -98,9 +155,29 @@
                 </svg>
                 Help
             </a>
+            @endguest
             @auth
-            <a href="{{ route('notifications.index') }}">Notifications</a>
-            <a href="{{ route('guest.bookings.index') }}">My bookings</a>
+            {{-- Notifications remain accessible from workspace pages; hidden here to reduce menu clutter. --}}
+            @if($isMarketplaceContext)
+            <a href="{{ route('guest.dashboard') }}" class="{{ $isDashboardActive ? 'active' : '' }}">Dashboard</a>
+            @endif
+            @if($isGuestWorkspaceContext)
+            <a href="{{ route('guest.dashboard') }}" class="{{ $isDashboardActive ? 'active' : '' }}">Dashboard</a>
+            <a href="{{ route('guest.bookings.index') }}" class="{{ $isBookingsActive ? 'active' : '' }}">Bookings</a>
+            @endif
+            @if($isMarketplaceContext || $isGuestWorkspaceContext)
+            <a href="{{ route('guest.favourites.index') }}" class="{{ $isFavouritesActive ? 'active' : '' }}">
+                Favourites
+                <span x-show="$store.favourites.count > 0" x-cloak x-text="$store.favourites.count" class="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-orange-600 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white"></span>
+            </a>
+            @endif
+            @if($isGuestWorkspaceContext)
+            <a href="{{ route('guest.messages.index') }}" class="{{ $isMessagesActive ? 'active' : '' }}">Messages</a>
+            @php($mobileHasOwnerAccess = auth()->user()->businessMemberships()->where('status', 'active')->exists())
+            @if($mobileHasOwnerAccess)
+            <a href="{{ route('owner.entry') }}">Business</a>
+            @endif
+            @endif
             <span class="px-4 py-3 text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf

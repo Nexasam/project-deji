@@ -26,7 +26,7 @@ class MarketplaceCheckoutTest extends TestCase
 
         $response = $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', [
             'arrival_date' => '2026-11-10', 'departure_date' => '2026-11-13',
-            'adult_count' => 2, 'child_count' => 1, 'guest_phone' => '+2348012345678', 'quoted_total' => 299250, 'idempotency_key' => 'checkout-one',
+            'adult_count' => 2, 'child_count' => 1, 'guest_phone' => '+2348012345678', 'quoted_total' => 285000, 'idempotency_key' => 'checkout-one',
             'total_amount' => 1,
         ]);
 
@@ -34,7 +34,7 @@ class MarketplaceCheckoutTest extends TestCase
         $response->assertRedirect(route('guest.bookings.show', $booking));
         $this->assertSame('confirmed', $booking->status->value);
         $this->assertSame('paid', $booking->payment_status->value);
-        $this->assertSame('299250.0000', $booking->total_amount);
+        $this->assertSame('285000.0000', $booking->total_amount);
         $this->assertSame(3, $booking->availabilityDays()->count());
         $this->assertSame('completed', Payment::query()->sole()->status->value);
         $this->assertSame(['awaiting_payment', 'confirmed'], BookingStatusHistory::query()->orderBy('occurred_at')->pluck('new_status')->all());
@@ -53,10 +53,28 @@ class MarketplaceCheckoutTest extends TestCase
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
         $guest = User::factory()->create();
-        $payload = ['arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12', 'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 199500, 'idempotency_key' => 'first'];
+        $payload = ['arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12', 'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 190000, 'idempotency_key' => 'first'];
         $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', $payload)->assertRedirect();
         $this->post('/stays/lekki-admiralty-waterfront/checkout', [...$payload, 'idempotency_key' => 'second'])->assertSessionHasErrors('arrival_date');
         $this->assertDatabaseCount('bookings', 1);
+    }
+
+    public function test_property_owner_cannot_book_their_own_marketplace_property(): void
+    {
+        $this->seed(ServicedApartmentMarketplaceSeeder::class);
+        $owner = User::query()->where('email', 'owner@lagoonstays.test')->firstOrFail();
+
+        $this->actingAs($owner)->post('/stays/lekki-admiralty-waterfront/checkout', [
+            'arrival_date' => '2026-11-10',
+            'departure_date' => '2026-11-12',
+            'adult_count' => 1,
+            'child_count' => 0,
+            'guest_phone' => '+2348012345678',
+            'quoted_total' => 190000,
+            'idempotency_key' => 'owner-self-booking',
+        ])->assertSessionHasErrors('property');
+
+        $this->assertDatabaseCount('bookings', 0);
     }
 
     public function test_failed_payment_is_recorded_without_reserving_calendar_nights(): void
@@ -73,7 +91,7 @@ class MarketplaceCheckoutTest extends TestCase
 
         $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', [
             'arrival_date' => '2026-12-10', 'departure_date' => '2026-12-12',
-            'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 199500, 'idempotency_key' => 'failed-payment',
+            'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 190000, 'idempotency_key' => 'failed-payment',
         ])->assertSessionHasErrors('payment');
 
         $booking = Booking::query()->sole();

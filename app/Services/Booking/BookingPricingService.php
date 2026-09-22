@@ -21,9 +21,9 @@ final class BookingPricingService
             ->where(fn ($q) => $q->whereNull('minimum_stay_nights')->orWhere('minimum_stay_nights', '<=', $nights))
             ->orderByDesc('discount_value')->first();
         $discount = $promotion && $promotion->discount_type->value === 'percentage'
-            ? (int) round($subtotal * ((float) $promotion->discount_value / 100)) : 0;
-        $fee = (int) round(($subtotal - $discount) * .05);
+            ? (int) round($subtotal * ((float) $promotion->discount_value / 100))
+            : 0;
 
-        return new BookingPrice($property->pricing_currency, $nights, $subtotal, $discount, $fee, $subtotal - $discount + $fee);
+        return new BookingPrice($property->pricing_currency, $nights, $subtotal, $discount, 0, $subtotal - $discount);
     }
 }

@@ -28,7 +28,7 @@ class ServicedApartmentBookingJourneyTest extends TestCase
 
         $this->post('/stays/lekki-admiralty-waterfront/checkout', [
             'arrival_date' => '2026-12-24', 'departure_date' => '2026-12-26',
-            'adult_count' => 2, 'child_count' => 2, 'guest_phone' => '+2348012345678', 'quoted_total' => 199500, 'idempotency_key' => 'tuesday-acceptance',
+            'adult_count' => 2, 'child_count' => 2, 'guest_phone' => '+2348012345678', 'quoted_total' => 190000, 'idempotency_key' => 'tuesday-acceptance',
         ])->assertRedirect();
 
         $booking = Booking::query()->sole();
