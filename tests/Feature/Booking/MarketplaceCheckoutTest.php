@@ -19,6 +19,19 @@ class MarketplaceCheckoutTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_guest_can_review_an_available_stay_on_the_dedicated_checkout_page(): void
+    {
+        $this->seed(ServicedApartmentMarketplaceSeeder::class);
+        $guest = User::factory()->create(['phone_number' => '+2348012345678']);
+
+        $this->actingAs($guest)->get('/stays/lekki-admiralty-waterfront/checkout?arrival_date=2026-11-10&departure_date=2026-11-13&adult_count=2&child_count=1')
+            ->assertOk()
+            ->assertSee('Confirm and pay')
+            ->assertSee('Admiralty Waterfront Residence')
+            ->assertSee('285,000')
+            ->assertSee('Paystack');
+    }
+
     public function test_guest_payment_confirms_booking_and_reserves_each_night(): void
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
@@ -31,7 +44,13 @@ class MarketplaceCheckoutTest extends TestCase
         ]);
 
         $booking = Booking::query()->sole();
-        $response->assertRedirect(route('guest.bookings.show', $booking));
+        $response->assertRedirect(route('guest.bookings.confirmation', $booking));
+        $this->get(route('guest.bookings.confirmation', $booking))
+            ->assertOk()
+            ->assertSee('Booking confirmed')
+            ->assertSee('Payment receipt')
+            ->assertSee('What happens next')
+            ->assertSee($booking->reference);
         $this->assertSame('confirmed', $booking->status->value);
         $this->assertSame('paid', $booking->payment_status->value);
         $this->assertSame('285000.0000', $booking->total_amount);

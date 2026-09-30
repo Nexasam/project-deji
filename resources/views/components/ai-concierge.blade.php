@@ -15,7 +15,7 @@
                 <div class="mt-6 rounded-2xl border border-white/10 bg-gray-800/80 p-4 sm:p-5">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span></span>
-                        <span class="text-sm font-bold text-white">AI Trip Concierge</span>
+                        <span class="text-sm font-bold text-white">AI Stay Concierge</span>
                     </div>
 
                     <div class="flex gap-3">
@@ -47,7 +47,7 @@
 
             <div class="divide-y divide-white/10 border-y border-white/10">
                 @foreach([
-                    ['GUEST MATCHING', 'Suggests stays based on what you ask', 'Mention “remote work” or “family trip” to narrow the list to stays that genuinely fit.'],
+                    ['GUEST MATCHING', 'Suggests stays based on what you ask', 'Mention “remote work” or “family stay” to narrow the list to places that genuinely fit.'],
                     ['PLAIN-LANGUAGE Q&A', 'Answers from verified listing data', 'Get concise answers about house rules, wifi and the details that have actually been checked.'],
                     ['FOR HOSTS', 'Pricing suggestions while you list', 'Compare nearby verified stays to guide a practical nightly rate.'],
                 ] as [$label, $heading, $copy])
@@ -79,7 +79,7 @@ function aiConcierge() {
             const value = question.toLowerCase();
             if (value.includes('beachfront') || value.includes('100k')) return 'Try the beachfront stays in Lekki and Victoria Island, then set your maximum nightly price to ₦100k.';
             if (value.includes('business')) return 'Choose Business stays for serviced apartments with reliable power, wifi and easy access to Lagos commercial districts.';
-            return 'Tell me your location, budget, dates or trip type and I’ll help narrow the verified stays.';
+            return 'Tell me your location, budget, dates or stay type and I’ll help narrow the verified stays.';
         }
     }
 }

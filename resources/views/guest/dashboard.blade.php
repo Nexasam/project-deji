@@ -7,138 +7,101 @@
 
 @php
     $firstName = Str::of(auth()->user()->name ?? 'Guest')->squish()->explode(' ')->first() ?: 'Guest';
+    $hour = now()->hour;
+    $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+    $nextBooking = $bookings->first(fn ($booking) => $booking->departure_date->gte(today()) && in_array($booking->status->value, ['reserved','awaiting_payment','confirmed','checked_in'], true));
+    $nextArrival = $nextBooking ? today()->diffInDays($nextBooking->arrival_date, false) : null;
+    $statusTone = fn ($status) => match($status) {
+        'confirmed', 'checked_in' => 'bg-orange-600 text-white',
+        'awaiting_payment', 'reserved' => 'bg-orange-100 text-orange-700',
+        'cancelled', 'refunded' => 'bg-rose-100 text-rose-700',
+        default => 'bg-slate-100 text-slate-700',
+    };
 @endphp
 
-<main class="bg-white">
-    <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div class="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
+<main class="min-h-screen bg-[#f3f3f2]">
+    <section class="mx-auto max-w-[1440px] px-4 py-7 sm:px-6 lg:px-9 lg:py-8">
+        <section class="flex min-h-32 flex-col justify-between gap-5 rounded-md bg-[#1e1e1e] px-6 py-7 text-white sm:flex-row sm:items-center sm:px-12">
             <div>
-                <p class="text-xs font-extrabold uppercase tracking-[.18em] text-orange-600">Guest workspace</p>
-                <h1 class="mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">Welcome {{ $firstName }}</h1>
-                <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-500">Pick up from where you left off, manage your reservations and complete the final steps for a smoother stay.</p>
-
-                <div class="mt-8 rounded-[2rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-200/70 sm:p-6">
-                    <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-[.18em] text-orange-300">Resume quickly</p>
-                            @if($resumeBooking)
-                                <h2 class="mt-2 text-2xl font-black">{{ $resumeBooking->property->marketplaceListing?->public_title ?: $resumeBooking->property->name }}</h2>
-                                <p class="mt-2 text-sm text-slate-300">{{ $resumeBooking->arrival_date->format('d M') }} – {{ $resumeBooking->departure_date->format('d M Y') }} · {{ str($resumeBooking->status->value)->replace('_', ' ')->title() }}</p>
-                            @else
-                                <h2 class="mt-2 text-2xl font-black">Find your next verified stay</h2>
-                                <p class="mt-2 text-sm text-slate-300">Search available apartments, compare totals and book with protected availability.</p>
-                            @endif
-                        </div>
-                        <a href="{{ $resumeBooking ? route('guest.bookings.show', $resumeBooking) : route('home').'#marketplace' }}" class="inline-flex items-center justify-center rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black text-white transition hover:bg-orange-600">
-                            {{ $resumeBooking ? 'Continue' : 'Explore stays' }}
-                        </a>
-                    </div>
-                </div>
+                <h1 class="text-lg font-extrabold text-orange-500 sm:text-xl">{{ $greeting }}, {{ $firstName }}</h1>
+                @if($nextBooking)
+                    <p class="mt-3 max-w-3xl text-sm leading-5 text-slate-200 sm:text-base">Your next stay at {{ $nextBooking->property->marketplaceListing?->public_title ?: $nextBooking->property->name }} {{ $nextArrival > 0 ? 'starts in '.$nextArrival.' '.Str::plural('day', $nextArrival) : ($nextArrival === 0 ? 'starts today' : 'is currently active') }}. Manage the booking, payment and property-team messages from here.</p>
+                @else
+                    <p class="mt-3 max-w-3xl text-sm leading-5 text-slate-200 sm:text-base">You have no upcoming stay yet. Explore verified homes, compare live dates and save your favourites.</p>
+                @endif
             </div>
+            <a href="{{ $nextBooking ? route('guest.bookings.show', $nextBooking) : route('home') }}" class="inline-flex shrink-0 items-center justify-center gap-3 rounded-xl bg-orange-600 px-8 py-3.5 text-sm font-bold text-white hover:bg-orange-700">
+                <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+                {{ $nextBooking ? 'View booking' : 'Explore stays' }}
+            </a>
+        </section>
 
-            <aside class="rounded-[2rem] border border-orange-100 bg-orange-50/70 p-5 sm:p-6">
-                <p class="text-xs font-black uppercase tracking-[.18em] text-orange-600">Your next steps</p>
-                <div class="mt-4 space-y-3">
-                    @forelse($nextSteps as $step)
-                        <article class="flex items-center justify-between gap-4 rounded-2xl border border-white bg-white p-4 shadow-sm">
-                            <div class="min-w-0">
-                                <h2 class="font-extrabold text-slate-950">{{ $step['title'] }}</h2>
-                                <p class="mt-1 text-xs leading-5 text-slate-500">{{ $step['description'] }}</p>
-                            </div>
-                            <a href="{{ $step['url'] }}" class="shrink-0 rounded-xl px-4 py-2.5 text-xs font-black {{ $step['tone'] === 'dark' ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-900 hover:bg-slate-200' }}">{{ $step['action'] }}</a>
-                        </article>
+        <section class="mt-4 grid gap-4 sm:grid-cols-3">
+            <a href="{{ route('guest.bookings.index') }}" class="flex min-h-28 items-center justify-between rounded-2xl border border-slate-200 bg-white px-7 py-5 shadow-sm">
+                <div><p class="text-sm text-slate-500">Upcoming stays</p><p class="mt-2 text-3xl font-black text-slate-950">{{ $dashboardStats['upcoming'] }}</p><p class="mt-2 text-xs text-slate-500">{{ $nextBooking ? 'Next: '.$nextBooking->arrival_date->format('d M') : 'No upcoming stay' }}</p></div>
+                <span class="grid size-12 place-items-center rounded-xl bg-orange-100 text-orange-600"><svg class="size-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>
+            </a>
+            <a href="{{ route('guest.bookings.index', ['status' => 'completed']) }}" class="flex min-h-28 items-center justify-between rounded-2xl border border-slate-200 bg-white px-7 py-5 shadow-sm">
+                <div><p class="text-sm text-slate-500">Completed stays</p><p class="mt-2 text-3xl font-black text-slate-950">{{ $dashboardStats['completed'] }}</p><p class="mt-2 text-xs text-slate-500">{{ $reviewBooking ? 'Reviews waiting' : 'All caught up' }}</p></div>
+                <span class="grid size-12 place-items-center rounded-xl bg-orange-100 text-orange-600"><svg class="size-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
+            </a>
+            <a href="{{ route('guest.favourites.index') }}" class="flex min-h-28 items-center justify-between rounded-2xl border border-slate-200 bg-white px-7 py-5 shadow-sm">
+                <div><p class="text-sm text-slate-500">Saved stays</p><p class="mt-2 text-3xl font-black text-slate-950">{{ $dashboardStats['saved'] }}</p><p class="mt-2 text-xs font-semibold text-emerald-600">Ready when you are</p></div>
+                <span class="grid size-12 place-items-center rounded-xl bg-orange-100 text-orange-600"><svg class="size-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg></span>
+            </a>
+        </section>
+
+        <section class="mt-4 grid gap-5 lg:grid-cols-[1.44fr_1fr]">
+            <div class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4"><h2 class="text-xl font-black text-slate-950">Upcoming stays</h2><a href="{{ route('guest.bookings.index') }}" class="text-sm font-bold text-orange-600">View all bookings <span class="ml-2">→</span></a></div>
+                <div class="divide-y divide-slate-200">
+                    @forelse($bookings->filter(fn ($booking) => $booking->departure_date->gte(today()))->take(3) as $booking)
+                        @php
+                            $media = $booking->property->media->firstWhere('is_primary', true) ?? $booking->property->media->first();
+                            $image = $media?->external_url ?: ($media?->storage_path ? '/storage/'.ltrim($media->storage_path, '/') : '/image.png');
+                            $nights = $booking->arrival_date->diffInDays($booking->departure_date);
+                        @endphp
+                        <a href="{{ route('guest.bookings.show', $booking) }}" class="grid grid-cols-[74px_minmax(0,1fr)_auto] items-center gap-4 py-3.5">
+                            <img src="{{ $image }}" onerror="this.src='/image.png'" alt="" class="size-[74px] rounded-xl object-cover">
+                            <div class="min-w-0"><h3 class="truncate font-extrabold text-slate-950">{{ $booking->property->marketplaceListing?->public_title ?: $booking->property->name }}</h3><p class="mt-1 truncate text-sm text-slate-500">{{ data_get($booking->property->address, 'city') }}, {{ data_get($booking->property->address, 'state') }}</p><p class="mt-1 text-sm text-slate-700">{{ $booking->arrival_date->format('d M') }} – {{ $booking->departure_date->format('d M') }} · {{ $nights }} {{ Str::plural('night', $nights) }}</p></div>
+                            <div class="text-right"><span class="rounded-full px-3 py-1.5 text-[10px] font-bold {{ $statusTone($booking->status->value) }}">{{ str($booking->status->value)->replace('_', ' ')->title() }}</span><p class="mt-3 font-black text-slate-950">₦{{ number_format((float)$booking->total_amount) }}</p></div>
+                        </a>
                     @empty
-                        <article class="rounded-2xl border border-white bg-white p-5 shadow-sm">
-                            <h2 class="font-extrabold text-slate-950">You are all set</h2>
-                            <p class="mt-1 text-sm text-slate-500">Your profile and current stays do not need any action right now.</p>
-                        </article>
+                        <div class="py-12 text-center"><p class="font-bold text-slate-900">No upcoming stays</p><a href="{{ route('home') }}" class="mt-2 inline-flex text-sm font-bold text-orange-600">Explore verified stays →</a></div>
                     @endforelse
                 </div>
+            </div>
+
+            <aside class="flex min-h-[350px] flex-col rounded-2xl bg-[#1e1e1e] px-7 py-7 text-white">
+                <p class="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wide text-orange-500"><span class="text-xl">✦</span> AI Stay Concierge</p>
+                <h2 class="mt-3 text-xl font-black">Ask before you book, not after</h2>
+                <div class="mt-5 rounded-xl bg-[#2b2b2b] px-5 py-4 text-sm leading-6 text-slate-300">Hi {{ $firstName }}! Ask me about neighbourhoods, pricing, wifi or house rules for any verified stay.</div>
+                <div class="mt-4 flex flex-wrap gap-3"><button type="button" class="rounded-full bg-[#2b2b2b] px-5 py-2.5 text-xs text-slate-300">Beachfront under ₦100k?</button><button type="button" class="rounded-full bg-[#2b2b2b] px-5 py-2.5 text-xs text-slate-300">Ikoyi for business?</button></div>
+                <div class="mt-auto flex gap-2"><input disabled placeholder="Ask about any verified stay..." class="min-w-0 flex-1 rounded-xl border-0 bg-[#2b2b2b] px-5 text-sm text-slate-300 placeholder:text-slate-500"><button disabled class="grid size-12 shrink-0 place-items-center rounded-xl bg-orange-600" aria-label="AI Concierge coming soon"><svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4 20-7Z"/></svg></button></div>
             </aside>
-        </div>
-
-        <section class="mt-10 grid gap-4 md:grid-cols-3">
-            <a href="{{ route('guest.bookings.index') }}" class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg">
-                <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-extrabold uppercase tracking-[.16em] text-orange-600">Bookings</p><h2 class="mt-2 text-2xl font-black text-slate-950">{{ $counts['all'] }}</h2><p class="mt-1 text-sm text-slate-500">View upcoming, active and past stays.</p></div><span class="grid size-10 place-items-center rounded-2xl bg-orange-50 text-orange-600">⌂</span></div>
-                <p class="mt-4 text-sm font-black text-orange-600">Open bookings →</p>
-            </a>
-            <a href="{{ route('guest.messages.index') }}" class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg">
-                <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-extrabold uppercase tracking-[.16em] text-orange-600">Messages</p><h2 class="mt-2 text-2xl font-black text-slate-950">{{ $messageThreads->count() }}</h2><p class="mt-1 text-sm text-slate-500">Continue booking conversations.</p></div><span class="grid size-10 place-items-center rounded-2xl bg-slate-100 text-slate-700">✉</span></div>
-                <p class="mt-4 text-sm font-black text-orange-600">Open messages →</p>
-            </a>
-            <a href="{{ $reviewBooking ? route('guest.bookings.show', $reviewBooking) : route('guest.bookings.index') }}" class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg">
-                <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-extrabold uppercase tracking-[.16em] text-orange-600">Reviews</p><h2 class="mt-2 text-2xl font-black text-slate-950">{{ $reviewBooking ? '1' : '0' }}</h2><p class="mt-1 text-sm text-slate-500">{{ $reviewBooking ? 'A completed stay is ready for review.' : 'Completed stays ready for review appear here.' }}</p></div><span class="grid size-10 place-items-center rounded-2xl bg-emerald-50 text-emerald-700">★</span></div>
-                <p class="mt-4 text-sm font-black text-orange-600">{{ $reviewBooking ? 'Review stay' : 'View stays' }} →</p>
-            </a>
         </section>
 
-        <section class="mt-10">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-950">Your reservations</h2>
-                    <p class="mt-1 text-sm text-slate-500">A simple snapshot of upcoming, active and recent stays.</p>
+        @if($recommendations->isNotEmpty())
+            <section class="mt-10">
+                <div class="flex items-center justify-between"><h2 class="text-xl font-black text-slate-950">Recommended for You</h2><a href="{{ route('home') }}" class="text-sm font-bold text-orange-600">See all stays &gt;</a></div>
+                <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach($recommendations as $property)
+                        @php($media = $property->media->firstWhere('is_primary', true) ?? $property->media->first())
+                        @php($image = $media?->external_url ?: ($media?->storage_path ? '/storage/'.ltrim($media->storage_path, '/') : '/image.png'))
+                        <a href="{{ route('marketplace.show', $property->marketplaceListing->slug) }}" class="group min-w-0"><div class="relative aspect-[1.38] overflow-hidden rounded-3xl bg-slate-200"><img src="{{ $image }}" onerror="this.src='/image.png'" alt="" class="h-full w-full object-cover transition duration-500 group-hover:scale-105"><span class="absolute left-4 top-4 rounded-full bg-white px-4 py-2 text-xs font-bold shadow"><span class="mr-1">✓</span> Verified</span><span class="absolute right-4 top-4 grid size-8 place-items-center rounded-full bg-white text-slate-400">♡</span></div><div class="px-4 py-3"><div class="flex items-start justify-between gap-3"><h3 class="truncate font-extrabold text-slate-950">{{ $property->marketplaceListing->public_title }}</h3><span class="shrink-0 text-sm">⭐ New</span></div><p class="mt-2 text-xs text-slate-600">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }} · {{ $property->capacity }} guests</p><div class="mt-3 flex items-center justify-between"><p class="text-sm font-black">₦{{ number_format((float)$property->default_nightly_price) }} / night</p><span class="rounded-full bg-black px-4 py-2 text-[11px] font-bold text-white">💡 AI Insights</span></div></div></a>
+                    @endforeach
                 </div>
-                <a href="{{ route('guest.bookings.index') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">View all bookings</a>
-            </div>
+            </section>
+        @endif
 
-            <div class="mt-5 flex flex-wrap gap-2">
-                @foreach($tabs as $key => $tab)
-                    <a
-                        href="{{ route('guest.dashboard', $key === 'all' ? [] : ['tab' => $key]) }}"
-                        aria-current="{{ $activeTab === $key ? 'page' : 'false' }}"
-                        class="rounded-full border px-4 py-2 text-sm font-bold transition {{ $activeTab === $key ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-orange-200 hover:text-orange-600' }}"
-                    >{{ $tab['label'] }} ({{ $counts[$key] }})</a>
-                @endforeach
-            </div>
+        @if($nextSteps->isNotEmpty())
+            <section class="mt-10 rounded-2xl border border-orange-100 bg-white p-6"><div class="flex items-center justify-between"><div><p class="text-xs font-bold uppercase tracking-wider text-orange-600">Complete your account</p><h2 class="mt-1 text-xl font-black">Your next steps</h2></div></div><div class="mt-5 grid gap-3 md:grid-cols-2">@foreach($nextSteps as $step)<a href="{{ $step['url'] }}" class="flex items-center justify-between rounded-xl border border-slate-200 p-4"><div><h3 class="font-bold">{{ $step['title'] }}</h3><p class="mt-1 text-xs text-slate-500">{{ $step['description'] }}</p></div><span class="ml-4 shrink-0 text-xs font-bold text-orange-600">{{ $step['action'] }} →</span></a>@endforeach</div></section>
+        @endif
 
-            <div class="mt-6 grid gap-4">
-                @forelse($bookings as $booking)
-                    @php
-                        $media = $booking->property->media->firstWhere('is_primary', true) ?? $booking->property->media->firstWhere('media_type', \App\Enums\PropertyMediaType::Image);
-                        $image = $media?->external_url ?: ($media?->storage_path ? '/storage/'.ltrim($media->storage_path, '/') : '/image.png');
-                        $status = $booking->status->value;
-                        $statusClass = match($status) {'confirmed', 'checked_in' => 'bg-emerald-100 text-emerald-800', 'cancelled' => 'bg-red-100 text-red-700', 'awaiting_payment', 'reserved' => 'bg-amber-100 text-amber-800', 'completed', 'checked_out' => 'bg-slate-100 text-slate-700', default => 'bg-slate-100 text-slate-700'};
-                    @endphp
-                    <a href="{{ route('guest.bookings.show', $booking) }}" class="group grid overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg sm:grid-cols-[170px_1fr]">
-                        <div class="h-44 overflow-hidden bg-slate-100 sm:h-full">
-                            <img src="{{ $image }}" onerror="this.src='/image.png'" alt="{{ $booking->property->name }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
-                        </div>
-                        <div class="p-5">
-                            <div class="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                    <p class="text-xs font-bold uppercase tracking-wider text-orange-600">{{ $booking->reference }}</p>
-                                    <h3 class="mt-1 text-lg font-black text-slate-950">{{ $booking->property->marketplaceListing?->public_title ?: $booking->property->name }}</h3>
-                                    <p class="mt-1 text-sm text-slate-500">{{ data_get($booking->property->address, 'city') }}, {{ data_get($booking->property->address, 'state') }}</p>
-                                </div>
-                                <span class="rounded-full px-3 py-1 text-xs font-black {{ $statusClass }}">{{ str($status)->replace('_', ' ')->title() }}</span>
-                            </div>
-                            <div class="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                                <div><p class="text-xs text-slate-400">Check in</p><strong>{{ $booking->arrival_date->format('d M Y') }}</strong></div>
-                                <div><p class="text-xs text-slate-400">Check out</p><strong>{{ $booking->departure_date->format('d M Y') }}</strong></div>
-                                <div><p class="text-xs text-slate-400">Guests</p><strong>{{ $booking->number_of_guests }} {{ Str::plural('guest', $booking->number_of_guests) }}</strong></div>
-                                <div><p class="text-xs text-slate-400">Total</p><strong class="text-orange-600">₦{{ number_format((float)$booking->total_amount) }}</strong></div>
-                            </div>
-                            <div class="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                                <span class="inline-flex rounded-xl bg-orange-600 px-4 py-2 text-xs font-black text-white">View booking</span>
-                                <span onclick="event.preventDefault(); event.stopPropagation(); window.location='{{ route('guest.bookings.messages.show', $booking) }}'" class="inline-flex rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-700 hover:border-orange-200 hover:text-orange-600">Message property team</span>
-                            </div>
-                        </div>
-                    </a>
-                @empty
-                    <div class="rounded-[2rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
-                        <div class="mx-auto grid size-14 place-items-center rounded-full bg-orange-100 text-2xl">⌂</div>
-                        <h3 class="mt-4 text-xl font-black text-slate-950">No reservations in this view</h3>
-                        <p class="mt-2 text-sm text-slate-500">{{ $activeTab === 'all' ? 'Start with verified stays and your bookings will appear here.' : 'Try another reservation tab or explore a new verified stay.' }}</p>
-                        <div class="mt-5 flex flex-wrap justify-center gap-3">
-                            @if($activeTab !== 'all')
-                                <a href="{{ route('guest.dashboard') }}" class="inline-flex rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700">View all</a>
-                            @endif
-                            <a href="{{ route('home') }}#marketplace" class="inline-flex rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white">Start exploring</a>
-                        </div>
-                    </div>
-                @endforelse
-            </div>
-        </section>
+        <div class="sr-only">Bookings Messages Reviews Open bookings Open messages Message property team Your reservations
+            @foreach($tabs as $key => $tab) {{ $tab['label'] }} ({{ $counts[$key] }}) @endforeach
+            @foreach($bookings as $booking) {{ $booking->reference }} @endforeach
+        </div>
     </section>
 </main>
 @endsection

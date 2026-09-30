@@ -1,7 +1,7 @@
-@props(['filters' => []])
-<div class="search-bar-outer">
+@props(['filters' => [], 'workspace' => false])
+<div class="search-bar-outer {{ $workspace ? 'search-bar-workspace' : '' }}">
     <div
-        class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 search-bar-wrap"
+        class="{{ $workspace ? 'max-w-6xl' : 'max-w-5xl' }} mx-auto px-4 sm:px-6 lg:px-10 search-bar-wrap"
         x-data="searchBar(@js($filters))"
     >
         <button

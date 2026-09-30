@@ -145,9 +145,9 @@ class LandingPagePresentationTest extends TestCase
         $this->assertStringContainsString('get subtotal()', $view);
         $this->assertStringContainsString('get discount()', $view);
         $this->assertStringContainsString('get total(){return this.serverQuote?Number(this.serverQuote.total):this.subtotal-this.discount}', $view);
-        $this->assertStringContainsString('Total amount', $view);
+        $this->assertStringContainsString('Estimated total', $view);
         $this->assertStringContainsString('guestCount>capacity', $view);
-        $this->assertStringContainsString("'Confirm & book · '+formatMoney(total)", $view);
+        $this->assertStringContainsString("'Continue to checkout'", $view);
         $this->assertStringNotContainsString('Service fee (5%)', $view);
         $this->assertStringNotContainsString('Eligible stay discount', $view);
     }

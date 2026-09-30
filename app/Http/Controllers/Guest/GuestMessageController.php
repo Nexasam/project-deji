@@ -15,7 +15,7 @@ class GuestMessageController extends Controller
     {
         $startableBookings = Booking::query()
             ->where('guest_user_id', $request->user()->id)
-            ->with(['property.marketplaceListing'])
+            ->with(['property.marketplaceListing', 'property.media'])
             ->latest()
             ->limit(6)
             ->get();
@@ -23,7 +23,7 @@ class GuestMessageController extends Controller
         $bookings = Booking::query()
             ->where('guest_user_id', $request->user()->id)
             ->whereHas('interactions', fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false))
-            ->with(['property.marketplaceListing', 'guest', 'interactions' => fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false)->latest('occurred_at')])
+            ->with(['property.marketplaceListing', 'property.media', 'guest', 'interactions' => fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false)->latest('occurred_at')])
             ->withMax(['interactions as latest_message_at' => fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false)], 'occurred_at')
             ->orderByDesc('latest_message_at')
             ->paginate(12);
@@ -35,7 +35,7 @@ class GuestMessageController extends Controller
     {
         $booking = Booking::query()
             ->where('guest_user_id', $request->user()->id)
-            ->with(['business', 'property.marketplaceListing', 'guest', 'interactions' => fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false)->orderBy('occurred_at')])
+            ->with(['business', 'property.marketplaceListing', 'property.media', 'guest', 'interactions' => fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false)->orderBy('occurred_at')])
             ->findOrFail($booking);
 
         return view('guest.messages.show', compact('booking'));

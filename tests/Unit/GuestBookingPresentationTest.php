@@ -6,13 +6,13 @@ use PHPUnit\Framework\TestCase;
 
 class GuestBookingPresentationTest extends TestCase
 {
-    public function test_guest_booking_list_exposes_rich_trip_information(): void
+    public function test_guest_booking_list_exposes_rich_stay_information(): void
     {
         $view = file_get_contents(dirname(__DIR__, 2).'/resources/views/guest/bookings/index.blade.php');
 
-        $this->assertStringContainsString('Explore more stays', $view);
-        $this->assertStringContainsString('Payment:', $view);
-        $this->assertStringContainsString('View booking', $view);
+        $this->assertStringContainsString('Find a stay', $view);
+        $this->assertStringContainsString('Upcoming stays', $view);
+        $this->assertStringContainsString('View details', $view);
         $this->assertStringContainsString("property->media", $view);
     }
 
@@ -21,7 +21,9 @@ class GuestBookingPresentationTest extends TestCase
         $view = file_get_contents(dirname(__DIR__, 2).'/resources/views/guest/bookings/show.blade.php');
 
         $this->assertStringContainsString('Stay details', $view);
-        $this->assertStringContainsString('About the property', $view);
+        $this->assertStringContainsString('About this stay', $view);
+        $this->assertStringContainsString('Your host', $view);
+        $this->assertStringContainsString('Booking timeline', $view);
         $this->assertStringContainsString('Payment summary', $view);
         $this->assertStringContainsString('Stay subtotal', $view);
         $this->assertStringNotContainsString('Service fee', $view);

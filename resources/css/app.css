@@ -18,6 +18,65 @@ body,
     font-family: 'Manrope', 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Shared form language across guest, marketplace, owner and platform surfaces. */
+:where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']):not([type='image']),
+    select,
+    textarea
+) {
+    min-height: 3rem;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #b9c5d3;
+    border-radius: 0.75rem;
+    background-color: #fff;
+    color: #0f172a;
+    padding: 0.72rem 0.95rem;
+    font-size: 0.9375rem;
+    line-height: 1.5rem;
+    font-weight: 400;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+:where(textarea) {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+:where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']):not([type='image']),
+    select,
+    textarea
+)::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+:where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']):not([type='image']),
+    select,
+    textarea
+):hover:not(:disabled) {
+    border-color: #8797aa;
+}
+
+:where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']):not([type='image']),
+    select,
+    textarea
+):focus {
+    border-color: #f97316;
+    outline: none;
+    box-shadow: 0 0 0 4px rgb(249 115 22 / 0.13);
+}
+
+:where(input, select, textarea):disabled {
+    cursor: not-allowed;
+    border-color: #dbe3ec;
+    background-color: #eef2f6;
+    color: #64748b;
+}
+
 /* Owner property setup: intentionally scoped so dashboard forms can adopt it gradually. */
 .property-form-section {
     overflow: hidden;

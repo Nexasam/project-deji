@@ -51,8 +51,11 @@
     {{-- Navigation --}}
     <x-navbar />
 
-    {{-- Hero Section --}}
-    <x-hero 
+    <div class="{{ auth()->check() ? 'guest-explore-surface' : '' }}">
+
+    {{-- Public marketing hero. Authenticated guests enter directly into Explore Stays. --}}
+    @guest
+    <x-hero
         badge="Verification-first marketplace"
         title="Find a stay you don't have to second-guess."
         highlightText="second-guess."
@@ -65,12 +68,23 @@
         backgroundImage="/image.png"
         :heroImages="['/hero1.jpg', '/hero2.jpg', '/hero3.jpg']"
     />
+    @endguest
 
     {{-- Search Bar --}}
-    <x-search-bar :filters="$filters" />
+    <x-search-bar :filters="$filters" :workspace="auth()->check()" />
 
     {{-- Category Pills --}}
     <x-category-pills :filters="$filters" />
+
+    @auth
+        <section class="mx-auto mt-5 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col gap-4 rounded-xl bg-[#1e1e1e] px-6 py-4 text-white lg:flex-row lg:items-center">
+                <p class="shrink-0 text-[11px] font-black uppercase tracking-wide text-orange-500">✦ &nbsp; AI Stay Concierge</p>
+                <strong class="shrink-0 text-sm">Ask before you book</strong>
+                <div class="flex min-w-0 flex-1 gap-3"><input disabled class="h-11 min-w-0 flex-1 rounded-lg border-0 bg-[#2b2b2b] px-5 text-sm text-slate-300 placeholder:text-slate-500" placeholder="Try: beachfront under ₦100k, or a quiet place in Ikoyi for work"><button disabled class="h-11 rounded-lg bg-orange-600 px-8 text-sm font-bold">Ask</button></div>
+            </div>
+        </section>
+    @endauth
 
     <section class="mx-auto mt-4 max-w-7xl px-4 sm:mt-6 sm:px-6 lg:px-8" aria-label="Refine marketplace search">
         <details class="marketplace-advanced-filters">
@@ -133,14 +147,27 @@
         @else
             @php
                 $propertyCollection = $properties->getCollection();
+                $hasActiveSearch = collect($filters)->contains(fn ($value, $key) => filled($value) && !($key === 'category' && $value === 'all'));
                 $marketplaceRows = collect([
-                    ['title' => 'Popular verified stays in Lagos', 'subtitle' => 'Guest-ready homes with live availability.', 'items' => $propertyCollection->take(10)],
-                    ['title' => 'Great stays for your next trip', 'subtitle' => 'Comfortable apartments across Lekki, Ikoyi and Victoria Island.', 'items' => $propertyCollection->skip(3)->take(10)],
+                    ['title' => auth()->check() ? 'Stays near You in Lagos' : 'Popular verified stays in Lagos', 'subtitle' => auth()->check() ? null : 'Guest-ready homes with live availability.', 'items' => $propertyCollection->take(10)],
+                    ['title' => auth()->check() ? 'Recommended for You' : 'Great stays for your next trip', 'subtitle' => auth()->check() ? null : 'Comfortable apartments across Lekki, Ikoyi and Victoria Island.', 'items' => $propertyCollection->skip(3)->take(10)],
+                    ['title' => 'Popular verified stays', 'subtitle' => null, 'items' => $propertyCollection->take(10)],
                     ['title' => 'Best value longer stays', 'subtitle' => 'Homes where selected dates can unlock host discounts.', 'items' => $propertyCollection->filter(fn($property) => $property->promotions->isNotEmpty())->take(10)],
                     ['title' => 'Family and group stays', 'subtitle' => 'More space for guests travelling together.', 'items' => $propertyCollection->filter(fn($property) => $property->capacity >= 4)->take(10)],
                 ])->filter(fn($row) => $row['items']->isNotEmpty())->values();
             @endphp
 
+            @if(auth()->check() && $hasActiveSearch)
+                <div class="mb-6 flex flex-col gap-4 pr-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 class="text-lg font-black text-slate-900">{{ $properties->total() }} verified {{ Str::plural('stay', $properties->total()) }} in Lagos</h2>
+                    <div class="flex flex-wrap gap-3"><button type="button" onclick="document.querySelector('.marketplace-advanced-summary')?.click()" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold">☷ &nbsp; Filters</button><span class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm">Any price⌄</span><span class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm">{{ $filters['guests'] ?? 2 }} guests⌄</span><span class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm">Sort: Relevance⌄</span></div>
+                </div>
+                <div class="grid gap-x-7 gap-y-10 pr-4 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach($propertyCollection as $property)
+                        <x-marketplace-property-tile :property="$property" :filters="$filters" class="!w-full" />
+                    @endforeach
+                </div>
+            @else
             <div class="space-y-12">
                 @foreach($marketplaceRows as $index => $row)
                     <section x-data="{ scrollBy(direction) { this.$refs.rail.scrollBy({ left: direction * 860, behavior: 'smooth' }) } }" aria-labelledby="marketplace-row-{{ $index }}">
@@ -150,7 +177,7 @@
                                     {{ $row['title'] }}
                                     <span class="flex size-7 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-700 transition group-hover:bg-slate-950 group-hover:text-white">→</span>
                                 </a>
-                                <p class="mt-1 text-sm text-slate-500">{{ $row['subtitle'] }}</p>
+                                @if($row['subtitle'])<p class="mt-1 text-sm text-slate-500">{{ $row['subtitle'] }}</p>@endif
                             </div>
                             <div class="marketplace-row-controls flex items-center gap-2">
                                 <button type="button" @click="scrollBy(-1)" class="marketplace-row-nav" aria-label="Scroll {{ $row['title'] }} left">
@@ -169,6 +196,7 @@
                     </section>
                 @endforeach
             </div>
+            @endif
             <div class="mt-8">{{ $properties->links() }}</div>
         @endif
     </section>
@@ -300,7 +328,10 @@
         </section>
     @endif
 
-    {{-- AI Trip Concierge Section --}}
+    </div>
+
+    @guest
+    {{-- Public marketing sections --}}
     <x-ai-concierge 
         title="Ask before you book, not after"
         subtitle="AI TRIP CONCIERGE"
@@ -379,6 +410,7 @@
         secondaryButton="Get started"
         :secondaryUrl="route('register')"
     />
+    @endguest
 
     {{-- Footer --}}
     <x-footer />

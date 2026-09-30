@@ -30,12 +30,12 @@ class MarketplaceSearchTest extends TestCase
             ->assertSee('9 serviced apartments');
     }
 
-    public function test_home_shows_up_to_one_hundred_results_without_ai_insights_controls(): void
+    public function test_home_shows_up_to_one_hundred_results_with_ai_insights_controls(): void
     {
         $response = $this->get('/')->assertOk()
             ->assertSee('Admiralty Waterfront Residence')
             ->assertSee('Oniru Beachside Studio')
-            ->assertDontSee('class="insights-btn"', false);
+            ->assertSee('class="insights-btn"', false);
 
         $this->assertSame(10, $response->viewData('properties')->count());
         $this->assertSame(100, $response->viewData('properties')->perPage());
@@ -67,8 +67,12 @@ class MarketplaceSearchTest extends TestCase
         $property = Property::query()->where('code', 'LAG-001')->firstOrFail();
         $guest = User::factory()->create();
         $this->actingAs($guest)->get('/stays/lekki-admiralty-waterfront')->assertOk()->assertSee($property->name)
-            ->assertSee('Choose your stay dates')->assertSee('Confirm your stay')
-            ->assertSee('Confirm & book', false)->assertSee('x-for="(media,index) in gallery"', false);
+            ->assertSee('Availability calendar')->assertSee('Continue to checkout')
+            ->assertSee('aria-label="Adult count"', false)
+            ->assertSee('aria-label="Child count"', false)
+            ->assertSee('Who will be staying?')
+            ->assertSee(route('marketplace.checkout.show', 'lekki-admiralty-waterfront'), false)
+            ->assertSee('x-for="(media,index) in gallery"', false);
 
         $property->update(['verification_status' => 'unverified']);
         $this->get('/stays/lekki-admiralty-waterfront')->assertNotFound();

@@ -116,6 +116,7 @@
     </div>
 </article>
 
+@once
 @push('scripts')
 <script>
 function propertyCard(config = {}) {
@@ -176,3 +177,4 @@ function propertyCard(config = {}) {
 }
 </script>
 @endpush
+@endonce

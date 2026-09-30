@@ -19,7 +19,14 @@ class GuestBookingAuthorizationTest extends TestCase
         $foreign = Booking::factory()->create(['guest_user_id' => $other->id]);
 
         $this->actingAs($guest)->get('/guest/bookings')->assertOk()->assertSee($own->reference)->assertDontSee($foreign->reference);
-        $this->get("/guest/bookings/{$own->id}")->assertOk()->assertSee($own->reference);
+        $this->get("/guest/bookings/{$own->id}")->assertOk()
+            ->assertSee($own->reference)
+            ->assertSee('Booking details')
+            ->assertSee('Stay details')
+            ->assertSee('Your host')
+            ->assertSee('Payment summary')
+            ->assertSee('Manage booking')
+            ->assertSee('Booking timeline');
         $this->get("/guest/bookings/{$foreign->id}")->assertNotFound();
     }
 
@@ -33,7 +40,7 @@ class GuestBookingAuthorizationTest extends TestCase
         $guest = User::factory()->create(['name' => 'Sarah Guest']);
 
         $this->actingAs($guest)->get('/')->assertOk()
-            ->assertSee('My bookings')
+            ->assertSee('Bookings')
             ->assertSee('Sarah Guest')
             ->assertSee('Log out');
     }

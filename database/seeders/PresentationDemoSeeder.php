@@ -9,6 +9,7 @@ use App\Models\Business;
 use App\Models\BusinessMembership;
 use App\Models\Employee;
 use App\Models\Property;
+use App\Models\Payment;
 use App\Models\PropertyAmenity;
 use App\Models\PropertyMarketplaceListing;
 use App\Models\PropertyMedia;
@@ -43,7 +44,8 @@ class PresentationDemoSeeder extends Seeder
             app(ManageExternalCalendarConnection::class)->ensureExport($chevron);
             app(ManageExternalCalendarConnection::class)->ensureExport($admiralty);
             $this->reviewProperty($coastline);
-            $this->guest();
+            $guest = $this->guest();
+            $this->guestBookingPortfolio($guest, $chevron, $admiralty);
             $verificationAdmin = $this->platformAdministrator('Nneka Verification Admin', 'verification.admin@verifiedshortlet.test', 'platform_verification_admin');
             $supportAdmin = $this->platformAdministrator('Tobi Support Admin', 'disputes.admin@verifiedshortlet.test', 'platform_support_admin');
             $this->moderationAndDisputeCases($coastline, $chevron, $verificationAdmin, $supportAdmin);
@@ -170,7 +172,7 @@ class PresentationDemoSeeder extends Seeder
         }
     }
 
-    private function guest(): void
+    private function guest(): User
     {
         $guest = $this->user('Zainab Demo Guest', 'guest.demo@verifiedshortlet.test');
         $role = Role::query()->where('system_key', 'guest')->firstOrFail();
@@ -184,6 +186,95 @@ class PresentationDemoSeeder extends Seeder
             'assigned_at' => now(),
             'revoked_at' => null,
         ]);
+
+        return $guest;
+    }
+
+    private function guestBookingPortfolio(User $guest, Property $chevron, Property $admiralty): void
+    {
+        $secondaryCoastline = Property::query()
+            ->where('business_id', $chevron->business_id)
+            ->whereKeyNot($chevron->id)
+            ->where('publication_status', 'published')
+            ->first() ?? $chevron;
+
+        $records = [
+            ['VS-DEMO-UPCOMING-01', $chevron, today()->addDays(10), today()->addDays(14), 'confirmed', 'paid', 4, 420000, 'Upcoming confirmed stay'],
+            ['VS-DEMO-PENDING-01', $admiralty, today()->addDays(22), today()->addDays(27), 'awaiting_payment', 'unpaid', 2, 475000, 'Upcoming stay awaiting payment'],
+            ['VS-DEMO-INSTAY-01', $secondaryCoastline, today()->subDay(), today()->addDays(2), 'checked_in', 'paid', 2, 270000, 'Guest currently checked in'],
+            ['VS-DEMO-CANCELLED-01', $admiralty, today()->subDays(35), today()->subDays(31), 'cancelled', 'refunded', 3, 380000, 'Cancelled demonstration stay'],
+        ];
+
+        foreach ($records as [$reference, $property, $arrival, $departure, $status, $paymentStatus, $guests, $total, $note]) {
+            Booking::query()->updateOrCreate([
+                'business_id' => $property->business_id,
+                'reference' => $reference,
+            ], [
+                'property_id' => $property->id,
+                'guest_user_id' => $guest->id,
+                'arrival_date' => $arrival,
+                'departure_date' => $departure,
+                'number_of_guests' => $guests,
+                'adult_count' => $guests,
+                'child_count' => 0,
+                'source' => 'marketplace',
+                'status' => $status,
+                'payment_status' => $paymentStatus,
+                'special_requests' => $note,
+                'currency' => 'NGN',
+                'subtotal_amount' => $total,
+                'discount_amount' => 0,
+                'total_amount' => $total,
+                'external_reference' => (string) str($reference)->lower(),
+                'created_by' => $guest->id,
+            ]);
+
+            $booking = Booking::query()
+                ->where('business_id', $property->business_id)
+                ->where('reference', $reference)
+                ->firstOrFail();
+
+            if (in_array($paymentStatus, ['paid', 'refunded'], true)) {
+                $charge = Payment::query()->updateOrCreate([
+                    'business_id' => $booking->business_id,
+                    'reference' => $reference.'-PAY',
+                ], [
+                    'booking_id' => $booking->id,
+                    'purpose' => 'balance',
+                    'amount' => $total,
+                    'currency' => 'NGN',
+                    'method' => 'card',
+                    'provider' => 'paystack',
+                    'provider_reference' => $reference.'-SIMULATED',
+                    'status' => 'completed',
+                    'transaction_at' => now(),
+                    'verified_at' => now(),
+                    'notes' => 'Simulated presentation payment.',
+                    'created_by' => $guest->id,
+                ]);
+
+                if ($paymentStatus === 'refunded') {
+                    Payment::query()->updateOrCreate([
+                        'business_id' => $booking->business_id,
+                        'reference' => $reference.'-REFUND',
+                    ], [
+                        'booking_id' => $booking->id,
+                        'original_payment_id' => $charge->id,
+                        'purpose' => 'refund',
+                        'amount' => $total,
+                        'currency' => 'NGN',
+                        'method' => 'card',
+                        'provider' => 'paystack',
+                        'provider_reference' => $reference.'-SIMULATED-REFUND',
+                        'status' => 'completed',
+                        'transaction_at' => now(),
+                        'verified_at' => now(),
+                        'notes' => 'Simulated presentation refund.',
+                        'created_by' => $guest->id,
+                    ]);
+                }
+            }
+        }
     }
 
     private function platformAdministrator(string $name, string $email, string $roleKey): User
@@ -226,6 +317,24 @@ class PresentationDemoSeeder extends Seeder
             'discount_amount' => 0,
             'total_amount' => 330750,
             'external_reference' => 'presentation-moderation-case',
+            'created_by' => $guest->id,
+        ]);
+
+        Payment::query()->updateOrCreate([
+            'business_id' => $booking->business_id,
+            'reference' => 'VS-DEMO-CASE01-PAY',
+        ], [
+            'booking_id' => $booking->id,
+            'purpose' => 'balance',
+            'amount' => $booking->total_amount,
+            'currency' => 'NGN',
+            'method' => 'card',
+            'provider' => 'paystack',
+            'provider_reference' => 'VS-DEMO-CASE01-SIMULATED',
+            'status' => 'completed',
+            'transaction_at' => now()->subDays(13),
+            'verified_at' => now()->subDays(13),
+            'notes' => 'Simulated completed-stay presentation payment.',
             'created_by' => $guest->id,
         ]);
 

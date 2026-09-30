@@ -185,6 +185,27 @@ class VerifiedStayReviewTest extends TestCase
             ->assertDontSee('This pending review must not appear publicly.');
     }
 
+    public function test_published_reviews_have_a_dedicated_public_reviews_page(): void
+    {
+        $business = Business::factory()->create();
+        $property = $this->marketplaceProperty($business);
+        $guest = User::factory()->create(['name' => 'Tunde Reviewer']);
+        $booking = Booking::factory()->for($business)->for($property)->create([
+            'guest_user_id' => $guest->id,
+            'status' => 'completed',
+        ]);
+
+        $this->publishedReview($booking, $guest, 'A polished standalone review experience.');
+
+        $this->get(route('marketplace.reviews', 'waterfront-review-flat'))
+            ->assertOk()
+            ->assertSee('Reviews')
+            ->assertSee('Consolidated score')
+            ->assertSee('Tunde Reviewer')
+            ->assertSee('A polished standalone review experience.')
+            ->assertSee(route('marketplace.show', 'waterfront-review-flat'), false);
+    }
+
     private function ownerWithBusiness(string $name = 'Nexa Stays'): array
     {
         $this->seed(AccessControlSeeder::class);

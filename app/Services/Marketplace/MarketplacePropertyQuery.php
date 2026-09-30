@@ -60,7 +60,7 @@ final class MarketplacePropertyQuery
     public function eligibleBySlug(string $slug): Property
     {
         return $this->eligible()->with([
-            'marketplaceListing', 'media', 'amenities', 'houseRules',
+            'marketplaceListing', 'media', 'amenities', 'houseRules', 'business',
             'promotions' => fn ($query) => $query->where('status', 'active')->where('publication_status', 'published')
                 ->where(fn ($query) => $query->whereNull('effective_at')->orWhere('effective_at', '<=', now()))
                 ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', now())),

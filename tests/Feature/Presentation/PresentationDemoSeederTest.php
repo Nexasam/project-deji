@@ -3,9 +3,11 @@
 namespace Tests\Feature\Presentation;
 
 use App\Models\BookingDispute;
+use App\Models\Booking;
 use App\Models\Business;
 use App\Models\Property;
 use App\Models\PropertyCalendarExport;
+use App\Models\Payment;
 use App\Models\Review;
 use App\Models\User;
 use Database\Seeders\AccessControlSeeder;
@@ -95,6 +97,17 @@ class PresentationDemoSeederTest extends TestCase
         $this->assertTrue($supportAdmin->hasActiveGlobalRole('platform_support_admin'));
         $this->assertSame(1, Review::query()->where('title', 'Needs a moderation decision')->where('moderation_status', 'hidden')->count());
         $this->assertSame(1, BookingDispute::query()->where('reference', 'DSP-DEMO-OPEN')->where('dispute_status', 'open')->count());
+
+        $guest = $users->firstWhere('email', 'guest.demo@verifiedshortlet.test');
+        $guestBookings = Booking::query()->where('guest_user_id', $guest->id)->get();
+        $this->assertTrue($guestBookings->contains('status', 'confirmed'));
+        $this->assertTrue($guestBookings->contains('status', 'awaiting_payment'));
+        $this->assertTrue($guestBookings->contains('status', 'checked_in'));
+        $this->assertTrue($guestBookings->contains('status', 'completed'));
+        $this->assertTrue($guestBookings->contains('status', 'cancelled'));
+        $this->assertGreaterThanOrEqual(3, Payment::query()
+            ->whereHas('booking', fn ($query) => $query->where('guest_user_id', $guest->id))
+            ->count());
     }
 
     public function test_admin_review_renders_seeded_external_property_media(): void
@@ -155,6 +168,6 @@ class PresentationDemoSeederTest extends TestCase
         $this->post(route('login'), [
             'email' => 'guest.demo@verifiedshortlet.test',
             'password' => PresentationDemoSeeder::PASSWORD,
-        ])->assertRedirect(route('guest.bookings.index', absolute: false));
+        ])->assertRedirect(route('guest.dashboard', absolute: false));
     }
 }

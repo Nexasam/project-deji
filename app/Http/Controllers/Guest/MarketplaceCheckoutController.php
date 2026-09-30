@@ -13,9 +13,35 @@ use Illuminate\Validation\ValidationException;
 use App\Services\Booking\CreateMarketplaceBooking;
 use App\Services\Marketplace\MarketplacePropertyQuery;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class MarketplaceCheckoutController extends Controller
 {
+    public function checkout(QuoteMarketplaceBookingRequest $request, string $slug, MarketplacePropertyQuery $marketplace, BookingPricingService $pricing, PropertyAvailabilityService $availability): View
+    {
+        $data = $request->validated();
+        $property = $marketplace->eligibleBySlug($slug);
+        $guests = (int) $data['adult_count'] + (int) ($data['child_count'] ?? 0);
+        if ($guests > $property->capacity) {
+            throw ValidationException::withMessages(['adult_count' => 'Guest count exceeds this property capacity.']);
+        }
+
+        $arrival = CarbonImmutable::parse($data['arrival_date']);
+        $departure = CarbonImmutable::parse($data['departure_date']);
+        if (! $availability->isAvailable($property, $arrival, $departure)) {
+            throw ValidationException::withMessages(['arrival_date' => 'These dates are no longer available.']);
+        }
+
+        return view('marketplace.checkout', [
+            'property' => $property,
+            'arrival' => $arrival,
+            'departure' => $departure,
+            'adultCount' => (int) $data['adult_count'],
+            'childCount' => (int) ($data['child_count'] ?? 0),
+            'quote' => $pricing->quote($property, $arrival, $departure),
+        ]);
+    }
+
     public function quote(QuoteMarketplaceBookingRequest $request, string $slug, MarketplacePropertyQuery $marketplace, BookingPricingService $pricing, PropertyAvailabilityService $availability): JsonResponse
     {
         $data = $request->validated();
@@ -40,6 +66,6 @@ class MarketplaceCheckoutController extends Controller
     {
         $booking = $creator->handle($request->user(), $marketplace->eligibleBySlug($slug), $request->validated());
 
-        return redirect()->route('guest.bookings.show', $booking);
+        return redirect()->route('guest.bookings.confirmation', $booking);
     }
 }

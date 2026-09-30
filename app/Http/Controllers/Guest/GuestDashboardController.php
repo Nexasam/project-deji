@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Guest;
 use App\Enums\BookingPaymentStatus;
 use App\Enums\BookingStatus;
 use App\Enums\IdentityVerificationStatus;
+use App\Enums\PropertyPublicationStatus;
+use App\Enums\PropertyVerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -124,6 +127,34 @@ class GuestDashboardController extends Controller
             ->latest('departure_date')
             ->first();
 
+        $dashboardStats = [
+            'upcoming' => (clone $baseQuery)
+                ->whereIn('status', $activeStatuses)
+                ->whereDate('departure_date', '>=', $today->toDateString())
+                ->count(),
+            'completed' => (clone $baseQuery)
+                ->whereIn('status', [BookingStatus::CheckedOut, BookingStatus::Completed])
+                ->count(),
+            'saved' => $user->favourites()->count(),
+        ];
+
+        $recommendations = Property::query()
+            ->where('publication_status', PropertyPublicationStatus::Published)
+            ->where('verification_status', PropertyVerificationStatus::Verified)
+            ->where('booking_mode', 'entire')
+            ->where('readiness_status', 'ready')
+            ->where('status', 'active')
+            ->whereIn('operational_status', ['available', 'reserved', 'occupied', 'cleaning', 'inspection'])
+            ->whereHas('business', fn ($query) => $query->where('status', 'active'))
+            ->whereHas('marketplaceListing', fn ($query) => $query
+                ->where('publication_status', 'published')
+                ->where('is_publication_eligible', true)
+                ->where('status', 'active'))
+            ->with(['media', 'marketplaceListing'])
+            ->latest('published_at')
+            ->limit(4)
+            ->get();
+
         if ($reviewBooking) {
             $nextSteps->push([
                 'title' => 'Share a verified review',
@@ -143,6 +174,8 @@ class GuestDashboardController extends Controller
             'reviewBooking' => $reviewBooking,
             'nextSteps' => $nextSteps->take(4),
             'tabs' => $tabs,
+            'dashboardStats' => $dashboardStats,
+            'recommendations' => $recommendations,
         ]);
     }
 }

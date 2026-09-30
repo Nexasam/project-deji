@@ -232,6 +232,42 @@
     position: relative;
     z-index: 40;
 }
+.search-bar-workspace {
+    padding: 58px 0 42px;
+    background: #f3f3f2;
+}
+.guest-explore-surface {
+    min-height: calc(100vh - 68px);
+    padding-bottom: 64px;
+    background: #f3f3f2;
+}
+.guest-explore-surface .cat-strip {
+    background: #fff;
+    border-top: 1px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
+}
+.guest-explore-surface #marketplace {
+    width: 100%;
+    max-width: 80rem;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 2rem;
+    padding-left: 2rem;
+}
+.guest-explore-surface #marketplace > .mb-5 {
+    display: none;
+}
+.guest-explore-surface .marketplace-row-title {
+    font-size: 1.35rem;
+}
+.search-bar-workspace .search-bar-wrap {
+    transform: none;
+}
+.search-bar-workspace .search-bar {
+    min-height: 76px;
+    border-radius: 38px;
+    box-shadow: none;
+}
 .search-mobile-toggle {
     display: none;
 }
@@ -241,7 +277,7 @@
     box-shadow: 0 4px 32px rgba(0,0,0,0.13);
     display: flex;
     align-items: center;
-    padding: 10px 10px 10px 24px;
+    padding: 7px 8px 7px 20px;
     gap: 0;
 }
 .search-field {
@@ -275,11 +311,11 @@
 .search-field-input::placeholder { color: #9ca3af; }
 .search-field-where {
     flex: 1.2;
-    padding-right: 20px;
+    padding-right: 16px;
 }
 .search-field-dates {
     flex: 1;
-    padding: 0 20px;
+    padding: 0 16px;
     cursor: pointer;
 }
 .search-field-value {
@@ -299,17 +335,17 @@
     flex-shrink: 0;
 }
 .search-field-guests {
-    padding: 0 20px;
+    padding: 0 16px;
     flex-shrink: 0;
 }
 .search-guests-control {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 .guest-btn {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: 1.5px solid #d1d5db;
     background: none;
@@ -339,12 +375,12 @@
     color: #fff;
     font-size: 15px;
     font-weight: 700;
-    padding: 14px 26px;
+    padding: 12px 22px;
     border-radius: 999px;
     border: none;
     cursor: pointer;
     white-space: nowrap;
-    margin-left: 10px;
+    margin-left: 6px;
     flex-shrink: 0;
     transition: background .15s, transform .1s;
 }
@@ -433,6 +469,9 @@
     display: flex;
     gap: 8px;
     overflow-x: auto;
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
     padding: 2px 20px;
     scroll-padding: 20px;
     -webkit-overflow-scrolling: touch;
@@ -1198,7 +1237,7 @@
         display: none;
         flex-direction: column;
         border-radius: 20px;
-        padding: 16px;
+        padding: 12px 14px;
         gap: 0;
         align-items: stretch;
         box-shadow: 0 4px 24px rgba(0,0,0,0.12);
@@ -1210,7 +1249,7 @@
     .search-divider {
         width: 100%;
         height: 1px;
-        margin: 12px 0;
+        margin: 9px 0;
     }
     .search-field-where,
     .search-field-dates,
@@ -1221,16 +1260,17 @@
     }
     .search-btn {
         margin-left: 0;
-        margin-top: 14px;
+        margin-top: 11px;
         width: 100%;
         justify-content: center;
-        padding: 14px;
+        padding: 12px;
         font-size: 15px;
     }
 
     /* Category pills — tighter on mobile */
     .cat-strip { padding: 10px 0; }
     .cat-scroll { padding: 2px 16px; }
+    .guest-explore-surface #marketplace { padding-right: 1rem; padding-left: 1rem; }
     .cat-pill { font-size: 13px; padding: 7px 14px; }
 
     /* Filter bar */
