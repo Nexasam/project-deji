@@ -5,9 +5,14 @@ namespace Database\Seeders;
 use App\Models\Amenity;
 use App\Models\Booking;
 use App\Models\BookingDispute;
+use App\Models\BookingInteraction;
 use App\Models\Business;
 use App\Models\BusinessMembership;
 use App\Models\Employee;
+use App\Models\Notification;
+use App\Models\OperationalTask;
+use App\Models\OperationalTaskAssignment;
+use App\Models\OperationalTaskChecklistItem;
 use App\Models\Property;
 use App\Models\Payment;
 use App\Models\PropertyAmenity;
@@ -21,6 +26,10 @@ use App\Models\User;
 use App\Models\UserBusinessContext;
 use App\Models\UserRole;
 use App\Services\Calendar\ManageExternalCalendarConnection;
+use App\Enums\OperationalTaskStatus;
+use App\Enums\OperationalTaskType;
+use App\Enums\TaskGenerationSource;
+use App\Enums\TaskPriority;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -67,6 +76,8 @@ class PresentationDemoSeeder extends Seeder
                 $this->activateContext($user, $membership);
             }
 
+            $this->roleSpecificDemoRecords($coastline, $chevron);
+
             // The property manager deliberately belongs to two businesses so the
             // presentation can demonstrate safe active-business switching.
             $manager = User::query()->where('email', 'manager.demo@verifiedshortlet.test')->firstOrFail();
@@ -76,6 +87,122 @@ class PresentationDemoSeeder extends Seeder
                 $coastline->memberships()->where('user_id', $manager->id)->firstOrFail()
             );
         });
+    }
+
+    private function roleSpecificDemoRecords(Business $business, Property $property): void
+    {
+        $owner = User::query()->where('email', 'owner@coastlineresidences.test')->firstOrFail();
+        $guest = User::query()->where('email', 'guest.demo@verifiedshortlet.test')->firstOrFail();
+
+        $employees = [
+            'cleaner' => $this->employee('cleaner.demo@verifiedshortlet.test', $business),
+            'maintenance' => $this->employee('maintenance.demo@verifiedshortlet.test', $business),
+            'inspector' => $this->employee('inspector.demo@verifiedshortlet.test', $business),
+            'operations' => $this->employee('operations.demo@verifiedshortlet.test', $business),
+            'reception' => $this->employee('reception.demo@verifiedshortlet.test', $business),
+            'support' => $this->employee('support.demo@verifiedshortlet.test', $business),
+        ];
+
+        $upcoming = Booking::query()
+            ->where('business_id', $business->id)
+            ->where('reference', 'VS-DEMO-UPCOMING-01')
+            ->firstOrFail();
+
+        $checkedIn = Booking::query()
+            ->where('business_id', $business->id)
+            ->where('reference', 'VS-DEMO-INSTAY-01')
+            ->first();
+
+        $case = Booking::query()
+            ->where('business_id', $business->id)
+            ->where('reference', 'VS-DEMO-CASE01')
+            ->firstOrFail();
+
+        $this->task($business, $property, $upcoming, $employees['cleaner'], $owner, [
+            'reference' => 'TASK-DEMO-CLEAN-CHECKOUT',
+            'title' => 'Turnover clean after Zainab checkout',
+            'task_type' => OperationalTaskType::Cleaning->value,
+            'priority' => TaskPriority::High->value,
+            'status' => OperationalTaskStatus::Assigned->value,
+            'due_at' => today()->addDays(14)->setTime(12, 0),
+            'notes' => 'Prepare bedrooms, bathrooms and kitchen for same-day availability.',
+            'checklist' => [
+                'Strip linen and send to laundry',
+                'Sanitise bathrooms and guest-touch surfaces',
+                'Restock towels, toiletries and bottled water',
+                'Upload final room photos before handoff',
+            ],
+        ]);
+
+        $this->task($business, $property, $upcoming, $employees['maintenance'], $owner, [
+            'reference' => 'TASK-DEMO-MAINT-AC',
+            'title' => 'Inspect master-bedroom AC before arrival',
+            'task_type' => OperationalTaskType::Maintenance->value,
+            'priority' => TaskPriority::Normal->value,
+            'status' => OperationalTaskStatus::Assigned->value,
+            'due_at' => today()->addDays(9)->setTime(15, 0),
+            'notes' => 'Guest requested reliable cooling. Check filters, thermostat and generator switchover.',
+            'checklist' => [
+                'Clean AC filter',
+                'Run cooling test for 20 minutes',
+                'Confirm generator switchover',
+            ],
+        ]);
+
+        $this->task($business, $property, $case, $employees['inspector'], $owner, [
+            'reference' => 'TASK-DEMO-INSPECT-CASE',
+            'title' => 'Post-stay inspection for moderation case',
+            'task_type' => OperationalTaskType::Inspection->value,
+            'priority' => TaskPriority::Urgent->value,
+            'status' => OperationalTaskStatus::InProgress->value,
+            'due_at' => today()->setTime(16, 0),
+            'notes' => 'Capture condition evidence for platform review and dispute resolution.',
+            'checklist' => [
+                'Photograph living room, kitchen and bathrooms',
+                'Confirm reported issue against listing standard',
+                'Submit inspection outcome for owner review',
+            ],
+        ]);
+
+        $this->task($business, $property, $upcoming, $employees['reception'], $owner, [
+            'reference' => 'TASK-DEMO-RECEPTION-WELCOME',
+            'title' => 'Send arrival note and gate instructions',
+            'task_type' => OperationalTaskType::GuestWelcome->value,
+            'priority' => TaskPriority::Normal->value,
+            'status' => OperationalTaskStatus::Pending->value,
+            'due_at' => today()->addDays(9)->setTime(10, 0),
+            'notes' => 'Confirm ETA, guest phone number and access instructions.',
+            'checklist' => [
+                'Confirm guest arrival time',
+                'Share estate gate code and check-in contact',
+                'Mark pre-arrival confirmation complete',
+            ],
+        ]);
+
+        if ($checkedIn) {
+            $this->task($business, $checkedIn->property, $checkedIn, $employees['support'], $owner, [
+                'reference' => 'TASK-DEMO-SUPPORT-INSTAY',
+                'title' => 'Resolve in-stay Wi-Fi support request',
+                'task_type' => OperationalTaskType::Repair->value,
+                'priority' => TaskPriority::High->value,
+                'status' => OperationalTaskStatus::Assigned->value,
+                'due_at' => today()->setTime(18, 0),
+                'notes' => 'Guest currently checked in asked for router restart and backup network details.',
+                'checklist' => [
+                    'Call guest to acknowledge request',
+                    'Restart router or share backup network',
+                    'Record resolution note on booking',
+                ],
+            ]);
+        }
+
+        $this->bookingMessage($business, $upcoming, $guest, $owner, 'guest-arrival-question', 'Hello, can we check in around 1pm if the apartment is ready?', 'Guest asked about early check-in.', 'inbound', now()->subHours(4));
+        $this->bookingMessage($business, $upcoming, $owner, $guest, 'owner-arrival-reply', 'Thanks Zainab. We will confirm after cleaning, but 2pm remains the guaranteed check-in time.', 'Owner replied with check-in guidance.', 'outbound', now()->subHours(3));
+        $this->bookingMessage($business, $case, $guest, $owner, 'guest-case-followup', 'Please confirm when the review case is resolved. I added photos in the thread.', 'Guest followed up on review case.', 'inbound', now()->subDay());
+
+        $this->notification($business, $owner, 'demo_payment_received', 'Payment received', 'A simulated ₦420,000 payment is attached to VS-DEMO-UPCOMING-01.', ['url' => route('owner.finance')]);
+        $this->notification($business, User::query()->where('email', 'accountant.demo@verifiedshortlet.test')->firstOrFail(), 'demo_finance_queue', 'Finance queue ready', 'Review paid, unpaid and refunded demo bookings in the Finance workspace.', ['url' => route('owner.finance')]);
+        $this->notification($business, User::query()->where('email', 'cleaner.demo@verifiedshortlet.test')->firstOrFail(), 'demo_cleaning_task', 'Cleaning task assigned', 'Turnover clean for Chevron Family Residence is ready on your staff task board.', ['url' => route('staff.tasks.index')]);
     }
 
     private function reviewProperty(Business $business): void
@@ -295,6 +422,106 @@ class PresentationDemoSeeder extends Seeder
         return $administrator;
     }
 
+    /** @param array{reference:string,title:string,task_type:string,priority:string,status:string,due_at:\Illuminate\Support\Carbon,notes:string,checklist:array<int,string>} $data */
+    private function task(Business $business, Property $property, ?Booking $booking, Employee $employee, User $owner, array $data): OperationalTask
+    {
+        $task = OperationalTask::query()->updateOrCreate([
+            'business_id' => $business->id,
+            'reference' => $data['reference'],
+        ], [
+            'property_id' => $property->id,
+            'booking_id' => $booking?->id,
+            'assigned_employee_id' => $employee->id,
+            'title' => $data['title'],
+            'task_type' => $data['task_type'],
+            'priority' => $data['priority'],
+            'status' => $data['status'],
+            'due_at' => $data['due_at'],
+            'started_at' => $data['status'] === OperationalTaskStatus::InProgress->value ? now()->subHour() : null,
+            'completed_at' => null,
+            'notes' => $data['notes'],
+            'generation_source' => TaskGenerationSource::Manual->value,
+            'is_recurring' => false,
+            'generation_metadata' => ['presentation_demo' => true],
+            'created_by' => $owner->id,
+            'updated_by' => $owner->id,
+        ]);
+
+        OperationalTaskAssignment::query()->updateOrCreate([
+            'business_id' => $business->id,
+            'operational_task_id' => $task->id,
+            'employee_id' => $employee->id,
+        ], [
+            'assignment_role' => $employee->propertyAssignments()->where('assignment_status', 'active')->value('assignment_role') ?? 'other',
+            'assignment_status' => 'accepted',
+            'assigned_by' => $owner->id,
+            'assigned_at' => now()->subHours(2),
+            'accepted_at' => now()->subHour(),
+            'status' => 'active',
+        ]);
+
+        foreach ($data['checklist'] as $index => $title) {
+            OperationalTaskChecklistItem::query()->updateOrCreate([
+                'business_id' => $business->id,
+                'operational_task_id' => $task->id,
+                'sort_order' => $index + 1,
+            ], [
+                'title' => $title,
+                'instructions' => null,
+                'is_required' => true,
+                'is_completed' => false,
+                'completed_by' => null,
+                'completed_at' => null,
+                'notes' => null,
+                'status' => 'active',
+            ]);
+        }
+
+        return $task;
+    }
+
+    private function bookingMessage(Business $business, Booking $booking, User $sender, User $recipient, string $key, string $content, string $summary, string $direction, mixed $occurredAt): void
+    {
+        BookingInteraction::query()->updateOrCreate([
+            'business_id' => $business->id,
+            'booking_id' => $booking->id,
+            'channel' => 'platform',
+            'external_message_id' => 'presentation-'.$booking->reference.'-'.$key,
+        ], [
+            'user_id' => $sender->id,
+            'recipient_user_id' => $recipient->id,
+            'interaction_type' => 'message',
+            'direction' => $direction,
+            'recipient_name' => $recipient->name,
+            'recipient_address' => $recipient->email,
+            'summary' => $summary,
+            'content' => $content,
+            'is_internal' => false,
+            'external_thread_id' => 'presentation-thread-'.$booking->reference,
+            'delivery_status' => 'sent',
+            'sent_at' => $occurredAt,
+            'delivered_at' => $occurredAt,
+            'metadata' => ['presentation_demo' => true],
+            'occurred_at' => $occurredAt,
+            'status' => 'active',
+        ]);
+    }
+
+    private function notification(Business $business, User $user, string $type, string $title, string $message, array $data): void
+    {
+        Notification::query()->updateOrCreate([
+            'business_id' => $business->id,
+            'user_id' => $user->id,
+            'type' => $type,
+        ], [
+            'title' => $title,
+            'message' => $message,
+            'data' => $data + ['presentation_demo' => true],
+            'read_at' => null,
+            'status' => 'active',
+        ]);
+    }
+
     private function moderationAndDisputeCases(Business $business, Property $property, User $moderator, User $supportAdmin): void
     {
         $guest = User::query()->where('email', 'guest.demo@verifiedshortlet.test')->firstOrFail();
@@ -391,6 +618,14 @@ class PresentationDemoSeeder extends Seeder
             'created_by' => $supportAdmin->id,
             'updated_by' => $supportAdmin->id,
         ]);
+    }
+
+    private function employee(string $email, Business $business): Employee
+    {
+        return Employee::query()
+            ->where('business_id', $business->id)
+            ->whereHas('businessMembership.user', fn ($query) => $query->where('email', $email))
+            ->firstOrFail();
     }
 
     private function user(string $name, string $email): User

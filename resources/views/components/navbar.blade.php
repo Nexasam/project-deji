@@ -8,6 +8,7 @@
     $isFavouritesActive = request()->routeIs('guest.favourites.*');
     $guestLink = fn (bool $active) => 'inline-flex h-[68px] items-center border-b-2 px-1 text-[13px] font-semibold transition '.($active ? 'border-orange-600 text-orange-600' : 'border-transparent text-slate-800 hover:text-orange-600');
     $favouritesCount = auth()->check() ? auth()->user()->favourites()->count() : 0;
+    $hasBusinessAccess = auth()->check() && auth()->user()->businessMemberships()->where('status', 'active')->exists();
 @endphp
 
 <header id="site-header" class="sticky top-0 z-50 border-b border-slate-200 bg-white" x-data="{ mobileMenuOpen: false, accountOpen: false }">
@@ -38,7 +39,11 @@
                     <div x-show="accountOpen" x-cloak x-transition class="absolute right-0 mt-3 w-60 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
                         <div class="border-b border-slate-100 px-3 py-3"><p class="truncate text-sm font-bold text-slate-950">{{ auth()->user()->name }}</p><p class="truncate text-xs text-slate-500">{{ auth()->user()->email }}</p></div>
                         <a href="{{ route('guest.favourites.index') }}" class="mt-2 flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold {{ $isFavouritesActive ? 'bg-orange-50 text-orange-700' : 'text-slate-700 hover:bg-slate-50' }}">Favourites <span x-show="$store.favourites.count > 0" x-cloak x-text="$store.favourites.count" class="ml-auto rounded-full bg-orange-600 px-2 py-0.5 text-[10px] text-white"></span></a>
-                        @if(auth()->user()->businessMemberships()->where('status', 'active')->exists())<a href="{{ route('owner.entry') }}" class="flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Business</a>@endif
+                        @if($hasBusinessAccess)
+                            <a href="{{ route('owner.entry') }}" class="flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Business</a>
+                        @else
+                            <span class="flex cursor-not-allowed items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-400" title="Sorry, you cannot access the business workspace with this account.">Business unavailable</span>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}">@csrf<button class="flex w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 hover:bg-rose-50">Log out</button></form>
                     </div>
                 </div>
@@ -67,7 +72,7 @@
                 <a href="{{ route('guest.messages.index') }}" class="{{ $isMessagesActive ? 'active' : '' }}">Messages</a>
                 <a href="{{ route('guest.settings.edit') }}" class="{{ $isSettingsActive ? 'active' : '' }}">Settings</a>
                 <a href="{{ route('guest.favourites.index') }}" class="{{ $isFavouritesActive ? 'active' : '' }}">Favourites <span x-show="$store.favourites.count > 0" x-cloak x-text="$store.favourites.count" class="ml-auto rounded-full bg-orange-600 px-2 py-0.5 text-[10px] text-white"></span></a>
-                @if(auth()->user()->businessMemberships()->where('status', 'active')->exists())<a href="{{ route('owner.entry') }}">Business</a>@endif
+                @if($hasBusinessAccess)<a href="{{ route('owner.entry') }}">Business</a>@else<span class="flex cursor-not-allowed text-slate-400">Business unavailable · Sorry, you cannot access this page.</span>@endif
                 <form method="POST" action="{{ route('logout') }}">@csrf<button class="flex w-full">Log out</button></form>
             @else
                 <a href="{{ route('home') }}" class="{{ $isExploreActive ? 'active' : '' }}">Explore stays</a><a href="#">Why verified?</a><a href="#">Become a host</a>

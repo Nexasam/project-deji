@@ -20,9 +20,25 @@
                         <div class="min-w-0 flex-1">
                             <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-orange-600 sm:text-xs">Owner workspace</p>
                             <h1 class="mt-0.5 whitespace-normal break-words text-xl font-extrabold leading-tight tracking-tight sm:text-2xl">{{ $business->name }}</h1>
+                            <div class="mt-2 flex w-max items-center rounded-full border border-slate-200 bg-slate-50 p-1 lg:hidden">
+                                @if($hasGuestActivity)
+                                    <a href="{{ route('guest.dashboard') }}" class="rounded-full px-3 py-1.5 text-[11px] font-extrabold text-slate-600 hover:bg-white hover:text-orange-700">Guest</a>
+                                @else
+                                    <span class="rounded-full px-3 py-1.5 text-[11px] font-extrabold text-slate-400" title="You do not have a guest account yet">No guest account</span>
+                                @endif
+                                <span class="rounded-full bg-slate-950 px-3 py-1.5 text-[11px] font-extrabold text-white">Business</span>
+                            </div>
                         </div>
                     </div>
                     <div class="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
+                        <div class="hidden items-center rounded-full border border-slate-200 bg-slate-50 p-1 lg:flex">
+                            @if($hasGuestActivity)
+                                <a href="{{ route('guest.dashboard') }}" class="rounded-full px-3 py-1.5 text-xs font-extrabold text-slate-600 hover:bg-white hover:text-orange-700" title="Switch to your guest dashboard">Guest</a>
+                            @else
+                                <span class="rounded-full px-3 py-1.5 text-xs font-extrabold text-slate-400" title="You do not have a guest account yet">No guest account</span>
+                            @endif
+                            <span class="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-extrabold text-white">Business</span>
+                        </div>
                         <x-owner.view-switch route-name="owner.dashboard" mode="real" />
                         <div class="hidden text-right sm:block">
                             <p class="text-sm font-bold text-slate-900">{{ auth()->user()?->name ?? 'Guest' }}</p>
@@ -43,14 +59,13 @@
                     <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ session('status') }}</div>
                 @endif
 
-                <section class="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
-                    @foreach ([
-                        ['Properties', $summary['propertyCount']], ['Published', $summary['publishedProperties']],
-                        ['Arrivals · 30d', $summary['upcomingArrivals']], ['Departures · 30d', $summary['upcomingDepartures']],
-                        ['Revenue', ($business->currency === 'NGN' ? '₦' : $business->currency.' ').number_format($summary['receivedRevenue'], 2)],
-                        ['Unpaid bookings', $summary['unpaidBookings']], ['Open tasks', $summary['openTasks']], ['Urgent tasks', $summary['urgentTasks']],
-                    ] as [$label, $value])
-                        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><p class="text-xs font-semibold text-slate-500">{{ $label }}</p><p class="mt-3 break-words text-2xl font-extrabold leading-tight">{{ $value }}</p></div>
+                <section class="mb-8 -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 md:grid-cols-4 xl:grid-cols-8">
+                    @foreach ($summaryCards as $card)
+                        <div class="min-w-[148px] snap-start rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:min-w-0 sm:p-5" @if(isset($card['exact'])) title="{{ $card['exact'] }}" @endif>
+                            <p class="text-xs font-semibold text-slate-500">{{ $card['label'] }}</p>
+                            <p class="mt-3 break-words text-2xl font-extrabold leading-tight">{{ $card['value'] }}</p>
+                            @if(isset($card['exact']))<span class="sr-only">{{ $card['exact'] }}</span>@endif
+                        </div>
                     @endforeach
                 </section>
 
@@ -58,7 +73,7 @@
                     <div class="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-wider text-orange-600">Live workboard</p>
-                            <h2 class="mt-1 text-2xl font-extrabold leading-tight">Today's operations</h2>
+                            <h2 class="mt-1 text-2xl font-extrabold leading-tight">Today’s operations</h2>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <a href="{{ route('notifications.index') }}" class="rounded-full bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-700">{{ $summary['today']['unread_alerts'] }} Unread alerts</a>
