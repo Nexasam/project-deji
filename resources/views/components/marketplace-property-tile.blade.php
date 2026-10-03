@@ -6,22 +6,38 @@
     $blockedIntervals = $property->bookings->map(fn($booking) => ['start' => $booking->arrival_date->toDateString(), 'end' => $booking->departure_date->toDateString()])
         ->concat($property->availabilityBlocks->map(fn($block) => ['start' => $block->starts_on->toDateString(), 'end' => $block->ends_on->toDateString()]))->values();
     $hasDateRange = filled($filters['check_in'] ?? null) && filled($filters['check_out'] ?? null);
-    $nights = $hasDateRange ? \Carbon\CarbonImmutable::parse($filters['check_in'])->diffInDays(\Carbon\CarbonImmutable::parse($filters['check_out'])) : 0;
+    $selectedCheckIn = $hasDateRange ? \Carbon\CarbonImmutable::parse($filters['check_in']) : null;
+    $selectedCheckOut = $hasDateRange ? \Carbon\CarbonImmutable::parse($filters['check_out']) : null;
+    $fallbackPromotion = $hasDateRange ? null : $property->promotions
+        ->filter(fn($promotion) => $promotion->discount_type->value === 'percentage' && ($promotion->minimum_stay_nights ?? 0) > 1)
+        ->sortByDesc(fn($promotion) => (float) $promotion->discount_value)
+        ->first();
+    $fallbackCheckIn = $fallbackPromotion
+        ? \Carbon\CarbonImmutable::now()->addDays(7)->startOfDay()
+        : null;
+    $fallbackCheckOut = $fallbackPromotion
+        ? $fallbackCheckIn->addDays((int) ($fallbackPromotion->minimum_stay_nights ?? 1))
+        : null;
+    $displayCheckIn = $selectedCheckIn ?: $fallbackCheckIn;
+    $displayCheckOut = $selectedCheckOut ?: $fallbackCheckOut;
+    $usesPromoPreview = ! $hasDateRange && $fallbackPromotion !== null;
+    $nights = $displayCheckIn && $displayCheckOut ? $displayCheckIn->diffInDays($displayCheckOut) : 0;
     $subtotal = $nights > 0 ? (float) $property->default_nightly_price * $nights : 0;
-    $promotion = $nights > 0 ? $property->promotions
+    $promotion = $usesPromoPreview ? $fallbackPromotion : ($nights > 0 ? $property->promotions
         ->filter(fn($promotion) => $promotion->discount_type->value === 'percentage' && ($promotion->minimum_stay_nights ?? 1) <= $nights)
         ->sortByDesc(fn($promotion) => (float) $promotion->discount_value)
-        ->first() : null;
+        ->first() : null);
     $discount = $promotion ? round($subtotal * ((float) $promotion->discount_value / 100)) : 0;
     $rangeTotal = max(0, $subtotal - $discount);
     $discountPercent = $promotion ? rtrim(rtrim((string)$promotion->discount_value, '0'), '.') : null;
-    $dateRangeLabel = $hasDateRange && $nights > 0
-        ? \Carbon\CarbonImmutable::parse($filters['check_in'])->format('M j').' - '.\Carbon\CarbonImmutable::parse($filters['check_out'])->format(\Carbon\CarbonImmutable::parse($filters['check_in'])->month === \Carbon\CarbonImmutable::parse($filters['check_out'])->month ? 'j' : 'M j')
+    $dateRangeLabel = $displayCheckIn && $displayCheckOut && $nights > 0
+        ? $displayCheckIn->format('M j').' - '.$displayCheckOut->format($displayCheckIn->month === $displayCheckOut->month ? 'j' : 'M j')
         : null;
-    $pricingNote = $hasDateRange && $nights > 0 ? $dateRangeLabel.' · '.$nights.' '.Str::plural('night', $nights) : null;
+    $showsTotalPrice = ($hasDateRange || $usesPromoPreview) && $nights > 0;
+    $pricingNote = $showsTotalPrice ? $dateRangeLabel.' · '.$nights.' '.Str::plural('night', $nights) : null;
     $savingsLabel = $discount > 0 ? 'You save ₦'.number_format($discount).' with '.$discountPercent.'% longer-stay pricing' : null;
-    $basePriceLabel = $hasDateRange && $nights > 0 ? 'Base: ₦'.number_format((float) $property->default_nightly_price).' / night' : null;
-    $valueBadge = $discount > 0 ? 'Best value for '.$nights.' nights' : ($hasDateRange && $nights > 0 ? 'Selected dates total' : null);
+    $basePriceLabel = $showsTotalPrice ? 'Base: ₦'.number_format((float) $property->default_nightly_price).' / night' : null;
+    $valueBadge = $discount > 0 ? ($usesPromoPreview ? 'Long-stay offer' : 'Best value for '.$nights.' nights') : ($hasDateRange && $nights > 0 ? 'Selected dates total' : null);
     $hostSource = trim((string) ($property->business?->primary_contact_name ?: $property->owner_name ?: ''));
     $hostFirstName = filled($hostSource) ? Str::of($hostSource)->squish()->explode(' ')->first() : null;
     $hostDisplayName = $hostFirstName ?: 'Verified host';
@@ -40,7 +56,11 @@
         'qualityTitle' => $ratingLabel,
         'qualityBody' => $topAmenities ? 'Guest-ready highlights include '.implode(', ', $topAmenities).'.' : 'Verified listing details, calendar and host information are checked before publication.',
         'pricingTitle' => $discount > 0 ? 'Longer-stay value available' : 'Transparent pricing',
-        'pricingBody' => $discount > 0 ? 'Selected dates save ₦'.number_format($discount).' with host-set longer-stay pricing.' : 'Adjust dates to compare totals and unlock any eligible host-set longer-stay offers.',
+        'pricingBody' => $discount > 0
+            ? ($usesPromoPreview
+                ? $dateRangeLabel.' preview totals ₦'.number_format($rangeTotal).' after host-set longer-stay pricing. Open the stay to choose your exact dates.'
+                : 'Selected dates save ₦'.number_format($discount).' with host-set longer-stay pricing.')
+            : 'Adjust dates to compare totals and unlock any eligible host-set longer-stay offers.',
     ];
     $isFavourite = auth()->check()
         ? \App\Models\GuestFavourite::query()->where('user_id', auth()->id())->where('property_id', $property->id)->exists()
@@ -54,8 +74,8 @@
         :location="data_get($property->address, 'city').', '.data_get($property->address, 'state')"
         :guests="$property->capacity"
         :price="(float) $property->default_nightly_price"
-        :price-label="$hasDateRange && $nights > 0 ? '₦'.number_format($rangeTotal) : null"
-        :price-unit="$hasDateRange && $nights > 0 ? 'total' : '/ night'"
+        :price-label="$showsTotalPrice ? '₦'.number_format($rangeTotal) : null"
+        :price-unit="$showsTotalPrice ? 'total' : '/ night'"
         :pricing-note="$pricingNote"
         :base-price-label="$basePriceLabel"
         :savings-label="$savingsLabel"

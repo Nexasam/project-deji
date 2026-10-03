@@ -1,0 +1,394 @@
+VERIFIED SHORTLET — CLIENT REVIEW SUMMARY
+Date: 3 October 2026
+
+Purpose
+-------
+This note summarises the recent work completed across the guest experience,
+property owner/property admin workspace, platform administration portal,
+demo data and remaining MVP acceptance items.
+
+
+1. GUEST EXPERIENCE
+-------------------
+
+Recently completed:
+
+- Redesigned the guest-facing marketplace closer to the new UX direction.
+- Improved mobile marketplace layout.
+- Added cleaner horizontal property sections for browsing.
+- Added AI Insights button on marketplace cards as a placeholder/deadlink for now.
+- Added property favourites.
+- Added favourites count in the guest navigation.
+- Fixed favourite icon behaviour so clicking it does not open the property detail page.
+- Added guest dashboard improvements.
+- Added guest bookings/stays view.
+- Changed language from “Trips” to “Stays”.
+- Added better booking detail pages.
+- Added booking-specific messages.
+- Added guest messages inbox.
+- Added guest reviews after completed stays.
+- Added phone number update support in profile/settings.
+- Improved booking checkout UI.
+- Improved guest count/adult/children controls.
+- Added real-time booking estimate/price preview before final confirmation.
+- Removed service fee/discount display where the client asked not to expose it directly.
+- Improved property detail page responsiveness.
+- Added clearer host/property-team information on property pages.
+- Added availability calendar behaviour improvements.
+- Prevented property owners from booking their own listed properties.
+- Guest can switch to business area only if they have business access.
+- If not, system shows that business access is unavailable instead of silently hiding the option.
+
+Seeded guest testing data now includes:
+
+- Upcoming confirmed stay.
+- Pending payment stay.
+- Currently checked-in stay.
+- Cancelled/refunded stay.
+- Completed stay with review/dispute context.
+- Booking messages.
+- Review case.
+
+Guest login:
+
+Email: guest.demo@verifiedshortlet.test
+Password: DemoPassword123!
+
+
+2. PROPERTY OWNER / PROPERTY ADMIN WORKSPACE
+-------------------------------------------
+
+Recently completed:
+
+- Improved owner dashboard cards.
+- Revenue now uses compact values such as ₦25K, ₦11M and ₦10B.
+- Dashboard stat cards now become a horizontal slider on mobile.
+- Added owner-to-guest switch at the top of owner dashboard.
+- If owner has no guest activity, it shows “No guest account”.
+- Improved owner navigation wording: “Business” instead of “Business workspace”.
+- Improved owner team/roles/access flow.
+- Added role capability matrix.
+- Added collapsible role details.
+- Added ability to create custom roles so owners are not boxed into only predefined roles.
+- Improved role/user creation inputs.
+- Fixed duplicate role assignment crash.
+- Added ability to reactivate deactivated users.
+- Added property-level scoping.
+- A cleaner can be assigned to only specific properties.
+- An accountant may see finance but not operational areas.
+- A receptionist can manage booking/front-desk operations without full finance access.
+- Added clearer permission-based access boundaries.
+- Added owner calendar/operations improvements.
+- Added cleaner, maintenance and inspector staff task experiences.
+- Added booking-related operations tasks.
+- Added owner finance demo records.
+- Added owner message entry points from bookings.
+- Added seeded records that make each role dashboard meaningful.
+
+Seeded property owner/team data now includes:
+
+- Cleaner assigned to turnover cleaning task with checklist.
+- Maintenance technician assigned to AC/generator readiness task.
+- Inspector assigned to post-stay inspection task.
+- Reception assigned to arrival/gate-instruction task.
+- Customer support assigned to in-stay support context.
+- Accountant sees paid, unpaid, refunded and completed booking/payment records.
+- Operations manager sees the wider operations queue.
+- Property manager has scoped multi-business switching.
+
+Owner login:
+
+Email: owner@coastlineresidences.test
+Password: Password123!
+
+Team logins:
+
+Email: manager.demo@verifiedshortlet.test
+Email: reception.demo@verifiedshortlet.test
+Email: accountant.demo@verifiedshortlet.test
+Email: operations.demo@verifiedshortlet.test
+Email: cleaner.demo@verifiedshortlet.test
+Email: maintenance.demo@verifiedshortlet.test
+Email: inspector.demo@verifiedshortlet.test
+Email: support.demo@verifiedshortlet.test
+
+Password for all team accounts:
+DemoPassword123!
+
+
+3. PLATFORM ADMINISTRATION PORTAL
+---------------------------------
+
+Recently completed:
+
+- Platform admin dashboard exists.
+- Property review flow exists.
+- Admin can publish, reject and unpublish properties.
+- Business directory exists.
+- Business verification/rejection/suspension/reactivation exists.
+- User/security directory exists.
+- Admin can lock/unlock users.
+- Review moderation exists.
+- Reviews can be hidden/restored.
+- Owner responses can be moderated.
+- Dispute management exists.
+- Admin can create, assign, transition and resolve disputes.
+- Platform settings/configuration area exists.
+- Platform audit area exists.
+- Permission-restricted platform admin roles exist:
+  - Super admin.
+  - Verification/moderation admin.
+  - Support/disputes admin.
+- Platform review/moderation demo data exists.
+
+Platform admin logins:
+
+Platform Super Admin
+Email: admin@verifiedshortlet.test
+Password: AdminPassword123!
+
+Verification / Moderation Admin
+Email: verification.admin@verifiedshortlet.test
+Password: DemoPassword123!
+
+Support / Disputes Admin
+Email: disputes.admin@verifiedshortlet.test
+Password: DemoPassword123!
+
+Demo cases available:
+
+- Eko Pearl Executive Residence for property review.
+- VS-DEMO-CASE01 for completed stay/review moderation/dispute flow.
+- DSP-DEMO-OPEN for open dispute demonstration.
+
+
+4. PAYMENTS, REPUTATION AND SETTLEMENT ARCHITECTURE
+---------------------------------------------------
+
+Recently completed:
+
+- Designed the next payments/reputation/settlement architecture.
+- Documented the agreed payment flow:
+
+  Guest payment
+  -> Verified Shortlet gateway
+  -> verified webhook
+  -> booking confirmed
+  -> platform fee recorded
+  -> owner balance recorded
+  -> settlement to property owner
+
+- Confirmed payments should route through Verified Shortlet, not directly through property owners.
+- Documented that Paystack/Flutterwave actual payment integration will use a service architecture.
+- Documented that platform fee behaviour should remain configurable:
+  - fee added to guest booking amount; or
+  - fee absorbed by property owner.
+- Workstreams have been planned and partially advanced/documented.
+
+
+5. DEMO / STAGING READINESS
+---------------------------
+
+Recently completed:
+
+- Staging deployment is live.
+- Shared-hosting issues were handled.
+- Production assets are compiled and included.
+- Scheduler was configured and verified.
+- Demo credentials are documented.
+- Presentation seed data is repeatable.
+- Latest changes were committed and pushed to dev.
+
+Latest pushed commit:
+
+0566f20 Enhance owner dashboard and presentation seed data
+
+Seed reset command:
+
+php artisan db:seed --force
+
+
+6. INDICATIVE MONTHLY RUNNING COSTS
+-----------------------------------
+
+These are practical MVP operating-cost estimates. Final figures depend on
+traffic, number of properties, image/video volume, email volume, backups and
+whether the platform remains on shared hosting or moves to a VPS/cloud server.
+
+Recommended MVP cost posture:
+
+- Keep application hosting simple at the beginning.
+- Use object storage for property images and documents instead of keeping all
+  uploads only on the web server.
+- Use transactional email for booking confirmations, password resets, review
+  notifications and operational alerts.
+- Add SMS/WhatsApp later only for high-value alerts because message costs can
+  grow quickly.
+
+Core monthly cost buckets:
+
+1. Application hosting
+
+- Current shared hosting can continue for staging/demo if stable.
+- For production MVP, a VPS/cloud server is safer for queue workers, cron,
+  logs and deployment control.
+- Estimated MVP range: $10 - $40/month for a small VPS.
+- Higher-availability production setup can move above this later.
+
+2. Database
+
+- If using the same VPS/shared host database, there may be no separate database
+  line item at MVP stage.
+- Managed database is preferred later for backups, uptime and easier recovery.
+- Estimated MVP range:
+  - Included/self-managed: $0 extra.
+  - Managed database: roughly $15 - $60+/month depending on provider and size.
+
+3. File/media storage
+
+Option A: DigitalOcean Spaces
+
+- Good for property images, documents, verification files and generated media.
+- Simple predictable MVP option.
+- Current public pricing is about $5/month base for one Space, with included
+  storage/bandwidth limits and extra usage billed separately.
+- Estimated MVP range: $5 - $20/month initially.
+
+Option B: Cloudinary
+
+- Better if the team wants image resizing, optimisation, transformations,
+  thumbnails and CDN delivery handled automatically.
+- Useful for marketplace images because it can optimise images for mobile.
+- Estimated MVP range:
+  - Free/low tier for testing if usage is small.
+  - Paid plans can become significantly higher as usage/media grows.
+- Recommended approach:
+  - Start with DigitalOcean Spaces for raw storage.
+  - Consider Cloudinary when image optimisation and transformation become a
+    clear product need.
+
+4. Transactional email
+
+Emails needed:
+
+- Account verification.
+- Password reset.
+- Booking confirmation.
+- Payment confirmation.
+- Owner booking notification.
+- Review submitted/moderation notification.
+- Dispute updates.
+- iCal/stale-sync alerts.
+- Operations/task reminders.
+
+Option A: Amazon SES
+
+- Usually very cheap at scale.
+- Requires more setup: domain verification, DNS records, SPF/DKIM/DMARC,
+  sandbox-to-production approval, bounce/complaint handling.
+- Estimated MVP range: usually low, often under $5 - $20/month for modest
+  transactional volume.
+
+Option B: Resend/Postmark/Mailgun-style provider
+
+- Easier developer experience and cleaner dashboards.
+- Usually more expensive than SES but faster to operate.
+- Estimated MVP range: $0 - $35+/month depending on provider and email volume.
+
+Recommended MVP approach:
+
+- Use Resend/Postmark-style provider if the team wants faster setup and easier
+  debugging.
+- Use Amazon SES if the priority is lowest long-term sending cost.
+
+5. Domain and DNS
+
+- Domain cost depends on registrar and TLD.
+- Estimated range: $10 - $30/year for common domains.
+- DNS is often free through registrar/Cloudflare.
+
+6. Backups
+
+- Database backup.
+- Uploaded media backup.
+- Application release backup.
+- Estimated MVP range:
+  - Manual/basic: $0 - $10/month.
+  - Automated offsite backups: $5 - $30+/month.
+
+7. Monitoring and error tracking
+
+- Useful before public launch.
+- Examples: uptime monitor, error logs, application exceptions.
+- Estimated MVP range:
+  - Free/low tier initially.
+  - $10 - $30+/month once usage grows.
+
+8. Payment gateway costs
+
+- Paystack/Flutterwave usually charge per successful transaction.
+- This is not a fixed monthly hosting cost.
+- It should be treated as a transaction cost and built into the platform fee
+  model.
+- The platform still needs final decision on whether guest pays the platform
+  fee separately or the property owner absorbs it.
+
+9. SMS / WhatsApp notifications
+
+- Not required for MVP if email and in-app notifications are acceptable.
+- Recommended for later:
+  - check-in reminders,
+  - payment alerts,
+  - urgent owner/staff alerts,
+  - guest support escalation.
+- Estimated cost depends heavily on provider, country and volume.
+
+Simple MVP monthly budget expectation:
+
+- Lean staging/demo: $5 - $25/month extra beyond existing hosting.
+- Practical production MVP: $40 - $150/month excluding payment transaction fees.
+- More robust production setup with managed database, media optimisation,
+  monitoring and higher email volume: $150 - $400+/month.
+
+Recommended starting stack:
+
+- Hosting: VPS/cloud server when leaving shared hosting.
+- Storage: DigitalOcean Spaces initially.
+- Email: Resend/Postmark for fastest setup, or Amazon SES for lowest long-term
+  cost.
+- Media optimisation: add Cloudinary later if marketplace image performance
+  becomes a priority.
+- Backups: automated database + uploads backup from the beginning of production.
+
+
+7. WHAT IS LEFT / NEXT ACCEPTANCE ITEMS
+---------------------------------------
+
+These should be presented as next acceptance/commercial integration items,
+not as blockers to the current product review.
+
+- Full real Paystack/Flutterwave live payment integration.
+- Payment webhook verification in staging/production.
+- Settlement dashboard for property owner balances/payouts.
+- Final decision on platform fee model.
+- SMTP/email delivery configuration for real notifications.
+- Final external iCal test with a real Airbnb/Booking.com feed.
+- Backup/restore rehearsal.
+- More mobile polish after client reviews the new UX.
+- Final review scoring system controlled by platform owner.
+- Advanced AI Insights behaviour; currently placeholder/deadlink.
+- Pre-booking chat/general property enquiry flow; current messages are booking-based.
+- Full production monitoring/background worker setup beyond shared hosting limitations.
+
+
+8. SIMPLE CLOSING STATEMENT
+---------------------------
+
+Over the last few days, we have strengthened the MVP from a basic booking
+marketplace into a more complete operating system. Guests can discover, save,
+book, message and review stays. Property owners can manage bookings, operations,
+finance, staff roles and property-scoped access. Platform admins can verify
+businesses/properties, moderate reviews, manage disputes and control platform
+trust workflows. The remaining major items are mostly external/commercial
+integrations: live payments, settlement automation, SMTP, real external iCal
+validation and final production-hardening.

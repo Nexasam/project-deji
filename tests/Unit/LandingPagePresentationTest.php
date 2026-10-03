@@ -130,6 +130,9 @@ class LandingPagePresentationTest extends TestCase
         $this->assertStringContainsString('Generated from verified marketplace data', $landing);
         $this->assertStringContainsString('qualityTitle', $tile);
         $this->assertStringContainsString('pricingTitle', $tile);
+        $this->assertStringContainsString('$fallbackPromotion', $tile);
+        $this->assertStringContainsString('Long-stay offer', $tile);
+        $this->assertStringContainsString(':price-unit="$showsTotalPrice ? \'total\' : \'/ night\'"', $tile);
 
         $css = file_get_contents(dirname(__DIR__, 2).'/resources/css/components.css');
         $this->assertStringContainsString('.marketplace-row-rail .card-listing', $css);
