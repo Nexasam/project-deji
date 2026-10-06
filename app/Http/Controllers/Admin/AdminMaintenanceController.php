@@ -48,7 +48,7 @@ class AdminMaintenanceController extends Controller
     {
         $data = $request->validate([
             'log' => ['required', 'string', 'in:'.implode(',', array_keys($this->logs))],
-            'reason' => ['required', 'string', 'min:10', 'max:1000'],
+            'confirm' => ['accepted'],
         ]);
 
         $path = base_path($this->logs[$data['log']]);
@@ -58,7 +58,7 @@ class AdminMaintenanceController extends Controller
         $this->record($request, 'platform.maintenance.log_cleared', 'Cleared '.$data['log'].' log.', [
             'log' => $data['log'],
             'path' => $this->logs[$data['log']],
-            'reason' => $data['reason'],
+            'confirmed' => true,
         ]);
 
         return back()->with('status', str($data['log'])->title().' log cleared.');
@@ -66,14 +66,12 @@ class AdminMaintenanceController extends Controller
 
     public function optimizeClear(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'reason' => ['required', 'string', 'min:10', 'max:1000'],
-        ]);
+        $request->validate(['confirm' => ['accepted']]);
 
         Artisan::call('optimize:clear');
 
         $this->record($request, 'platform.maintenance.optimize_cleared', 'Ran php artisan optimize:clear.', [
-            'reason' => $data['reason'],
+            'confirmed' => true,
             'output' => trim(Artisan::output()),
         ]);
 
@@ -82,9 +80,7 @@ class AdminMaintenanceController extends Controller
 
     public function gitPull(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'reason' => ['required', 'string', 'min:10', 'max:1000'],
-        ]);
+        $request->validate(['confirm' => ['accepted']]);
 
         $process = new Process(['git', 'pull', 'origin', 'dev'], base_path(), null, null, 120);
         $process->run();
@@ -92,7 +88,7 @@ class AdminMaintenanceController extends Controller
         $output = trim($process->getOutput()."\n".$process->getErrorOutput());
 
         $this->record($request, 'platform.maintenance.git_pull', 'Ran git pull origin dev.', [
-            'reason' => $data['reason'],
+            'confirmed' => true,
             'successful' => $process->isSuccessful(),
             'exit_code' => $process->getExitCode(),
             'output' => mb_substr($output, 0, 4000),
@@ -106,7 +102,7 @@ class AdminMaintenanceController extends Controller
     {
         $data = $request->validate([
             'command' => ['required', 'string', 'in:'.implode(',', array_keys($this->commands))],
-            'reason' => ['required', 'string', 'min:10', 'max:1000'],
+            'confirm' => ['accepted'],
         ]);
 
         $exitCode = Artisan::call($data['command']);
@@ -115,7 +111,7 @@ class AdminMaintenanceController extends Controller
         $this->record($request, 'platform.maintenance.command_run', 'Ran '.$data['command'].'.', [
             'command' => $data['command'],
             'exit_code' => $exitCode,
-            'reason' => $data['reason'],
+            'confirmed' => true,
             'output' => mb_substr($output, 0, 4000),
         ]);
 

@@ -12,7 +12,7 @@
     <section class="rounded-3xl bg-slate-950 p-6 text-white shadow-xl sm:p-8">
         <p class="text-xs font-black uppercase tracking-[.18em] text-orange-400">Platform operations</p>
         <h2 class="mt-2 text-2xl font-black">Maintenance console</h2>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">Run fixed operational actions without SSH. Every action requires a reason and is written to platform audit history.</p>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">Run fixed operational actions without SSH. Every action requires confirmation and is written to platform audit history.</p>
     </section>
 
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,.65fr)]">
@@ -49,8 +49,9 @@
                 <pre class="max-h-80 overflow-auto whitespace-pre-wrap break-words bg-slate-950 p-5 font-mono text-[11px] leading-5 text-slate-100 selection:bg-orange-500/40">{{ $logContent }}</pre>
                 <form method="POST" action="{{ route('admin.maintenance.logs.clear') }}" class="grid gap-3 border-t border-slate-100 p-5 sm:grid-cols-[1fr_auto]">@csrf
                     <input type="hidden" name="log" value="{{ $selectedLog }}">
-                    <label class="text-sm font-black text-slate-800">Reason for clearing this log
-                        <textarea name="reason" required minlength="10" maxlength="1000" rows="2" class="mt-2 block w-full rounded-xl border-slate-300 text-sm" placeholder="e.g. Cleared after exporting logs for review.">{{ old('reason') }}</textarea>
+                    <label class="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-900">
+                        <input type="checkbox" name="confirm" value="1" required class="mt-1 rounded border-red-300 text-red-600 focus:ring-red-500">
+                        <span>I confirm I want to clear the selected {{ str($selectedLog)->title() }} log.</span>
                     </label>
                     <button class="self-end rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 hover:bg-red-100">Clear selected log</button>
                 </form>
@@ -63,7 +64,10 @@
                 <h3 class="mt-1 text-xl font-black">Pull latest dev branch</h3>
                 <p class="mt-2 text-sm leading-6 text-slate-500">Runs exactly: <code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">git pull origin dev</code></p>
                 <form method="POST" action="{{ route('admin.maintenance.git-pull') }}" class="mt-4 space-y-3">@csrf
-                    <textarea name="reason" required minlength="10" maxlength="1000" rows="3" class="block w-full rounded-xl border-slate-300 text-sm" placeholder="Why are you pulling the latest dev branch?">{{ old('reason') }}</textarea>
+                    <label class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800">
+                        <input type="checkbox" name="confirm" value="1" required class="mt-1 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                        <span>I confirm I want to pull the latest code from <code class="rounded bg-white px-1 py-0.5 text-xs">origin/dev</code>.</span>
+                    </label>
                     <button class="w-full rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white hover:bg-orange-600">Run git pull origin dev</button>
                 </form>
             </section>
@@ -73,7 +77,10 @@
                 <h3 class="mt-1 text-xl font-black">Clear Laravel optimization cache</h3>
                 <p class="mt-2 text-sm leading-6 text-slate-500">Runs <code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">php artisan optimize:clear</code>.</p>
                 <form method="POST" action="{{ route('admin.maintenance.optimize-clear') }}" class="mt-4 space-y-3">@csrf
-                    <textarea name="reason" required minlength="10" maxlength="1000" rows="3" class="block w-full rounded-xl border-slate-300 text-sm" placeholder="Why are caches being cleared?">{{ old('reason') }}</textarea>
+                    <label class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800">
+                        <input type="checkbox" name="confirm" value="1" required class="mt-1 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                        <span>I confirm I want to clear Laravel cached config, routes, events and views.</span>
+                    </label>
                     <button class="w-full rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white hover:bg-orange-700">Run optimize:clear</button>
                 </form>
             </section>
@@ -92,7 +99,10 @@
                     <input type="hidden" name="command" value="{{ $command }}">
                     <p class="font-black text-slate-950">{{ $label }}</p>
                     <p class="mt-1 font-mono text-xs text-slate-500">{{ $command }}</p>
-                    <textarea name="reason" required minlength="10" maxlength="1000" rows="3" class="mt-4 block w-full rounded-xl border-slate-300 bg-white text-sm" placeholder="Reason for manual run">{{ old('reason') }}</textarea>
+                    <label class="mt-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-xs font-bold text-slate-700">
+                        <input type="checkbox" name="confirm" value="1" required class="mt-0.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500">
+                        <span>Confirm manual run</span>
+                    </label>
                     <button class="mt-3 w-full rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-orange-600">Run now</button>
                 </form>
             @endforeach
