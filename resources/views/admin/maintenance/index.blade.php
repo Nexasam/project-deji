@@ -16,29 +16,45 @@
     </section>
 
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,.65fr)]">
-        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <section x-data="{ logsOpen: false }" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[.16em] text-orange-600">Logs</p>
-                    <h3 class="mt-1 text-xl font-black">View application logs</h3>
-                    <p class="mt-1 text-xs text-slate-500">{{ $logPath }}</p>
+                <button type="button" @click="logsOpen=!logsOpen" class="flex min-w-0 flex-1 items-center gap-4 text-left">
+                    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-slate-950 font-mono text-xs font-black text-emerald-300">LOG</span>
+                    <span class="min-w-0">
+                        <span class="block text-xs font-black uppercase tracking-[.16em] text-orange-600">Logs</span>
+                        <span class="mt-1 block text-xl font-black">View application logs</span>
+                        <span class="mt-1 block truncate text-xs text-slate-500">{{ $logPath }}</span>
+                    </span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <form method="GET" action="{{ route('admin.maintenance.index') }}">
+                        <select name="log" onchange="this.form.submit()" class="rounded-xl border-slate-300 text-sm font-bold">
+                            @foreach($logs as $key => $path)
+                                <option value="{{ $key }}" @selected($selectedLog === $key)>{{ str($key)->title() }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                    <button type="button" @click="logsOpen=!logsOpen" class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white" x-text="logsOpen ? 'Hide terminal' : 'Show terminal'"></button>
                 </div>
-                <form method="GET" action="{{ route('admin.maintenance.index') }}">
-                    <select name="log" onchange="this.form.submit()" class="rounded-xl border-slate-300 text-sm font-bold">
-                        @foreach($logs as $key => $path)
-                            <option value="{{ $key }}" @selected($selectedLog === $key)>{{ str($key)->title() }}</option>
-                        @endforeach
-                    </select>
+            </div>
+            <div x-cloak x-show="logsOpen" x-collapse>
+                <div class="border-b border-slate-800 bg-slate-950 px-4 py-2">
+                    <div class="flex items-center gap-2">
+                        <span class="size-3 rounded-full bg-red-500"></span>
+                        <span class="size-3 rounded-full bg-amber-400"></span>
+                        <span class="size-3 rounded-full bg-emerald-500"></span>
+                        <span class="ml-2 font-mono text-xs font-bold text-slate-400">{{ $logPath }}</span>
+                    </div>
+                </div>
+                <pre class="max-h-80 overflow-auto whitespace-pre-wrap break-words bg-slate-950 p-5 font-mono text-[11px] leading-5 text-slate-100 selection:bg-orange-500/40">{{ $logContent }}</pre>
+                <form method="POST" action="{{ route('admin.maintenance.logs.clear') }}" class="grid gap-3 border-t border-slate-100 p-5 sm:grid-cols-[1fr_auto]">@csrf
+                    <input type="hidden" name="log" value="{{ $selectedLog }}">
+                    <label class="text-sm font-black text-slate-800">Reason for clearing this log
+                        <textarea name="reason" required minlength="10" maxlength="1000" rows="2" class="mt-2 block w-full rounded-xl border-slate-300 text-sm" placeholder="e.g. Cleared after exporting logs for review.">{{ old('reason') }}</textarea>
+                    </label>
+                    <button class="self-end rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 hover:bg-red-100">Clear selected log</button>
                 </form>
             </div>
-            <pre class="max-h-[34rem] overflow-auto bg-slate-950 p-5 text-xs leading-6 text-slate-100">{{ $logContent }}</pre>
-            <form method="POST" action="{{ route('admin.maintenance.logs.clear') }}" class="grid gap-3 border-t border-slate-100 p-5 sm:grid-cols-[1fr_auto]">@csrf
-                <input type="hidden" name="log" value="{{ $selectedLog }}">
-                <label class="text-sm font-black text-slate-800">Reason for clearing this log
-                    <textarea name="reason" required minlength="10" maxlength="1000" rows="2" class="mt-2 block w-full rounded-xl border-slate-300 text-sm" placeholder="e.g. Cleared after exporting logs for review.">{{ old('reason') }}</textarea>
-                </label>
-                <button class="self-end rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 hover:bg-red-100">Clear selected log</button>
-            </form>
         </section>
 
         <aside class="space-y-5">
