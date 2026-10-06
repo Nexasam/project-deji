@@ -78,6 +78,23 @@ class AdminMaintenanceController extends Controller
         return back()->with('status', 'Application caches cleared.');
     }
 
+    public function migrate(Request $request): RedirectResponse
+    {
+        $request->validate(['confirm' => ['accepted']]);
+
+        $exitCode = Artisan::call('migrate', ['--force' => true]);
+        $output = trim(Artisan::output());
+
+        $this->record($request, 'platform.maintenance.migrations_run', 'Ran php artisan migrate --force.', [
+            'confirmed' => true,
+            'exit_code' => $exitCode,
+            'output' => mb_substr($output, 0, 4000),
+        ]);
+
+        return back()
+            ->with($exitCode === 0 ? 'status' : 'maintenance_error', $output ?: 'php artisan migrate --force finished.');
+    }
+
     public function gitPull(Request $request): RedirectResponse
     {
         $request->validate(['confirm' => ['accepted']]);

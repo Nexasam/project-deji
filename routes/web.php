@@ -122,6 +122,7 @@ Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->
     Route::get('/maintenance', [AdminMaintenanceController::class, 'index'])->middleware('platform.permission:platform.configure')->name('maintenance.index');
     Route::post('/maintenance/logs/clear', [AdminMaintenanceController::class, 'clearLog'])->middleware('platform.permission:platform.configure')->name('maintenance.logs.clear');
     Route::post('/maintenance/git-pull', [AdminMaintenanceController::class, 'gitPull'])->middleware('platform.permission:platform.configure')->name('maintenance.git-pull');
+    Route::post('/maintenance/migrate', [AdminMaintenanceController::class, 'migrate'])->middleware('platform.permission:platform.configure')->name('maintenance.migrate');
     Route::post('/maintenance/optimize-clear', [AdminMaintenanceController::class, 'optimizeClear'])->middleware('platform.permission:platform.configure')->name('maintenance.optimize-clear');
     Route::post('/maintenance/commands/run', [AdminMaintenanceController::class, 'runCommand'])->middleware('platform.permission:platform.configure')->name('maintenance.commands.run');
     Route::get('/audit', AdminAuditController::class)->middleware('platform.permission:platform.audit.view')->name('audit.index');

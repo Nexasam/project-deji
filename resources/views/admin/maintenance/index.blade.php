@@ -84,6 +84,19 @@
                     <button class="w-full rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white hover:bg-orange-700">Run optimize:clear</button>
                 </form>
             </section>
+
+            <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-xs font-black uppercase tracking-[.16em] text-orange-600">Database</p>
+                <h3 class="mt-1 text-xl font-black">Run database migrations</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-500">Runs <code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">php artisan migrate --force</code>.</p>
+                <form method="POST" action="{{ route('admin.maintenance.migrate') }}" class="mt-4 space-y-3">@csrf
+                    <label class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">
+                        <input type="checkbox" name="confirm" value="1" required class="mt-1 rounded border-amber-300 text-orange-600 focus:ring-orange-500">
+                        <span>I confirm I want to run pending database migrations.</span>
+                    </label>
+                    <button class="w-full rounded-xl bg-amber-600 px-5 py-3 text-sm font-black text-white hover:bg-amber-700">Run migrate --force</button>
+                </form>
+            </section>
         </aside>
     </div>
 
