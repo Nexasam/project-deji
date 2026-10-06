@@ -49,6 +49,11 @@ final class BookingLifecycleService
         return DB::transaction(function () use ($booking, $actor, $data): Booking {
             $booking = Booking::query()->with(['property', 'business', 'guest'])->lockForUpdate()->findOrFail($booking->id);
             $this->requireState($booking, ['confirmed'], 'Only a confirmed booking can be checked in.');
+            if ($booking->payment_status->value !== 'paid') {
+                throw ValidationException::withMessages([
+                    'payment_status' => 'This booking still has an outstanding balance. Full payment is required before check-in.',
+                ]);
+            }
 
             BookingCheckIn::query()->updateOrCreate(['booking_id' => $booking->id], [
                 'business_id' => $booking->business_id,

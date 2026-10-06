@@ -1,0 +1,106 @@
+VERIFIED SHORTLET — CLIENT INTERVENTION CHECKLIST
+Date: 2026-10-05
+
+The remaining practical code-side payment configuration gap has now been handled:
+
+- Platform administrators now have a payment configuration area.
+- Paystack and Flutterwave key fields are available from platform settings.
+- Installment and fee controls are configurable.
+- Guests can pay outstanding installment balances from their booking page.
+
+The items below still require client/platform-owner decisions, credentials, or external-service acceptance before they can be fully activated.
+
+1. REAL PAYSTACK / FLUTTERWAVE ACTIVATION
+
+The admin UI for payment keys now exists, but real live payments still require:
+
+- Final Paystack credentials.
+- Final Flutterwave credentials.
+- Callback URLs.
+- Webhook URLs.
+- Webhook secrets.
+- Live hosted-checkout test.
+- Webhook verification test.
+
+2. FEE POLICY DECISION
+
+Fee settings are now configurable, but the client still needs to confirm the business rule:
+
+- Guest pays the platform fee; or
+- Property owner absorbs the fee from settlement.
+
+3. REAL NIN / BVN PROVIDER
+
+NIN/BVN verification is currently handled as an internal MVP verification flow.
+
+The client needs to choose:
+
+- Verification provider/API.
+- Compliance rules.
+- Required verification point for guests.
+- Required verification point for owners/business admins.
+- Required verification point before payouts.
+
+4. SMTP / EMAIL PROVIDER
+
+Actual outbound email delivery requires a provider and credentials.
+
+Options include:
+
+- Resend.
+- Postmark.
+- Amazon SES.
+- Mailgun.
+- SendGrid.
+
+The selected provider will need DNS records, sender verification and production credentials.
+
+5. STORAGE PROVIDER
+
+Production media/document storage still needs a final provider and keys.
+
+Options include:
+
+- Cloudinary.
+- DigitalOcean Spaces.
+- Amazon S3.
+- Other S3-compatible storage.
+
+The client needs to confirm storage provider, bucket/space name, access keys, CDN/domain preference and retention rules.
+
+6. REVIEW SCORING QUESTIONS
+
+Platform-owner-controlled review scoring needs client-defined rules:
+
+- Review questions.
+- Question weights.
+- Scoring thresholds.
+- What score qualifies for Superhost or similar badge.
+- Whether poor guest reviews trigger manual moderation or property-owner warnings.
+
+7. SETTLEMENT OPERATIONS
+
+The platform route is:
+
+Guest payment → Verified Shortlet gateway → verified webhook → booking confirmed → platform fee recorded → owner balance recorded → settlement to property owner.
+
+The client still needs to define:
+
+- Owner payout timing.
+- Manual or automatic payout approval.
+- Bank account verification rules.
+- Settlement report format.
+- Payout failure handling.
+- Refund and dispute impact on settlement.
+
+SUMMARY
+
+The core payment configuration interface and installment-balance flow are now handled in the application.
+
+The remaining major items are:
+
+- External provider credentials.
+- Business policy decisions.
+- Compliance provider selection.
+- Production email/storage choices.
+- Final live acceptance testing.

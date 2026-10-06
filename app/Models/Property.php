@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'bathrooms',
     'floor_area_sqm',
     'description',
+    'check_in_instructions',
     'default_nightly_price',
     'pricing_currency',
     'verification_status',
@@ -53,6 +54,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'archived_at',
     'owner_name',
     'manager_name',
+    'host_phone_number',
+    'superhost_badge_enabled',
     'status',
     'created_by',
     'updated_by',
@@ -73,6 +76,7 @@ class Property extends Model
             'beds' => 'integer',
             'bathrooms' => 'decimal:1',
             'floor_area_sqm' => 'decimal:2',
+            'check_in_instructions' => 'array',
             'default_nightly_price' => 'decimal:4',
             'verification_status' => PropertyVerificationStatus::class,
             'maintenance_status' => PropertyMaintenanceStatus::class,
@@ -86,6 +90,7 @@ class Property extends Model
             'verified_at' => 'datetime',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
+            'superhost_badge_enabled' => 'boolean',
             'status' => PropertyStatus::class,
         ];
     }

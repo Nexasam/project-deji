@@ -20,15 +20,59 @@
 
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
                 <header class="flex flex-wrap items-center justify-between gap-4"><div><h2 class="text-2xl font-black">{{ $month->format('F Y') }}</h2><div class="mt-4 flex flex-wrap gap-5 text-sm text-slate-500"><span><i class="mr-2 inline-block size-3 rounded-sm border border-sky-400 bg-sky-100"></i>Confirmed stay</span><span><i class="mr-2 inline-block size-3 rounded-sm border border-amber-400 bg-amber-100"></i>Pending payment</span><span><i class="mr-2 inline-block size-3 rounded-sm border-2 border-orange-600"></i>Today</span></div></div><div class="flex gap-2"><a href="{{ route('guest.calendar',['month'=>$month->subMonth()->format('Y-m')]) }}" class="grid size-10 place-items-center rounded-lg border border-slate-200 text-xl">‹</a><a href="{{ route('guest.calendar',['month'=>$month->addMonth()->format('Y-m')]) }}" class="grid size-10 place-items-center rounded-lg border border-slate-200 text-xl">›</a></div></header>
-                <div class="mt-5 overflow-x-auto"><div class="min-w-[700px]"><div class="grid grid-cols-7 text-center text-sm font-bold text-slate-500">@foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $weekday)<div class="py-3">{{ $weekday }}</div>@endforeach</div><div class="grid grid-cols-7 gap-1.5">
-                    @foreach($calendarDays as $day)
-                        @php $dayTrips=$bookings->filter(fn($booking)=>$day->gte($booking->arrival_date)&&$day->lt($booking->departure_date)); $current=$day->month===$month->month; @endphp
-                        <div class="min-h-28 rounded-xl border p-3 {{ $day->isToday()?'border-2 border-orange-600':($current?'border-slate-200':'border-slate-100 bg-slate-50') }}">
-                            <strong class="text-sm {{ $current?'text-slate-900':'text-slate-300' }}">{{ $day->day }}</strong>
-                            <div class="mt-2 space-y-1.5">@foreach($dayTrips->take(1) as $trip)<a href="{{ route('guest.bookings.show',$trip) }}" class="block rounded-lg border p-2 text-[11px] leading-4 {{ $isPending($trip)?'border-amber-400 bg-amber-50':'border-sky-400 bg-sky-50' }}">@if($day->isSameDay($trip->arrival_date))<strong class="block">Check-in {{ substr($trip->property->marketplaceListing?->check_in_time ?: '14:00',0,5) }}</strong>@endif<span class="block truncate">{{ $trip->property->marketplaceListing?->public_title ?: $trip->property->name }}</span>@if($day->isSameDay($trip->arrival_date))<span>{{ $trip->arrival_date->diffInDays($trip->departure_date) }} nights</span>@endif</a>@endforeach</div>
+                <div class="mt-5 overflow-x-auto">
+                    <div class="min-w-[760px]">
+                        <div class="grid grid-cols-7 text-center text-sm font-bold text-slate-500">@foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $weekday)<div class="py-3">{{ $weekday }}</div>@endforeach</div>
+                        <div class="space-y-1.5">
+                            @foreach($calendarDays->chunk(7) as $week)
+                                @php
+                                    $weekStart = $week->first();
+                                    $weekEnd = $week->last();
+                                    $weekEndExclusive = $weekEnd->addDay();
+                                    $weekTrips = $bookings
+                                        ->filter(fn($booking) => $booking->arrival_date->lt($weekEndExclusive) && $booking->departure_date->gt($weekStart))
+                                        ->values()
+                                        ->take(3);
+                                @endphp
+                                <div class="relative grid min-h-[128px] grid-cols-7 gap-1.5">
+                                    @foreach($week as $day)
+                                        @php $current=$day->month===$month->month; @endphp
+                                        <div class="rounded-xl border p-3 {{ $day->isToday()?'border-2 border-orange-600':($current?'border-slate-200':'border-slate-100 bg-slate-50') }}">
+                                            <strong class="text-sm {{ $current?'text-slate-900':'text-slate-300' }}">{{ $day->day }}</strong>
+                                        </div>
+                                    @endforeach
+
+                                    @foreach($weekTrips as $barIndex => $trip)
+                                        @php
+                                            $segmentStart = $trip->arrival_date->greaterThan($weekStart) ? $trip->arrival_date : $weekStart;
+                                            $segmentEnd = $trip->departure_date->lessThan($weekEndExclusive) ? $trip->departure_date : $weekEndExclusive;
+                                            $columnStart = $segmentStart->dayOfWeek + 1;
+                                            $columnEnd = $segmentEnd->dayOfWeek + 1;
+                                            if ($segmentEnd->isSameDay($weekEndExclusive)) { $columnEnd = 8; }
+                                            $top = 42 + ($barIndex * 28);
+                                            $isStart = $segmentStart->isSameDay($trip->arrival_date);
+                                            $isEnd = $segmentEnd->isSameDay($trip->departure_date);
+                                            $nights = $trip->arrival_date->diffInDays($trip->departure_date);
+                                        @endphp
+                                        <a href="{{ route('guest.bookings.show',$trip) }}"
+                                           class="absolute z-10 flex h-7 items-center overflow-hidden px-3 text-[11px] font-black leading-none shadow-sm {{ $isPending($trip)?'bg-amber-100 text-amber-900 ring-1 ring-amber-300':'bg-sky-100 text-sky-900 ring-1 ring-sky-300' }} {{ $isStart ? 'rounded-l-lg' : '' }} {{ $isEnd ? 'rounded-r-lg' : '' }}"
+                                           style="grid-column: {{ $columnStart }} / {{ $columnEnd }}; top: {{ $top }}px; left: 3px; right: 3px;">
+                                            <span class="truncate">
+                                                @if($isStart)
+                                                    Check-in {{ substr($trip->property->marketplaceListing?->check_in_time ?: '14:00',0,5) }} ·
+                                                @endif
+                                                {{ $trip->property->marketplaceListing?->public_title ?: $trip->property->name }}
+                                                @if($isStart)
+                                                    · {{ $nights }} {{ Str::plural('night', $nights) }}
+                                                @endif
+                                            </span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endforeach
                         </div>
-                    @endforeach
-                </div></div></div>
+                    </div>
+                </div>
             </section>
         </div>
     </div>

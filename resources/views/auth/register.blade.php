@@ -36,21 +36,43 @@
         </section>
 
         <section class="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8 lg:px-12 xl:px-20">
-            <div class="w-full max-w-lg" x-data="{ showPassword: false, showConfirmation: false }">
+            <div class="w-full max-w-lg" x-data="{ showPassword: false, showConfirmation: false, accountType: @js(old('account_type', 'individual')) }">
                 <div class="mb-8 flex items-center justify-between lg:hidden">
                     <a href="{{ route('home') }}" class="flex items-center gap-2.5"><img src="{{ asset('logo1.png') }}" alt="" class="size-10 object-contain"><span class="font-extrabold">Verified Shortlet</span></a>
                     <a href="{{ route('home') }}" class="text-sm font-bold text-slate-500 hover:text-orange-600">Back home</a>
                 </div>
 
-                <div><h2 class="text-3xl font-extrabold tracking-[-0.025em] sm:text-4xl">Create your account</h2><p class="mt-3 text-sm leading-6 text-slate-600">Get started as a guest. You can add an owner workspace later.</p></div>
+                <div><h2 class="text-3xl font-extrabold tracking-[-0.025em] sm:text-4xl">Create your account</h2><p class="mt-3 text-sm leading-6 text-slate-600">Choose whether you are joining as an individual guest or business operator. Identity checks can be completed now or before payment and payouts.</p></div>
 
                 <form method="POST" action="{{ route('register') }}" class="mt-7 space-y-4">
                     @csrf
 
                     <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <p class="property-form-label mb-2">Account type</p>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="cursor-pointer rounded-2xl border p-4 transition" :class="accountType === 'individual' ? 'border-orange-500 bg-orange-50' : 'border-slate-200 bg-white'">
+                                    <input type="radio" name="account_type" value="individual" x-model="accountType" class="sr-only">
+                                    <span class="block font-extrabold text-slate-950">Individual</span>
+                                    <small class="mt-1 block text-xs leading-5 text-slate-500">Book stays for yourself. NIN can be completed now or before payment.</small>
+                                </label>
+                                <label class="cursor-pointer rounded-2xl border p-4 transition" :class="accountType === 'business' ? 'border-orange-500 bg-orange-50' : 'border-slate-200 bg-white'">
+                                    <input type="radio" name="account_type" value="business" x-model="accountType" class="sr-only">
+                                    <span class="block font-extrabold text-slate-950">Business</span>
+                                    <small class="mt-1 block text-xs leading-5 text-slate-500">Register a property/business profile. BVN/NIN can be completed before payout.</small>
+                                </label>
+                            </div>
+                            @error('account_type')<span class="property-form-error">{{ $message }}</span>@enderror
+                        </div>
+
                         <label for="name" class="property-form-label sm:col-span-2">Full name
                             <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" placeholder="Your full name" class="property-form-control mt-2 @error('name') is-invalid @enderror">
                             @error('name')<span class="property-form-error">{{ $message }}</span>@enderror
+                        </label>
+
+                        <label x-show="accountType === 'business'" x-cloak for="business_name" class="property-form-label sm:col-span-2">Business name
+                            <input id="business_name" type="text" name="business_name" value="{{ old('business_name') }}" placeholder="e.g. DanastyX Apartments" class="property-form-control mt-2 @error('business_name') is-invalid @enderror">
+                            @error('business_name')<span class="property-form-error">{{ $message }}</span>@enderror
                         </label>
 
                         <label for="email" class="property-form-label">Email address
@@ -61,6 +83,16 @@
                         <label for="phone_number" class="property-form-label">Phone number <span class="property-form-optional">(optional)</span>
                             <input id="phone_number" type="tel" name="phone_number" value="{{ old('phone_number') }}" autocomplete="tel" placeholder="+234 800 000 0000" class="property-form-control mt-2 @error('phone_number') is-invalid @enderror">
                             @error('phone_number')<span class="property-form-error">{{ $message }}</span>@enderror
+                        </label>
+
+                        <label for="nin" class="property-form-label">NIN <span class="property-form-optional">(optional now)</span>
+                            <input id="nin" type="text" name="nin" value="{{ old('nin') }}" inputmode="numeric" placeholder="Enter NIN to unlock payments" class="property-form-control mt-2 @error('nin') is-invalid @enderror">
+                            @error('nin')<span class="property-form-error">{{ $message }}</span>@enderror
+                        </label>
+
+                        <label x-show="accountType === 'business'" x-cloak for="bvn" class="property-form-label">Admin BVN <span class="property-form-optional">(required before payout)</span>
+                            <input id="bvn" type="text" name="bvn" value="{{ old('bvn') }}" inputmode="numeric" placeholder="Required before payout" class="property-form-control mt-2 @error('bvn') is-invalid @enderror">
+                            @error('bvn')<span class="property-form-error">{{ $message }}</span>@enderror
                         </label>
 
                         <label for="password" class="property-form-label">Password

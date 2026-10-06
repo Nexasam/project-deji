@@ -13,10 +13,10 @@
         <button type="button" @click="open=false" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" aria-label="Close AI insights"></button>
         <article class="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
-                <div><p class="text-xs font-extrabold uppercase tracking-[.16em] text-orange-600">AI Insights preview</p><h2 id="property-insights-title" class="mt-1 text-2xl font-extrabold text-slate-950" x-text="insight.title || 'Property insights'"></h2><p class="mt-1 text-xs text-slate-500">Generated from verified marketplace data. Full AI assistant coming later.</p></div>
+                <div><p class="text-xs font-extrabold uppercase tracking-[.16em] text-orange-600">AI Insights preview</p><h2 id="property-insights-title" class="mt-1 text-2xl font-extrabold text-slate-950" x-text="insight.title || 'Property insights'"></h2><p class="mt-1 text-xs text-slate-500">Generated from marketplace data. Full AI assistant coming later.</p></div>
                 <button type="button" @click="open=false" class="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xl text-slate-600">×</button>
             </div>
-            <div class="p-5"><div class="flex items-center gap-4 border-b border-slate-100 pb-5"><div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-lg font-black text-orange-700" x-text="(insight.host || 'Verified host').replace('Hosted by ','').slice(0,2).toUpperCase()"></div><div><p class="font-extrabold text-slate-950" x-text="insight.host || 'Hosted by Verified host'"></p><p class="mt-1 text-sm text-slate-500" x-text="insight.hostMeta || 'Verified Shortlet host'"></p></div></div><div class="mt-5 space-y-5"><template x-for="item in [{icon:'⌁', title:insight.locationTitle, body:insight.locationBody},{icon:'↳', title:insight.accessTitle, body:insight.accessBody},{icon:'★', title:insight.qualityTitle, body:insight.qualityBody},{icon:'₦', title:insight.pricingTitle, body:insight.pricingBody}]" :key="item.title"><div class="flex gap-4"><div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-base font-black text-slate-700" x-text="item.icon"></div><div><p class="font-extrabold text-slate-950" x-text="item.title"></p><p class="mt-1 text-sm leading-6 text-slate-500" x-text="item.body"></p></div></div></template></div></div>
+            <div class="p-5"><div class="flex items-center gap-4 border-b border-slate-100 pb-5"><div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-lg font-black text-orange-700" x-text="(insight.host || 'Host').replace('Hosted by ','').slice(0,2).toUpperCase()"></div><div><p class="font-extrabold text-slate-950" x-text="insight.host || 'Hosted by Host'"></p><p class="mt-1 text-sm text-slate-500" x-text="insight.hostMeta || 'Property team'"></p></div></div><div class="mt-5 space-y-5"><template x-for="item in [{icon:'⌁', title:insight.locationTitle, body:insight.locationBody},{icon:'↳', title:insight.accessTitle, body:insight.accessBody},{icon:'★', title:insight.qualityTitle, body:insight.qualityBody},{icon:'₦', title:insight.pricingTitle, body:insight.pricingBody}]" :key="item.title"><div class="flex gap-4"><div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-base font-black text-slate-700" x-text="item.icon"></div><div><p class="font-extrabold text-slate-950" x-text="item.title"></p><p class="mt-1 text-sm leading-6 text-slate-500" x-text="item.body"></p></div></div></template></div></div>
         </article>
     </div>
 
@@ -336,8 +336,8 @@
             ],
             [
                 'icon' => '<svg class=\'w-6 h-6 text-orange-500\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg>',
-                'title' => 'Verified property pages',
-                'description' => 'ID checks, an on-site inspection and photo verification — every badge you see means something.'
+                'title' => 'Checked property pages',
+                'description' => 'ID checks, on-site inspection and photo review support each stay before it appears on the marketplace.'
             ],
             [
                 'icon' => '<svg class=\'w-6 h-6 text-orange-500\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z\'/></svg>',

@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'onboarding_started_at',
     'onboarding_completed_at',
     'verification_status',
+    'verification_payload',
     'status',
 ])]
 class Business extends Model
@@ -49,6 +50,7 @@ class Business extends Model
             'address' => 'array',
             'social_links' => 'array',
             'tax_information' => 'encrypted:array',
+            'verification_payload' => 'array',
             'verification_status' => BusinessVerificationStatus::class,
             'status' => BusinessStatus::class,
             'onboarding_status' => BusinessOnboardingStatus::class,

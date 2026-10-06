@@ -48,7 +48,7 @@
         @if($verified)
             <div class="card-verified-badge">
                 <svg width="10" height="10" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span>Verified</span>
+                <span>Super host</span>
             </div>
         @endif
 

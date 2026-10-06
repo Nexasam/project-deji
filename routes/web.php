@@ -5,12 +5,14 @@ use App\Http\Controllers\Admin\AdminAuthenticatedSessionController;
 use App\Http\Controllers\Admin\AdminBusinessController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminDisputeController;
+use App\Http\Controllers\Admin\AdminMaintenanceController;
 use App\Http\Controllers\Admin\AdminPlatformSettingController;
 use App\Http\Controllers\Admin\AdminPropertyController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Guest\GuestBookingCancellationController;
 use App\Http\Controllers\Guest\GuestBookingController;
+use App\Http\Controllers\Guest\GuestBookingPaymentController;
 use App\Http\Controllers\Guest\GuestCalendarController;
 use App\Http\Controllers\Guest\GuestDashboardController;
 use App\Http\Controllers\Guest\GuestFavouriteController;
@@ -75,6 +77,7 @@ Route::middleware('auth')->prefix('guest')->name('guest.')->group(function () {
     Route::get('/bookings/{booking}/messages', [GuestMessageController::class, 'show'])->name('bookings.messages.show');
     Route::post('/bookings/{booking}/messages', [GuestMessageController::class, 'store'])->name('bookings.messages.store');
     Route::get('/bookings/{booking}/receipt', [GuestBookingController::class, 'receipt'])->name('bookings.receipt');
+    Route::post('/bookings/{booking}/pay-balance', [GuestBookingPaymentController::class, 'payBalance'])->name('bookings.pay-balance');
     Route::post('/bookings/{booking}/cancel', GuestBookingCancellationController::class)->name('bookings.cancel');
     Route::post('/bookings/{booking}/service-requests', [GuestServiceRequestController::class, 'store'])->name('bookings.service-requests.store');
     Route::post('/bookings/{booking}/review', [GuestReviewController::class, 'store'])->name('bookings.reviews.store');
@@ -116,12 +119,18 @@ Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->
     Route::patch('/disputes/{dispute}/transition', [AdminDisputeController::class, 'transition'])->middleware('platform.permission:platform.dispute.manage')->name('disputes.transition');
     Route::get('/settings', [AdminPlatformSettingController::class, 'index'])->middleware('platform.permission:platform.configure')->name('settings.index');
     Route::patch('/settings', [AdminPlatformSettingController::class, 'update'])->middleware('platform.permission:platform.configure')->name('settings.update');
+    Route::get('/maintenance', [AdminMaintenanceController::class, 'index'])->middleware('platform.permission:platform.configure')->name('maintenance.index');
+    Route::post('/maintenance/logs/clear', [AdminMaintenanceController::class, 'clearLog'])->middleware('platform.permission:platform.configure')->name('maintenance.logs.clear');
+    Route::post('/maintenance/git-pull', [AdminMaintenanceController::class, 'gitPull'])->middleware('platform.permission:platform.configure')->name('maintenance.git-pull');
+    Route::post('/maintenance/optimize-clear', [AdminMaintenanceController::class, 'optimizeClear'])->middleware('platform.permission:platform.configure')->name('maintenance.optimize-clear');
+    Route::post('/maintenance/commands/run', [AdminMaintenanceController::class, 'runCommand'])->middleware('platform.permission:platform.configure')->name('maintenance.commands.run');
     Route::get('/audit', AdminAuditController::class)->middleware('platform.permission:platform.audit.view')->name('audit.index');
     Route::get('/properties', [AdminPropertyController::class, 'index'])->middleware('platform.permission:platform.property.view')->name('properties.index');
     Route::get('/properties/{property}', [AdminPropertyController::class, 'show'])->middleware('platform.permission:platform.property.view')->name('properties.show');
     Route::post('/properties/{property}/publish', [AdminPropertyController::class, 'publish'])->middleware('platform.permission:platform.property.verify')->name('properties.publish');
     Route::post('/properties/{property}/unpublish', [AdminPropertyController::class, 'unpublish'])->middleware('platform.permission:platform.property.verify')->name('properties.unpublish');
     Route::post('/properties/{property}/reject', [AdminPropertyController::class, 'reject'])->middleware('platform.permission:platform.property.verify')->name('properties.reject');
+    Route::patch('/properties/{property}/trust-badge', [AdminPropertyController::class, 'updateTrustBadge'])->middleware('platform.permission:platform.property.verify')->name('properties.trust-badge.update');
 });
 
 Route::prefix('owner')->name('owner.')->group(function () {
@@ -148,6 +157,7 @@ Route::prefix('owner')->name('owner.')->group(function () {
         Route::get('/properties/{property}/create/success', [PropertyWizardController::class, 'success'])->middleware('permission:property.view')->name('properties.wizard.success');
         Route::post('/properties/{property}/marketplace-verification', [PropertySetupController::class, 'submitMarketplace'])->middleware(['permission:property.manage_listing', 'business.mutation'])->name('properties.marketplace-verification.submit');
         Route::get('/properties/{property}', [OwnerPropertyController::class, 'show'])->middleware('permission:property.view')->name('properties.show');
+        Route::patch('/properties/{property}/arrival-guide', [OwnerPropertyController::class, 'updateArrivalGuide'])->middleware(['permission:property.edit', 'business.mutation'])->name('properties.arrival-guide.update');
         Route::post('/properties/{property}/calendars', [OwnerExternalCalendarController::class, 'store'])->middleware(['permission:calendar.manage_connections', 'business.mutation'])->name('properties.calendars.store');
         Route::post('/properties/{property}/calendars/{connection}/sync', [OwnerExternalCalendarController::class, 'sync'])->middleware(['permission:calendar.sync', 'business.mutation'])->name('properties.calendars.sync');
         Route::delete('/properties/{property}/calendars/{connection}', [OwnerExternalCalendarController::class, 'destroy'])->middleware(['permission:calendar.manage_connections', 'business.mutation'])->name('properties.calendars.destroy');

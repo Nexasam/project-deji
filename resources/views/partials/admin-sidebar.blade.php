@@ -9,6 +9,7 @@
         ['label' => 'Reviews', 'route' => 'admin.reviews.index', 'pattern' => 'admin.reviews.*', 'permission' => 'platform.review.view', 'icon' => 'm12 3 2.8 5.67 6.2.9-4.5 4.38 1.06 6.18L12 17.77l-5.56 2.92 1.06-6.18L3 9.57l6.2-.9L12 3Z'],
         ['label' => 'Disputes', 'route' => 'admin.disputes.index', 'pattern' => 'admin.disputes.*', 'permission' => 'platform.dispute.view', 'icon' => 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Zm0-13v4m0 4h.01'],
         ['label' => 'Configuration', 'route' => 'admin.settings.index', 'pattern' => 'admin.settings.*', 'permission' => 'platform.configure', 'icon' => 'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7.4-3.5a7.7 7.7 0 0 0-.1-1l2-1.55-2-3.46-2.45 1a7.8 7.8 0 0 0-1.75-1L14.75 3h-4l-.35 2.99a7.8 7.8 0 0 0-1.75 1l-2.45-1-2 3.46 2 1.55a7.7 7.7 0 0 0 0 2l-2 1.55 2 3.46 2.45-1a7.8 7.8 0 0 0 1.75 1l.35 2.99h4l.35-2.99a7.8 7.8 0 0 0 1.75-1l2.45 1 2-3.46-2-1.55a7.7 7.7 0 0 0 .1-1Z'],
+        ['label' => 'Maintenance', 'route' => 'admin.maintenance.index', 'pattern' => 'admin.maintenance.*', 'permission' => 'platform.configure', 'icon' => 'M4 7h16M4 12h16M4 17h10M18 17l2 2m0-2-2 2'],
         ['label' => 'Audit history', 'route' => 'admin.audit.index', 'pattern' => 'admin.audit.*', 'permission' => 'platform.audit.view', 'icon' => 'M9 11h6M9 15h4M7 3h10a2 2 0 0 1 2 2v16l-7-3-7 3V5a2 2 0 0 1 2-2Z'],
     ];
 @endphp

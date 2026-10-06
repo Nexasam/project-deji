@@ -107,6 +107,35 @@ class OwnerPropertyController extends Controller
         ]);
     }
 
+    public function updateArrivalGuide(Request $request, ActiveBusinessContext $context, string $property): RedirectResponse
+    {
+        $record = $context->business->properties()->whereKey($property)->firstOrFail();
+
+        $data = $request->validate([
+            'host_phone_number' => ['nullable', 'string', 'max:32'],
+            'key_pickup' => ['nullable', 'string', 'max:1000'],
+            'access_notes' => ['nullable', 'string', 'max:1500'],
+            'house_rules' => ['nullable', 'string', 'max:2000'],
+            'emergency_contact' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $record->forceFill([
+            'host_phone_number' => $data['host_phone_number'] ?? null,
+            'check_in_instructions' => [
+                'key_pickup' => $data['key_pickup'] ?? null,
+                'access_notes' => $data['access_notes'] ?? null,
+                'house_rules' => $data['house_rules'] ?? null,
+                'emergency_contact' => $data['emergency_contact'] ?? null,
+                'updated_at' => now()->toIso8601String(),
+            ],
+            'updated_by' => $request->user()->id,
+        ])->save();
+
+        return redirect()
+            ->route('owner.properties.show', $record)
+            ->with('status', 'Guest arrival guide and host contact details were updated.');
+    }
+
     public function store(
         StorePropertyRequest $request,
         ActiveBusinessContext $context,

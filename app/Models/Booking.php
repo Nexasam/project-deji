@@ -40,6 +40,9 @@ use LogicException;
     'total_amount',
     'external_reference',
     'source_metadata',
+    'payment_plan',
+    'payment_due_at',
+    'check_in_instructions_snapshot',
     'created_by',
 ])]
 class Booking extends Model
@@ -72,6 +75,9 @@ class Booking extends Model
             'subtotal_amount' => 'decimal:4',
             'total_amount' => 'decimal:4',
             'source_metadata' => 'array',
+            'payment_plan' => 'array',
+            'payment_due_at' => 'datetime',
+            'check_in_instructions_snapshot' => 'array',
         ];
     }
 

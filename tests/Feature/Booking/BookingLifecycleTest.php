@@ -72,7 +72,7 @@ class BookingLifecycleTest extends TestCase
     public function test_repeated_transition_is_rejected_without_duplicate_effects(): void
     {
         [$owner, $business] = $this->ownerWithBusiness();
-        $booking = Booking::factory()->for($business)->for(Property::factory()->for($business))->create(['status' => 'confirmed']);
+        $booking = Booking::factory()->for($business)->for(Property::factory()->for($business))->create(['status' => 'confirmed', 'payment_status' => 'paid']);
         $payload = ['identity_status' => 'verified', 'balance_status' => 'paid'];
 
         $this->actingAs($owner)->post(route('owner.bookings.check-in', $booking), $payload)->assertRedirect();

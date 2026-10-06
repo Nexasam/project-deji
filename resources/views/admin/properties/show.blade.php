@@ -44,7 +44,31 @@
             <div><dt class="text-slate-500">Bedrooms / beds</dt><dd class="mt-1 font-black">{{ $property->bedrooms }} / {{ $property->beds }}</dd></div>
             <div><dt class="text-slate-500">Bathrooms</dt><dd class="mt-1 font-black">{{ $property->bathrooms }}</dd></div>
             <div><dt class="text-slate-500">Eligibility</dt><dd class="mt-1 font-black">{{ $property->marketplaceListing?->is_publication_eligible ? 'Eligible' : 'Not yet eligible' }}</dd></div>
+            <div><dt class="text-slate-500">Guest trust badge</dt><dd class="mt-1 font-black">{{ $property->superhost_badge_enabled ? 'Super host' : 'No badge' }}</dd></div>
         </dl>
+
+        @if($canDecide)
+            <section class="mt-6 rounded-2xl border border-orange-100 bg-orange-50/40 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-[.18em] text-orange-600">Guest trust badge</p>
+                        <h3 class="mt-2 text-lg font-black">Super host visibility</h3>
+                        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Only the platform team can award or remove this badge. It appears on guest-facing cards only when this property qualifies.</p>
+                    </div>
+                    <span class="rounded-full {{ $property->superhost_badge_enabled ? 'bg-orange-600 text-white' : 'bg-white text-slate-600' }} px-4 py-2 text-xs font-black shadow-sm">{{ $property->superhost_badge_enabled ? '★ Super host enabled' : 'No public badge' }}</span>
+                </div>
+                <form method="POST" action="{{ route('admin.properties.trust-badge.update', $property) }}" class="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">@csrf @method('PATCH')
+                    <label class="flex items-center gap-3 rounded-xl border border-orange-200 bg-white px-4 py-3 text-sm font-bold text-slate-800">
+                        <input type="checkbox" name="superhost_badge_enabled" value="1" @checked($property->superhost_badge_enabled) class="rounded border-orange-300 text-orange-600 focus:ring-orange-500">
+                        Show “Super host” to guests
+                    </label>
+                    <button class="rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white hover:bg-orange-600 lg:row-span-2">Save badge status</button>
+                    <label class="text-xs font-bold text-slate-700 lg:col-start-1">Decision note
+                        <textarea name="reason" required minlength="10" maxlength="1000" rows="3" placeholder="Why should this property show or lose the Super host badge?" class="mt-1.5 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:ring-orange-500"></textarea>
+                    </label>
+                </form>
+            </section>
+        @endif
 
         <div class="mt-6 grid gap-5 lg:grid-cols-2">
             <section class="rounded-2xl border border-slate-200 p-5"><h3 class="font-black">Location & description</h3><p class="mt-2 text-sm text-slate-600">{{ collect([data_get($property->address,'line_1'),data_get($property->address,'city'),data_get($property->address,'state'),data_get($property->address,'country_code')])->filter()->join(', ') ?: 'No address provided' }}</p><p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-700">{{ $property->description ?: 'No description provided' }}</p></section>

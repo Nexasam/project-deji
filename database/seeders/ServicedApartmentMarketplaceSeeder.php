@@ -50,11 +50,19 @@ class ServicedApartmentMarketplaceSeeder extends Seeder
             'capacity' => $data['capacity'], 'bedrooms' => $data['bedrooms'], 'beds' => $data['beds'],
             'bathrooms' => $data['bathrooms'], 'description' => $data['description'],
             'default_nightly_price' => $data['price'], 'pricing_currency' => 'NGN',
-            'verification_status' => 'verified', 'publication_status' => 'published',
-            'readiness_status' => 'ready', 'operational_status' => 'available',
-            'maintenance_status' => 'not_required', 'status' => 'active',
-            'verified_at' => now(), 'published_at' => now(), 'created_by' => $owner->id, 'updated_by' => $owner->id,
-        ]);
+	            'verification_status' => 'verified', 'publication_status' => 'published',
+	            'readiness_status' => 'ready', 'operational_status' => 'available',
+	            'maintenance_status' => 'not_required', 'status' => 'active',
+	            'host_phone_number' => '+234 801 234 '.str_pad((string) (5600 + $index), 4, '0', STR_PAD_LEFT),
+	            'superhost_badge_enabled' => $index % 3 === 0,
+	            'check_in_instructions' => [
+	                'key_pickup' => 'Show your booking reference at the estate gate and collect the access card from the gateman.',
+	                'access_notes' => 'Check in from 2:00 PM. Parking is available in the visitor bay; call the host if security needs confirmation.',
+	                'house_rules' => 'No smoking indoors. No parties. Quiet hours begin at 11:00 PM. Please switch off AC units when leaving.',
+	                'emergency_contact' => '+234 801 234 '.str_pad((string) (5600 + $index), 4, '0', STR_PAD_LEFT),
+	            ],
+	            'verified_at' => now(), 'published_at' => now(), 'created_by' => $owner->id, 'updated_by' => $owner->id,
+	        ]);
 
         PropertyMarketplaceListing::withTrashed()->updateOrCreate(['property_id' => $property->id], [
             'business_id' => $business->id, 'slug' => $data['slug'], 'public_title' => $data['name'],

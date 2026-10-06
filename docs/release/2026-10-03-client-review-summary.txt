@@ -361,7 +361,49 @@ Recommended starting stack:
 - Backups: automated database + uploads backup from the beginning of production.
 
 
-7. WHAT IS LEFT / NEXT ACCEPTANCE ITEMS
+7. LATEST IMPLEMENTED UPDATE BATCH
+----------------------------------
+
+The following client-review changes have now been added to the product flow:
+
+- Guest settings notification preferences now save from /guest/settings.
+- Registration now asks whether the user is an individual or business.
+- Individual registration supports simulated NIN capture.
+- Business registration supports business name plus simulated NIN/BVN capture.
+- Guests who have not completed NIN verification cannot pay for a stay.
+- Property owners/staff cannot book properties belonging to their own business.
+- Checkout now supports a clearer Paystack / Flutterwave selector.
+- Checkout now supports full payment or installment/deposit payment.
+- Platform settings control installment enablement, deposit percentage and balance
+  due timing before check-in.
+- Installment bookings store a payment plan, balance due amount and due deadline.
+- Guest confirmation, booking details and receipt now distinguish "deposit paid"
+  from "paid in full".
+- Owner booking workspace now shows installment/payment-plan status and outstanding
+  balance.
+- Check-in is blocked until full payment has been completed.
+- Property owners can now set a guest arrival guide per property:
+  - host phone number,
+  - key pickup instructions,
+  - arrival notes,
+  - house rules,
+  - emergency contact.
+- Guest booking page shows "Call host" when a host phone number exists.
+- Guest arrival guide unlocks after full payment.
+- Marketplace cards now use "Super host" badge where enabled, instead of a generic
+  verified watermark.
+- Seeded demo properties now include host phone numbers, arrival-guide content and
+  some Super host examples.
+- Property details page now shows the property address to guests.
+- Long-stay/promo pricing on marketplace cards has been compacted to avoid card
+  distortion.
+- Landing availability preview now shows one simple calendar month with available
+  dates in green and unavailable/booked dates struck out.
+- Landing/guest search bar is now sticky and the search text alignment has been
+  tightened.
+
+
+8. WHAT IS LEFT / NEXT ACCEPTANCE ITEMS
 ---------------------------------------
 
 These should be presented as next acceptance/commercial integration items,
@@ -371,6 +413,7 @@ not as blockers to the current product review.
 - Payment webhook verification in staging/production.
 - Settlement dashboard for property owner balances/payouts.
 - Final decision on platform fee model.
+- Balance-payment collection screen for installment bookings.
 - SMTP/email delivery configuration for real notifications.
 - Final external iCal test with a real Airbnb/Booking.com feed.
 - Backup/restore rehearsal.
@@ -381,7 +424,7 @@ not as blockers to the current product review.
 - Full production monitoring/background worker setup beyond shared hosting limitations.
 
 
-8. SIMPLE CLOSING STATEMENT
+9. SIMPLE CLOSING STATEMENT
 ---------------------------
 
 Over the last few days, we have strengthened the MVP from a basic booking

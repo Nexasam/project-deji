@@ -56,4 +56,23 @@ class AdminPropertyController extends Controller
 
         return redirect()->route('admin.properties.show', $property)->with('status', 'Property rejected and returned to the owner for corrections.');
     }
+
+    public function updateTrustBadge(Request $request, Property $property): RedirectResponse
+    {
+        $data = $request->validate([
+            'superhost_badge_enabled' => ['sometimes', 'boolean'],
+            'reason' => ['required', 'string', 'min:10', 'max:1000'],
+        ]);
+
+        $property->forceFill([
+            'superhost_badge_enabled' => (bool) ($data['superhost_badge_enabled'] ?? false),
+            'updated_by' => $request->user()->id,
+        ])->save();
+
+        return redirect()
+            ->route('admin.properties.show', $property)
+            ->with('status', $property->superhost_badge_enabled
+                ? 'Super host badge enabled for this property.'
+                : 'Super host badge removed from this property.');
+    }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature\Booking;
 
 use App\Contracts\Payments\PaymentGateway;
 use App\Data\PaymentResult;
+use App\Enums\IdentityVerificationStatus;
 use App\Models\Booking;
 use App\Models\BookingStatusHistory;
 use App\Models\Payment;
@@ -22,7 +23,7 @@ class MarketplaceCheckoutTest extends TestCase
     public function test_guest_can_review_an_available_stay_on_the_dedicated_checkout_page(): void
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
-        $guest = User::factory()->create(['phone_number' => '+2348012345678']);
+        $guest = User::factory()->create(['phone_number' => '+2348012345678', 'identity_verification_status' => IdentityVerificationStatus::Verified]);
 
         $this->actingAs($guest)->get('/stays/lekki-admiralty-waterfront/checkout?arrival_date=2026-11-10&departure_date=2026-11-13&adult_count=2&child_count=1')
             ->assertOk()
@@ -35,7 +36,7 @@ class MarketplaceCheckoutTest extends TestCase
     public function test_guest_payment_confirms_booking_and_reserves_each_night(): void
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
-        $guest = User::factory()->create();
+        $guest = User::factory()->create(['identity_verification_status' => IdentityVerificationStatus::Verified]);
 
         $response = $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', [
             'arrival_date' => '2026-11-10', 'departure_date' => '2026-11-13',
@@ -71,7 +72,7 @@ class MarketplaceCheckoutTest extends TestCase
     public function test_checkout_rejects_dates_already_booked(): void
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
-        $guest = User::factory()->create();
+        $guest = User::factory()->create(['identity_verification_status' => IdentityVerificationStatus::Verified]);
         $payload = ['arrival_date' => '2026-11-10', 'departure_date' => '2026-11-12', 'adult_count' => 1, 'child_count' => 0, 'guest_phone' => '+2348012345678', 'quoted_total' => 190000, 'idempotency_key' => 'first'];
         $this->actingAs($guest)->post('/stays/lekki-admiralty-waterfront/checkout', $payload)->assertRedirect();
         $this->post('/stays/lekki-admiralty-waterfront/checkout', [...$payload, 'idempotency_key' => 'second'])->assertSessionHasErrors('arrival_date');
@@ -99,7 +100,7 @@ class MarketplaceCheckoutTest extends TestCase
     public function test_failed_payment_is_recorded_without_reserving_calendar_nights(): void
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
-        $guest = User::factory()->create();
+        $guest = User::factory()->create(['identity_verification_status' => IdentityVerificationStatus::Verified]);
         $this->app->instance(PaymentGateway::class, new class implements PaymentGateway
         {
             public function charge(string $reference, int $amountMinor, string $currency): PaymentResult

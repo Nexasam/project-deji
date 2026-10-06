@@ -110,18 +110,43 @@
                             </dl>
                         </section>
 
-                        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
-                            <h3 class="text-lg font-extrabold">Marketplace</h3>
-                            <dl class="mt-4 space-y-3 text-sm">
-                                <div class="flex justify-between gap-4"><dt class="text-slate-500">Listing status</dt><dd class="font-bold">{{ str($property->marketplaceListing?->publication_status ?? 'not listed')->replace('_', ' ')->title() }}</dd></div>
-                                <div class="flex justify-between gap-4"><dt class="text-slate-500">Instant booking</dt><dd class="font-bold">{{ $property->marketplaceListing?->instant_booking_enabled ? 'Enabled' : 'Disabled' }}</dd></div>
-                                <div class="flex justify-between gap-4"><dt class="text-slate-500">Operational status</dt><dd class="font-bold">{{ str($property->operational_status?->value ?? 'not set')->replace('_', ' ')->title() }}</dd></div>
-                            </dl>
-                        </section>
-                    </div>
-                </div>
+	                        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
+	                            <h3 class="text-lg font-extrabold">Marketplace</h3>
+	                            <dl class="mt-4 space-y-3 text-sm">
+	                                <div class="flex justify-between gap-4"><dt class="text-slate-500">Listing status</dt><dd class="font-bold">{{ str($property->marketplaceListing?->publication_status ?? 'not listed')->replace('_', ' ')->title() }}</dd></div>
+	                                <div class="flex justify-between gap-4"><dt class="text-slate-500">Instant booking</dt><dd class="font-bold">{{ $property->marketplaceListing?->instant_booking_enabled ? 'Enabled' : 'Disabled' }}</dd></div>
+	                                <div class="flex justify-between gap-4"><dt class="text-slate-500">Operational status</dt><dd class="font-bold">{{ str($property->operational_status?->value ?? 'not set')->replace('_', ' ')->title() }}</dd></div>
+	                                <div class="flex justify-between gap-4"><dt class="text-slate-500">Guest badge</dt><dd class="font-bold">{{ $property->superhost_badge_enabled ? 'Super host' : 'No badge' }}</dd></div>
+	                            </dl>
+	                        </section>
+	                    </div>
+	                </div>
 
-                @php $calendarExport = $property->calendarExports->first(); @endphp
+	                @php $arrivalGuide = $property->check_in_instructions ?? []; @endphp
+	                <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
+	                    <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+	                        <div>
+	                            <p class="text-xs font-bold uppercase tracking-wider text-orange-600">Guest arrival guide</p>
+	                            <h3 class="mt-1 text-lg font-extrabold">Check-in instructions and host contact</h3>
+	                            <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500">These details are copied to confirmed bookings and shown to the guest after full payment. Keep them simple and practical.</p>
+	                        </div>
+	                    </div>
+	                    @if($canEditProperty)
+	                        <form method="POST" action="{{ route('owner.properties.arrival-guide.update', $property) }}" class="mt-5 grid gap-4 lg:grid-cols-2">@csrf @method('PATCH')
+	                            <label class="text-xs font-bold text-slate-700">Host phone number<input name="host_phone_number" value="{{ old('host_phone_number', $property->host_phone_number) }}" placeholder="+234 801 234 5678" class="mt-1.5 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:ring-orange-500"></label>
+	                            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"><p class="font-bold">Guest badge: {{ $property->superhost_badge_enabled ? '★ Super host' : 'No badge' }}</p><p class="mt-1 text-xs leading-5 text-slate-500">Verified Shortlet controls this trust badge after platform review.</p></div>
+	                            <label class="text-xs font-bold text-slate-700 lg:col-span-2">Key pickup / access point<textarea name="key_pickup" rows="3" placeholder="e.g. Collect the key card from the estate gate house after showing your booking reference." class="mt-1.5 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:ring-orange-500">{{ old('key_pickup', data_get($arrivalGuide, 'key_pickup')) }}</textarea></label>
+	                            <label class="text-xs font-bold text-slate-700">Arrival notes<textarea name="access_notes" rows="4" placeholder="Parking, estate entry, lift, door code or contact-on-arrival notes." class="mt-1.5 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:ring-orange-500">{{ old('access_notes', data_get($arrivalGuide, 'access_notes')) }}</textarea></label>
+	                            <label class="text-xs font-bold text-slate-700">House rules<textarea name="house_rules" rows="4" placeholder="No parties, no smoking, quiet hours, visitor limits and other house rules." class="mt-1.5 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:ring-orange-500">{{ old('house_rules', data_get($arrivalGuide, 'house_rules')) }}</textarea></label>
+	                            <label class="text-xs font-bold text-slate-700 lg:col-span-2">Emergency contact / backup instructions<textarea name="emergency_contact" rows="3" placeholder="Who to call if the guest cannot access the property or has an emergency." class="mt-1.5 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:ring-orange-500">{{ old('emergency_contact', data_get($arrivalGuide, 'emergency_contact')) }}</textarea></label>
+	                            <div class="lg:col-span-2"><button class="rounded-xl bg-orange-600 px-5 py-3 text-sm font-extrabold text-white hover:bg-orange-700">Save guest arrival guide</button></div>
+	                        </form>
+	                    @else
+	                        <div class="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">You have read-only access to this guide.</div>
+	                    @endif
+	                </section>
+
+	                @php $calendarExport = $property->calendarExports->first(); @endphp
                 <section id="calendar-sync" class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
                     <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"><div><p class="text-xs font-bold uppercase tracking-wider text-orange-600">Calendar sync</p><h3 class="mt-1 text-lg font-extrabold">Prevent double bookings across platforms</h3><p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Paste each platform's calendar export URL below. Then paste your Verified Shortlet export URL into that platform's “Import calendar” area. No API key is needed.</p></div><a href="{{ route('owner.calendar',['property'=>$property->id]) }}" class="text-sm font-bold text-orange-600">View calendar →</a></div>
                     @if(session('status'))<div class="mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif

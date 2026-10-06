@@ -12,12 +12,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use App\Services\Booking\CreateMarketplaceBooking;
 use App\Services\Marketplace\MarketplacePropertyQuery;
+use App\Services\Platform\PlatformSettings;
+use App\Enums\IdentityVerificationStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class MarketplaceCheckoutController extends Controller
 {
-    public function checkout(QuoteMarketplaceBookingRequest $request, string $slug, MarketplacePropertyQuery $marketplace, BookingPricingService $pricing, PropertyAvailabilityService $availability): View
+    public function checkout(QuoteMarketplaceBookingRequest $request, string $slug, MarketplacePropertyQuery $marketplace, BookingPricingService $pricing, PropertyAvailabilityService $availability, PlatformSettings $settings): View
     {
         $data = $request->validated();
         $property = $marketplace->eligibleBySlug($slug);
@@ -32,13 +34,22 @@ class MarketplaceCheckoutController extends Controller
             throw ValidationException::withMessages(['arrival_date' => 'These dates are no longer available.']);
         }
 
+        $quote = $pricing->quote($property, $arrival, $departure);
+        $installmentsEnabled = (bool) $settings->get('payments.installments_enabled', true);
+        $depositPercentage = max(1, min(99, (int) $settings->get('payments.deposit_percentage', 50)));
+
         return view('marketplace.checkout', [
             'property' => $property,
             'arrival' => $arrival,
             'departure' => $departure,
             'adultCount' => (int) $data['adult_count'],
             'childCount' => (int) ($data['child_count'] ?? 0),
-            'quote' => $pricing->quote($property, $arrival, $departure),
+            'quote' => $quote,
+            'identityVerified' => $request->user()->identity_verification_status === IdentityVerificationStatus::Verified,
+            'installmentsEnabled' => $installmentsEnabled,
+            'depositPercentage' => $depositPercentage,
+            'depositAmount' => $installmentsEnabled ? round((float) $quote->decimal($quote->totalMinor) * ($depositPercentage / 100), 2) : null,
+            'balanceDueHours' => (int) $settings->get('payments.balance_due_hours_before_checkin', 24),
         ]);
     }
 
