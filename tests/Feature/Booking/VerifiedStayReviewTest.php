@@ -13,6 +13,7 @@ use App\Services\Booking\BookingLifecycleService;
 use App\Services\Business\BusinessOnboardingService;
 use App\Services\Reviews\VerifiedStayReviewService;
 use Database\Seeders\AccessControlSeeder;
+use Database\Seeders\PlatformAdminSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -52,6 +53,7 @@ class VerifiedStayReviewTest extends TestCase
     public function test_only_the_completed_stay_guest_can_submit_one_verified_review(): void
     {
         [$owner, $business] = $this->ownerWithBusiness();
+        $this->seed(PlatformAdminSeeder::class);
         $guest = User::factory()->create();
         $stranger = User::factory()->create();
         $property = Property::factory()->for($business)->create();
@@ -80,11 +82,17 @@ class VerifiedStayReviewTest extends TestCase
             'guest_user_id' => $guest->id,
             'rating' => 5,
             'is_verified_stay' => true,
-            'moderation_status' => 'approved',
+            'moderation_status' => 'pending',
             'status' => 'active',
         ]);
+        $review = Review::query()->where('booking_id', $booking->id)->sole();
+        $this->assertNull($review->published_at);
+        $this->assertSame(1, $review->questionnaire_version);
+        $this->assertSame('4.60', $review->weighted_score);
+        $this->assertSame(20, data_get($review->score_breakdown, 'cleanliness.weight'));
         $this->assertDatabaseHas('review_invitations', ['booking_id' => $booking->id, 'status' => 'used']);
-        $this->assertDatabaseHas('notifications', ['user_id' => $owner->id, 'type' => 'review_submitted']);
+        $this->assertDatabaseHas('notifications', ['type' => 'review_submitted']);
+        $this->assertDatabaseMissing('notifications', ['user_id' => $owner->id, 'type' => 'review_submitted']);
 
         $this->post(route('guest.bookings.reviews.store', $booking), $payload)->assertSessionHasErrors('review');
         $this->assertSame(1, Review::query()->where('booking_id', $booking->id)->count());
@@ -110,6 +118,7 @@ class VerifiedStayReviewTest extends TestCase
     public function test_correct_business_owner_can_respond_once_and_guest_is_notified(): void
     {
         [$owner, $business] = $this->ownerWithBusiness();
+        $this->seed(PlatformAdminSeeder::class);
         [$foreignOwner] = $this->ownerWithBusiness('Foreign Stays');
         $guest = User::factory()->create();
         $property = Property::factory()->for($business)->create();
@@ -130,9 +139,11 @@ class VerifiedStayReviewTest extends TestCase
         $this->assertDatabaseHas('review_responses', [
             'review_id' => $review->id,
             'responded_by' => $owner->id,
-            'moderation_status' => 'approved',
+            'moderation_status' => 'pending',
         ]);
-        $this->assertDatabaseHas('notifications', ['user_id' => $guest->id, 'type' => 'review_response']);
+        $this->assertNull(ReviewResponse::query()->where('review_id', $review->id)->sole()->published_at);
+        $this->assertDatabaseHas('notifications', ['type' => 'review_response']);
+        $this->assertDatabaseMissing('notifications', ['user_id' => $guest->id, 'type' => 'review_response']);
 
         $this->post(route('owner.reviews.responses.store', $review), [
             'content' => 'A duplicate public response should be rejected.',

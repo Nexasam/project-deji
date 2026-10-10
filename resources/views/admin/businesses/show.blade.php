@@ -7,6 +7,8 @@
     $permissions=app(\App\Services\PlatformPermissionService::class);
     $canVerify=$permissions->allows(auth()->user(),'platform.business.verify');
     $canManage=$permissions->allows(auth()->user(),'platform.business.manage');
+    $ninStatus=data_get($business->verification_payload,'nin_status','unverified');
+    $bvnStatus=data_get($business->verification_payload,'bvn_status','unverified');
 @endphp
 <div class="mx-auto max-w-7xl space-y-5" x-data="{ action: null }">
     <a href="{{ route('admin.businesses.index') }}" class="inline-flex text-sm font-black text-orange-600">← Business directory</a>
@@ -17,6 +19,18 @@
         </div>
         @if($state==='suspended')<div class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><strong>New activity is restricted.</strong> Marketplace discovery, new bookings and non-essential owner mutations are blocked. Existing stay completion remains available.</div>@endif
         <dl class="mt-7 grid gap-4 rounded-2xl bg-slate-50 p-5 sm:grid-cols-2 lg:grid-cols-4"><div><dt class="text-xs font-bold text-slate-500">Registration</dt><dd class="mt-1 font-black">{{ $business->registration_number ?: 'Not provided' }}</dd></div><div><dt class="text-xs font-bold text-slate-500">Primary contact</dt><dd class="mt-1 font-black">{{ $business->primary_contact_name ?: 'Not provided' }}</dd></div><div><dt class="text-xs font-bold text-slate-500">Email</dt><dd class="mt-1 truncate font-black">{{ $business->email ?: 'Not provided' }}</dd></div><div><dt class="text-xs font-bold text-slate-500">Location</dt><dd class="mt-1 font-black">{{ data_get($business->address,'city') ?: $business->country_code }}</dd></div></dl>
+    </section>
+
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+            <div><p class="text-xs font-black uppercase tracking-[.18em] text-orange-600">Payout eligibility</p><h3 class="mt-2 text-xl font-black">Business administrator identity</h3><p class="mt-2 max-w-2xl text-sm text-slate-500">Both NIN and BVN must be verified before owner balances can enter a settlement batch. Raw identity numbers are not displayed or stored here.</p></div>
+            <div class="flex gap-2"><span class="rounded-full px-3 py-1 text-xs font-black {{ $ninStatus==='verified'?'bg-emerald-100 text-emerald-800':($ninStatus==='rejected'?'bg-red-100 text-red-800':'bg-amber-100 text-amber-800') }}">NIN · {{ str($ninStatus)->title() }}</span><span class="rounded-full px-3 py-1 text-xs font-black {{ $bvnStatus==='verified'?'bg-emerald-100 text-emerald-800':($bvnStatus==='rejected'?'bg-red-100 text-red-800':'bg-amber-100 text-amber-800') }}">BVN · {{ str($bvnStatus)->title() }}</span></div>
+        </div>
+        <dl class="mt-6 grid gap-4 rounded-2xl bg-slate-50 p-5 text-sm lg:grid-cols-2">
+            <div><dt class="font-bold text-slate-500">NIN evidence</dt><dd class="mt-1 font-black">Ending {{ data_get($business->verification_payload,'nin_last4','—') }} · {{ data_get($business->verification_payload,'nin_provider','No provider') }}</dd><dd class="mt-1 break-all text-xs text-slate-500">{{ data_get($business->verification_payload,'nin_provider_reference','No provider reference') }}</dd></div>
+            <div><dt class="font-bold text-slate-500">BVN evidence</dt><dd class="mt-1 font-black">Ending {{ data_get($business->verification_payload,'bvn_last4','—') }} · {{ data_get($business->verification_payload,'bvn_provider','No provider') }}</dd><dd class="mt-1 break-all text-xs text-slate-500">{{ data_get($business->verification_payload,'bvn_provider_reference','No provider reference') }}</dd></div>
+        </dl>
+        <p class="mt-4 text-xs font-semibold text-slate-500">These results are produced by the configured identity service. Platform administrators cannot manually mark an identity as verified.</p>
     </section>
 
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">@foreach([['Properties',$business->properties_count],['Team',$business->memberships_count],['Bookings',$business->bookings_count],['Payments',$business->payments_count],['Reviews',$reviewCount],['Disputes',$disputeCount]] as [$label,$value])<article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p class="text-xs font-bold text-slate-500">{{ $label }}</p><p class="mt-2 text-2xl font-black">{{ number_format($value) }}</p></article>@endforeach</section>

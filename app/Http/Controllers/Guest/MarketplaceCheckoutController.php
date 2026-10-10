@@ -16,6 +16,9 @@ use App\Services\Platform\PlatformSettings;
 use App\Enums\IdentityVerificationStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use App\Services\Notifications\ProductNotificationService;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class MarketplaceCheckoutController extends Controller
 {
@@ -50,6 +53,7 @@ class MarketplaceCheckoutController extends Controller
             'depositPercentage' => $depositPercentage,
             'depositAmount' => $installmentsEnabled ? round((float) $quote->decimal($quote->totalMinor) * ($depositPercentage / 100), 2) : null,
             'balanceDueHours' => (int) $settings->get('payments.balance_due_hours_before_checkin', 24),
+            'freeCancellationHours' => (int) $settings->get('bookings.free_cancellation_hours', 48),
         ]);
     }
 
@@ -69,14 +73,38 @@ class MarketplaceCheckoutController extends Controller
             'subtotal' => (float) $quote->decimal($quote->subtotalMinor),
             'discount' => (float) $quote->decimal($quote->discountMinor),
             'service_fee' => (float) $quote->decimal($quote->serviceFeeMinor),
+            'tax' => (float) $quote->decimal($quote->taxMinor),
             'total' => (float) $quote->decimal($quote->totalMinor),
         ]);
     }
 
-    public function store(StoreMarketplaceBookingRequest $request, string $slug, MarketplacePropertyQuery $marketplace, CreateMarketplaceBooking $creator): RedirectResponse
+    public function store(StoreMarketplaceBookingRequest $request, string $slug, MarketplacePropertyQuery $marketplace, CreateMarketplaceBooking $creator, ProductNotificationService $notifications): RedirectResponse
     {
-        $booking = $creator->handle($request->user(), $marketplace->eligibleBySlug($slug), $request->validated());
+        $property = $marketplace->eligibleBySlug($slug);
+        try {
+            $booking = $creator->handle($request->user(), $property, $request->validated());
+        } catch (Throwable $exception) {
+            if ($exception instanceof ValidationException) throw $exception;
+            $this->reportCheckoutIssue($notifications, $property->business, $exception, $request->validated('payment_provider'));
+
+            return back()->withInput()->withErrors(['payment' => 'Payment could not be started right now. The platform operations team has been notified. Please try again shortly.']);
+        }
+
+        $authorizationUrl = data_get($booking->payments()->latest()->first()?->provider_metadata, 'authorization_url');
+        if (filled($authorizationUrl)) {
+            return redirect()->away($authorizationUrl);
+        }
 
         return redirect()->route('guest.bookings.confirmation', $booking);
+    }
+
+    private function reportCheckoutIssue(ProductNotificationService $notifications, $business, Throwable $exception, ?string $provider): void
+    {
+        Log::error('Marketplace payment initialization failed.', ['provider' => $provider, 'exception' => $exception]);
+        try {
+            $notifications->platformAdmins($business, 'platform.provider_attention', 'Payment provider needs attention', ucfirst((string) $provider).' checkout could not be started. Review provider status and credentials in Platform configuration.', ['url' => route('admin.settings.index'), 'provider' => $provider]);
+        } catch (Throwable $notificationException) {
+            Log::error('Could not notify platform administrators about provider failure.', ['exception' => $notificationException]);
+        }
     }
 }

@@ -74,6 +74,21 @@ class OwnerMessagesAndGuestReviewTest extends TestCase
         ]);
     }
 
+    public function test_owner_reply_can_be_sent_asynchronously(): void
+    {
+        [$owner, $business] = $this->ownerWithBusiness('Async Reply Stays');
+        $booking = Booking::factory()->for($business)->create();
+
+        $this->actingAs($owner)
+            ->postJson(route('owner.bookings.messages.store', $booking), [
+                'content' => 'Your check-in guide is now ready.',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('message.content', 'Your check-in guide is now ready.')
+            ->assertJsonPath('message.sender', 'You')
+            ->assertJsonStructure(['message' => ['id', 'content', 'time', 'sender']]);
+    }
+
     public function test_property_scoped_staff_cannot_access_out_of_scope_booking_thread(): void
     {
         [, $business] = $this->ownerWithBusiness('Scoped Messages Stays');

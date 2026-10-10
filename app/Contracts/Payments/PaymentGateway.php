@@ -6,5 +6,5 @@ use App\Data\PaymentResult;
 
 interface PaymentGateway
 {
-    public function charge(string $reference, int $amountMinor, string $currency): PaymentResult;
+    public function charge(string $reference, int $amountMinor, string $currency, array $context = []): PaymentResult;
 }

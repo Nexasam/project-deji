@@ -1,7 +1,7 @@
 @props(['routeName', 'mode' => 'real'])
 
 {{--
-    Demo mode is intentionally hidden for client acceptance testing.
+    Test mode is intentionally hidden for client acceptance testing.
     The routes can remain available internally, but the owner workspace should
     present one clear live product experience.
 --}}

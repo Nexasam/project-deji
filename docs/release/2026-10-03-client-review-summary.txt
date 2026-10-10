@@ -368,8 +368,8 @@ The following client-review changes have now been added to the product flow:
 
 - Guest settings notification preferences now save from /guest/settings.
 - Registration now asks whether the user is an individual or business.
-- Individual registration supports simulated NIN capture.
-- Business registration supports business name plus simulated NIN/BVN capture.
+- Individual registration supports NIN capture and provider-backed verification.
+- Business registration supports business information plus NIN/BVN capture for verification.
 - Guests who have not completed NIN verification cannot pay for a stay.
 - Property owners/staff cannot book properties belonging to their own business.
 - Checkout now supports a clearer Paystack / Flutterwave selector.

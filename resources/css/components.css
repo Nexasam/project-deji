@@ -883,7 +883,7 @@
     gap: 4px;
     margin-bottom: 12px;
 }
-.card-location, .card-guests {
+.card-location, .card-guests, .card-beds {
     display: inline-flex;
     align-items: center;
     gap: 3px;
@@ -892,7 +892,9 @@
 }
 .card-location { max-width: 100%; }
 .card-location svg,
-.card-guests svg { flex-shrink: 0; }
+.card-guests svg,
+.card-beds svg { flex-shrink: 0; }
+.card-capacity { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 10px; }
 .card-footer {
     display: flex;
     align-items: flex-end;
@@ -929,6 +931,8 @@
     font-size: 11px;
     font-weight: 600;
     color: #9ca3af;
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
 }
 .card-pricing-note {
     margin-top: 3px;
@@ -1249,11 +1253,20 @@
     .search-mobile-toggle.is-expanded .search-mobile-chevron {
         transform: rotate(180deg);
     }
+    .search-mobile-toggle.is-expanded {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-radius: 18px;
+    }
+    .search-mobile-toggle.is-expanded .search-mobile-icon {
+        width: 34px;
+        height: 34px;
+    }
     .search-bar {
         display: none;
         flex-direction: column;
-        border-radius: 20px;
-        padding: 12px 14px;
+        border-radius: 18px;
+        padding: 9px 12px 11px;
         gap: 0;
         align-items: stretch;
         box-shadow: 0 4px 24px rgba(0,0,0,0.12);
@@ -1265,7 +1278,7 @@
     .search-divider {
         width: 100%;
         height: 1px;
-        margin: 9px 0;
+        margin: 4px 0;
     }
     .search-field-where,
     .search-field-dates,
@@ -1274,13 +1287,32 @@
         flex: none;
         width: 100%;
     }
+    .search-field {
+        min-height: 48px;
+        justify-content: center;
+    }
+    .search-field-label {
+        margin-bottom: 1px;
+        font-size: 9px;
+        line-height: 1.2;
+    }
+    .search-field-input,
+    .search-field-value,
+    .guest-count {
+        min-height: 20px;
+        font-size: 13px;
+        line-height: 1.3;
+    }
+    .search-guests-control { gap: 7px; }
+    .guest-btn { width: 25px; height: 25px; }
     .search-btn {
         margin-left: 0;
-        margin-top: 11px;
+        margin-top: 7px;
         width: 100%;
         justify-content: center;
-        padding: 12px;
-        font-size: 15px;
+        min-height: 46px;
+        padding: 10px;
+        font-size: 14px;
     }
 
     /* Category pills — tighter on mobile */

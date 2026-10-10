@@ -9,13 +9,14 @@ use App\Models\ReviewInvitation;
 use App\Models\ReviewResponse;
 use App\Models\User;
 use App\Services\Notifications\ProductNotificationService;
+use App\Services\Platform\PlatformSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 final class VerifiedStayReviewService
 {
-    public function __construct(private readonly ProductNotificationService $notifications) {}
+    public function __construct(private readonly ProductNotificationService $notifications, private readonly PlatformSettings $settings) {}
 
     public function invite(Booking $booking, User $actor): ReviewInvitation
     {
@@ -96,12 +97,23 @@ final class VerifiedStayReviewService
                 'updated_by' => $guest->id,
             ]);
 
+            $scores = collect(['cleanliness','communication','location','value','accuracy'])->mapWithKeys(function (string $key) use ($data): array {
+                $rating = (int) ($data[$key.'_rating'] ?? $data['rating']);
+                $weight = max(0, (int) $this->settings->get('reviews.'.$key.'_weight', 20));
+                return [$key => ['rating'=>$rating,'weight'=>$weight]];
+            });
+            $weightTotal = max(1, (int) $scores->sum('weight'));
+            $weightedScore = round((float) $scores->sum(fn (array $score): int => $score['rating'] * $score['weight']) / $weightTotal, 2);
+
             $review = Review::query()->create([
                 'business_id' => $booking->business_id,
                 'property_id' => $booking->property_id,
                 'booking_id' => $booking->id,
                 'guest_user_id' => $guest->id,
                 'rating' => $data['rating'],
+                'questionnaire_version' => (int) $this->settings->get('reviews.questionnaire_version', 1),
+                'weighted_score' => $weightedScore,
+                'score_breakdown' => $scores->all(),
                 'cleanliness_rating' => $data['cleanliness_rating'] ?? null,
                 'communication_rating' => $data['communication_rating'] ?? null,
                 'location_rating' => $data['location_rating'] ?? null,
@@ -110,9 +122,9 @@ final class VerifiedStayReviewService
                 'title' => $data['title'] ?? null,
                 'content' => $data['content'],
                 'is_verified_stay' => true,
-                'moderation_status' => 'approved',
+                'moderation_status' => 'pending',
                 'submitted_at' => now(),
-                'published_at' => now(),
+                'published_at' => null,
                 'status' => 'active',
                 'created_by' => $guest->id,
                 'updated_by' => $guest->id,
@@ -124,12 +136,12 @@ final class VerifiedStayReviewService
                 'updated_by' => $guest->id,
             ]);
 
-            $this->notifications->businessOwners(
+            $this->notifications->platformAdmins(
                 $booking->business,
                 'review_submitted',
-                'A guest reviewed your property',
-                "{$guest->name} left a {$review->rating}-star verified-stay review for {$booking->property->name}.",
-                ['url' => route('owner.bookings.show', $booking), 'booking_id' => $booking->id, 'review_id' => $review->id]
+                'Review awaiting moderation',
+                "A {$review->rating}-star verified-stay review for {$booking->property->name} is ready for moderation.",
+                ['url' => route('admin.reviews.show', $review), 'booking_id' => $booking->id, 'review_id' => $review->id]
             );
 
             return $review;
@@ -160,21 +172,20 @@ final class VerifiedStayReviewService
                 'review_id' => $review->id,
                 'responded_by' => $owner->id,
                 'content' => $data['content'],
-                'moderation_status' => 'approved',
+                'moderation_status' => 'pending',
                 'submitted_at' => now(),
-                'published_at' => now(),
+                'published_at' => null,
                 'status' => 'active',
                 'created_by' => $owner->id,
                 'updated_by' => $owner->id,
             ]);
 
-            $this->notifications->user(
-                $review->guest,
+            $this->notifications->platformAdmins(
                 $business,
                 'review_response',
-                'The property owner responded',
-                "The owner of {$review->property->name} responded to your review.",
-                ['url' => route('guest.bookings.show', $review->booking), 'booking_id' => $review->booking_id, 'review_id' => $review->id]
+                'Owner response awaiting moderation',
+                "An owner response for {$review->property->name} is ready for moderation.",
+                ['url' => route('admin.reviews.show', $review), 'booking_id' => $review->booking_id, 'review_id' => $review->id]
             );
 
             return $response;

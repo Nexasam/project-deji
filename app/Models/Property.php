@@ -38,6 +38,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'check_in_instructions',
     'default_nightly_price',
     'pricing_currency',
+    'tax_enabled',
+    'tax_rate',
     'verification_status',
     'maintenance_status',
     'publication_status',
@@ -56,6 +58,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'manager_name',
     'host_phone_number',
     'superhost_badge_enabled',
+    'is_test',
     'status',
     'created_by',
     'updated_by',
@@ -78,6 +81,8 @@ class Property extends Model
             'floor_area_sqm' => 'decimal:2',
             'check_in_instructions' => 'array',
             'default_nightly_price' => 'decimal:4',
+            'tax_enabled' => 'boolean',
+            'tax_rate' => 'decimal:4',
             'verification_status' => PropertyVerificationStatus::class,
             'maintenance_status' => PropertyMaintenanceStatus::class,
             'publication_status' => PropertyPublicationStatus::class,
@@ -91,6 +96,7 @@ class Property extends Model
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
             'superhost_badge_enabled' => 'boolean',
+            'is_test' => 'boolean',
             'status' => PropertyStatus::class,
         ];
     }

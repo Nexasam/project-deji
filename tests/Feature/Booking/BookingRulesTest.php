@@ -11,6 +11,7 @@ use App\Services\Booking\PropertyAvailabilityService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\PlatformSetting;
 
 class BookingRulesTest extends TestCase
 {
@@ -40,6 +41,21 @@ class BookingRulesTest extends TestCase
         $this->assertSame(7000000, $quote->discountMinor);
         $this->assertSame(0, $quote->serviceFeeMinor);
         $this->assertSame(63000000, $quote->totalMinor);
+    }
+
+    public function test_quote_adds_optional_property_tax_while_owner_absorbs_platform_fees(): void
+    {
+        foreach (['payments.platform_fee_percentage' => 5, 'payments.platform_fee_fixed' => 1000] as $key => $value) {
+            PlatformSetting::query()->create(['group_key' => 'payments', 'key' => $key, 'value' => $value, 'value_type' => is_bool($value) ? 'boolean' : 'decimal', 'label' => $key]);
+        }
+        $property = Property::factory()->create(['default_nightly_price' => 100000, 'pricing_currency' => 'NGN', 'tax_enabled' => true, 'tax_rate' => 7.5]);
+
+        $quote = app(BookingPricingService::class)->quote($property, CarbonImmutable::parse('2026-10-01'), CarbonImmutable::parse('2026-10-03'));
+
+        $this->assertSame(20000000, $quote->subtotalMinor);
+        $this->assertSame(0, $quote->serviceFeeMinor);
+        $this->assertSame(1500000, $quote->taxMinor);
+        $this->assertSame(21500000, $quote->totalMinor);
     }
 
     public function test_active_manual_block_prevents_booking_without_duplicating_availability_days(): void

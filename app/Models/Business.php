@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'timezone',
     'currency',
     'subscription_plan',
+    'is_test',
     'onboarding_status',
     'onboarding_started_at',
     'onboarding_completed_at',
@@ -51,6 +52,7 @@ class Business extends Model
             'social_links' => 'array',
             'tax_information' => 'encrypted:array',
             'verification_payload' => 'array',
+            'is_test' => 'boolean',
             'verification_status' => BusinessVerificationStatus::class,
             'status' => BusinessStatus::class,
             'onboarding_status' => BusinessOnboardingStatus::class,
@@ -77,6 +79,11 @@ class Business extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function settlementAccount(): HasOne
+    {
+        return $this->hasOne(BusinessSettlementAccount::class);
     }
 
     public function departments(): HasMany

@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\UserRole;
 use Database\Seeders\AccessControlSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PlatformConfigurationTest extends TestCase
@@ -20,7 +22,14 @@ class PlatformConfigurationTest extends TestCase
         $admin = $this->administrator('platform_super_admin', 'configuration@example.test');
 
         $this->actingAs($admin)->get(route('admin.settings.index'))
-            ->assertOk()->assertSee('Platform configuration')->assertSee('Calendar stale threshold');
+            ->assertOk()
+            ->assertSee('Platform configuration')
+            ->assertSee('Calendar stale threshold')
+            ->assertSee('Gmail SMTP')
+            ->assertSee('Brevo SMTP')
+            ->assertSee('Sandbox payment cards')
+            ->assertSee('4084 0840 8408 4081')
+            ->assertSee('5531 8866 5214 2950');
 
         $this->actingAs($admin)->patch(route('admin.settings.update'), [
             'settings' => [
@@ -68,6 +77,35 @@ class PlatformConfigurationTest extends TestCase
 
         $this->actingAs($support)->get(route('admin.settings.index'))->assertForbidden();
         $this->actingAs($support)->patch(route('admin.settings.update'), [])->assertForbidden();
+    }
+
+    public function test_super_admin_can_run_email_and_storage_connection_checks(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->administrator('platform_super_admin', 'operations@example.test');
+        Mail::shouldReceive('raw')->once()->withArgs(function (string $body, callable $callback): bool {
+            return str_contains($body, 'configured successfully');
+        });
+        Storage::fake('platform_media');
+
+        $this->actingAs($admin)->post(route('admin.settings.test-email'), [
+            'recipient' => 'delivery-check@example.test',
+        ])->assertRedirect();
+        $this->post(route('admin.settings.test-storage'), ['confirm' => '1'])
+            ->assertRedirect()
+            ->assertSessionHas('status', 'Media storage write, read and delete checks passed.');
+        $this->assertSame([], Storage::disk('platform_media')->allFiles('health-checks'));
+    }
+
+    public function test_non_super_admin_cannot_run_provider_connection_checks(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $support = $this->administrator('platform_support_admin', 'support-probes@example.test');
+
+        $this->actingAs($support)->post(route('admin.settings.test-email'), [
+            'recipient' => 'delivery-check@example.test',
+        ])->assertForbidden();
+        $this->post(route('admin.settings.test-storage'), ['confirm' => '1'])->assertForbidden();
     }
 
     private function administrator(string $roleKey, string $email): User

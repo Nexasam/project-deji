@@ -15,6 +15,7 @@ use App\Services\Operations\ManageOperationalTask;
 use Database\Seeders\AccessControlSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class BookingLifecycleTest extends TestCase
@@ -121,12 +122,20 @@ class BookingLifecycleTest extends TestCase
 
     public function test_owner_cancellation_releases_dates_cancels_obsolete_work_and_notifies_guest(): void
     {
+        Queue::fake();
         Carbon::setTestNow('2026-09-13 10:00:00');
         [$owner, $business] = $this->ownerWithBusiness();
         $guest = User::factory()->create();
         $property = Property::factory()->for($business)->create();
         $booking = Booking::factory()->for($business)->for($property)->create(['guest_user_id' => $guest->id, 'status' => 'confirmed', 'payment_status' => 'paid', 'arrival_date' => '2026-09-20', 'departure_date' => '2026-09-22', 'total_amount' => 100000]);
-        $payment = Payment::factory()->for($business)->for($booking)->create(['purpose' => 'balance', 'status' => 'completed', 'amount' => 100000, 'currency' => $booking->currency]);
+        $payment = Payment::factory()->for($business)->for($booking)->create([
+            'purpose' => 'balance',
+            'status' => 'completed',
+            'amount' => 100000,
+            'currency' => $booking->currency,
+            'provider' => 'paystack',
+            'provider_reference' => 'provider-charge-123',
+        ]);
         PropertyAvailabilityDay::query()->create(['business_id' => $business->id, 'property_id' => $property->id, 'booking_id' => $booking->id, 'availability_date' => '2026-09-20', 'availability_state' => 'booked', 'source_type' => 'marketplace', 'active_key' => 'active', 'allocated_at' => now(), 'status' => 'active']);
         $task = OperationalTask::query()->create(['business_id' => $business->id, 'property_id' => $property->id, 'booking_id' => $booking->id, 'reference' => 'TASK-CANCEL', 'title' => 'Prepare stay', 'task_type' => 'cleaning', 'priority' => 'high', 'status' => 'pending', 'generation_source' => 'system']);
 
@@ -135,7 +144,9 @@ class BookingLifecycleTest extends TestCase
         $this->assertSame('cancelled', $booking->fresh()->status->value);
         $this->assertSame('cancelled', $task->fresh()->status->value);
         $this->assertDatabaseHas('property_availability_days', ['booking_id' => $booking->id, 'active_key' => null, 'status' => 'released']);
-        $this->assertDatabaseHas('payments', ['original_payment_id' => $payment->id, 'purpose' => 'refund', 'status' => 'completed']);
+        $this->assertDatabaseHas('payments', ['original_payment_id' => $payment->id, 'purpose' => 'refund', 'status' => 'pending']);
+        $this->assertDatabaseHas('refund_requests', ['original_payment_id' => $payment->id, 'refund_status' => 'approved']);
+        Queue::assertPushed(\App\Jobs\InitiateProviderRefund::class);
         $this->assertDatabaseHas('notifications', ['user_id' => $guest->id, 'type' => 'booking_cancelled']);
         $this->assertDatabaseHas('domain_events', ['booking_id' => $booking->id, 'event_name' => 'booking.cancelled']);
     }

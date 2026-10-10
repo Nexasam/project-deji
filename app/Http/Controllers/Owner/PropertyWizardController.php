@@ -215,7 +215,7 @@ class PropertyWizardController extends Controller
 
     private function media(Request $r, Property $p, StorePropertyMediaService $s): void
     {
-        $r->validate(['media' => 'array|max:10', 'media.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,mov|max:20480']);
+        $d = $r->validate(['media' => 'array|max:10', 'media.*' => 'file|mimes:jpg,jpeg,png,webp|max:20480', 'youtube_url' => 'nullable|string|max:2048']);
         if ($r->hasFile('media')) {
             $files = $r->file('media');
             $newImageCount = collect($files)->filter(fn ($file) => str_starts_with((string) $file->getMimeType(), 'image/'))->count();
@@ -224,7 +224,9 @@ class PropertyWizardController extends Controller
                 throw ValidationException::withMessages(['media' => 'A property can have up to 10 photos. Remove a photo before adding another.']);
             }
             $s->store($p, $r->user(), $files);
-        } if (! $p->media()->where('media_type', 'image')->exists()) {
+        }
+        $s->storeYouTube($p, $r->user(), $d['youtube_url'] ?? null);
+        if (! $p->media()->where('media_type', 'image')->exists()) {
             throw ValidationException::withMessages(['media' => 'Upload at least one image.']);
         }
     }
@@ -249,9 +251,10 @@ class PropertyWizardController extends Controller
 
     private function namePrice(Request $r, Property $p): void
     {
-        $d = $r->validate(['name' => 'required|string|max:255', 'marketplace_title' => 'nullable|string|max:255', 'short_summary' => 'nullable|string|max:500', 'description' => 'nullable|string|max:5000', 'default_nightly_price' => 'required|numeric|min:1', 'discount_percentage' => 'nullable|numeric|min:1|max:100', 'minimum_stay_nights' => 'nullable|required_with:discount_percentage|integer|min:2|max:365']);
+        $r->merge(['tax_enabled' => $r->boolean('tax_enabled')]);
+        $d = $r->validate(['name' => 'required|string|max:255', 'marketplace_title' => 'nullable|string|max:255', 'short_summary' => 'nullable|string|max:500', 'description' => 'nullable|string|max:5000', 'default_nightly_price' => 'required|numeric|min:1', 'tax_enabled' => 'required|boolean', 'tax_rate' => 'nullable|required_if:tax_enabled,1|numeric|min:0|max:100', 'discount_percentage' => 'nullable|numeric|min:1|max:100', 'minimum_stay_nights' => 'nullable|required_with:discount_percentage|integer|min:2|max:365']);
         $marketplaceTitle = filled($d['marketplace_title'] ?? null) ? $d['marketplace_title'] : $d['name'];
-        $p->update(collect($d)->only(['name', 'description', 'default_nightly_price'])->all() + ['information_completed_at' => now(), 'updated_by' => $r->user()->id]);
+        $p->update(collect($d)->only(['name', 'description', 'default_nightly_price', 'tax_enabled', 'tax_rate'])->all() + ['tax_rate' => $d['tax_enabled'] ? ($d['tax_rate'] ?? 0) : 0, 'information_completed_at' => now(), 'updated_by' => $r->user()->id]);
         $listing = $p->marketplaceListing()->firstOrNew();
         $listing->fill(['business_id' => $p->business_id, 'public_title' => $marketplaceTitle, 'short_summary' => $d['short_summary'] ?? null, 'public_description' => $d['description'] ?? null, 'publication_status' => 'draft', 'is_publication_eligible' => false, 'status' => 'active', 'updated_by' => $r->user()->id]);
         $listing->slug ??= Str::slug($marketplaceTitle).'-'.Str::lower(Str::random(6));

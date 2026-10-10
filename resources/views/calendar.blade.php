@@ -43,7 +43,7 @@
                         <span class="size-1.5 rounded-full {{ $calendarHealth['attention'] ? 'bg-red-500' : ($calendarHealth['connections'] ? 'bg-emerald-500' : 'bg-slate-400') }}"></span>
                         {{ $calendarHealth['connections'] ? ($calendarHealth['attention'] ? 'Sync needs attention' : 'Calendars healthy') : 'No external calendars' }}
                     </span>
-                    <x-owner.view-switch route-name="owner.calendar" mode="real" />
+                    <a href="{{ route('owner.dashboard') }}" class="text-xs font-bold text-slate-500 hover:text-slate-900">Dashboard</a>
                 </div>
             </div>
         </header>

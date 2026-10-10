@@ -9,6 +9,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Services\Identity\DojahIdentityVerifier;
+use Throwable;
+use Illuminate\Validation\ValidationException;
 
 class GuestSettingsController extends Controller
 {
@@ -17,7 +20,7 @@ class GuestSettingsController extends Controller
         return view('guest.settings', ['user' => $request->user()]);
     }
 
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request, DojahIdentityVerifier $identity): RedirectResponse
     {
         $data = $request->validated();
         $notificationKeys = ['booking_updates', 'host_messages', 'saved_stay_price_drops', 'promotions'];
@@ -30,13 +33,15 @@ class GuestSettingsController extends Controller
         ]);
 
         if ($request->filled('nin')) {
-            $request->validate(['nin' => ['string', 'max:32']]);
+            $validatedIdentity = $request->validate(['nin' => ['string', 'regex:/^\d{11}$/']]);
+            try {
+                $result = $identity->verifyNin($validatedIdentity['nin']);
+            } catch (Throwable $exception) {
+                report($exception);
+                throw ValidationException::withMessages(['nin' => $exception->getMessage()]);
+            }
             $request->user()->identity_verification_status = IdentityVerificationStatus::Verified;
-            $request->user()->identity_verification = [
-                'mode' => 'simulated',
-                'nin_last4' => substr(preg_replace('/\D/', '', (string) $request->input('nin')), -4),
-                'verified_at' => now()->toIso8601String(),
-            ];
+            $request->user()->identity_verification = $result + ['nin_last4' => substr($validatedIdentity['nin'], -4), 'verified_at' => now()->toIso8601String()];
         }
 
         if ($request->user()->isDirty('email')) {
@@ -45,6 +50,6 @@ class GuestSettingsController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('guest.settings.edit')->with('status', 'profile-updated');
+        return Redirect::route('guest.settings.edit')->with('status', $request->filled('nin') ? 'identity-verified' : 'profile-updated');
     }
 }

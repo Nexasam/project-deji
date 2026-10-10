@@ -62,8 +62,8 @@
 
                     @if ($property->media->isNotEmpty())
                         <div class="grid gap-2 p-5 sm:grid-cols-2 lg:grid-cols-4 lg:p-7">
-                            @foreach ($property->media->take(4) as $media)@php $mediaUrl=$media->external_url ?: '/storage/'.ltrim($media->storage_path,'/'); @endphp
-                                @if($media->media_type->value==='video')<video controls preload="metadata" src="{{ $mediaUrl }}" class="h-44 w-full rounded-xl bg-slate-900 object-contain"></video>@else<img src="{{ $mediaUrl }}" alt="{{ $media->alt_text ?: $property->name }}" class="h-44 w-full rounded-xl object-cover">@endif
+                            @foreach ($property->media->take(4) as $media)@php $mediaUrl=$media->external_url ?: ($media->storage_path ? Storage::disk($media->storage_disk)->url($media->storage_path) : '/image.png'); @endphp
+                                @if($media->youtubeEmbedUrl())<iframe src="{{ $media->youtubeEmbedUrl() }}" title="{{ $media->title ?: 'Property walkthrough' }}" class="h-44 w-full rounded-xl bg-slate-900" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>@elseif($media->media_type->value==='video')<video controls preload="metadata" src="{{ $mediaUrl }}" class="h-44 w-full rounded-xl bg-slate-900 object-contain"></video>@else<img src="{{ $mediaUrl }}" alt="{{ $media->alt_text ?: $property->name }}" class="h-44 w-full rounded-xl object-cover">@endif
                             @endforeach
                         </div>
                     @endif

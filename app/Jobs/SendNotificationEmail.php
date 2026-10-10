@@ -7,6 +7,7 @@ use App\Models\NotificationDelivery;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Mail;
+use App\Services\Notifications\PlatformMailConfigurator;
 use Throwable;
 
 class SendNotificationEmail implements ShouldQueue
@@ -19,8 +20,9 @@ class SendNotificationEmail implements ShouldQueue
 
     public function __construct(public readonly string $deliveryId) {}
 
-    public function handle(): void
+    public function handle(PlatformMailConfigurator $mail): void
     {
+        $mail->apply();
         $delivery = NotificationDelivery::query()->with('notification')->findOrFail($this->deliveryId);
         if ($delivery->status->value === 'delivered') {
             return;

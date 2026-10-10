@@ -4,6 +4,87 @@ import Alpine from 'alpinejs';
 // Expose Alpine globally BEFORE start so inline x-data and $store work
 window.Alpine = Alpine;
 
+window.asyncMessageThread = function () {
+    return {
+        sending: false,
+        error: '',
+        init() {
+            this.$nextTick(() => this.scrollToLatest());
+        },
+        async send(event) {
+            if (this.sending) return;
+
+            const form = event.currentTarget;
+            const input = form.querySelector('[name="content"]');
+            const content = input?.value.trim() || '';
+            if (content.length < 2) {
+                this.error = 'Please enter at least two characters.';
+                input?.focus();
+                return;
+            }
+
+            this.sending = true;
+            this.error = '';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': form.querySelector('[name="_token"]')?.value || '',
+                    },
+                    credentials: 'same-origin',
+                    body: new FormData(form),
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(payload.message || Object.values(payload.errors || {})?.[0]?.[0] || 'Message could not be sent.');
+                }
+
+                this.appendMessage(payload.message);
+                form.reset();
+                input?.focus();
+            } catch (error) {
+                this.error = error.message || 'Message could not be sent. Please try again.';
+            } finally {
+                this.sending = false;
+            }
+        },
+        appendMessage(message) {
+            this.$refs.emptyState?.remove();
+
+            const article = document.createElement('article');
+            article.className = 'flex justify-end';
+            article.dataset.messageId = message.id;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'max-w-[85%] rounded-2xl rounded-tr-sm bg-orange-600 px-5 py-3 text-sm text-white shadow-sm';
+
+            const sender = document.createElement('p');
+            sender.className = 'font-bold text-orange-100';
+            sender.textContent = message.sender || 'You';
+
+            const content = document.createElement('p');
+            content.className = 'mt-1 whitespace-pre-wrap leading-6';
+            content.textContent = message.content;
+
+            const time = document.createElement('p');
+            time.className = 'mt-2 text-right text-[10px] text-orange-100';
+            time.textContent = message.time;
+
+            bubble.append(sender, content, time);
+            article.appendChild(bubble);
+            this.$refs.messages.appendChild(article);
+            this.$nextTick(() => this.scrollToLatest());
+        },
+        scrollToLatest() {
+            const container = this.$refs.messages;
+            if (container) container.scrollTop = container.scrollHeight;
+        },
+    };
+};
+
 // Register all stores BEFORE Alpine.start()
 Alpine.store('modals', {
     showLoginModal: false,

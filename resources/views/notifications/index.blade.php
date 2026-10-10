@@ -16,7 +16,7 @@
                     <button type="button" @click="sidebarOpen = true" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden" aria-label="Open navigation"><svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
                     <p class="truncate text-sm font-semibold text-slate-700">{{ $activeBusiness->name }}</p>
                 </div>
-                <x-owner.view-switch route-name="notifications.index" mode="real" />
+                <a href="{{ route('owner.dashboard') }}" class="text-xs font-bold text-slate-500 hover:text-slate-900">Dashboard</a>
             </header>
 @else
     <x-navbar />

@@ -19,6 +19,34 @@ class ReviewModerationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_verification_admin_can_approve_pending_review_and_owner_response(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->administrator('platform_verification_admin');
+        [$review] = $this->publishedReview(withResponse: true);
+        $review->forceFill(['moderation_status' => 'pending', 'published_at' => null])->save();
+        $review->response->forceFill(['moderation_status' => 'pending', 'published_at' => null])->save();
+
+        $this->actingAs($admin)->get(route('admin.reviews.show', $review))
+            ->assertOk()
+            ->assertSee('Approve review')
+            ->assertSee('Approve response');
+
+        $this->post(route('admin.reviews.approve', $review), [
+            'reason' => 'The verified guest feedback meets publication policy.',
+        ])->assertRedirect(route('admin.reviews.show', $review));
+        $review->refresh();
+        $this->assertSame('approved', $review->moderation_status);
+        $this->assertNotNull($review->published_at);
+
+        $this->post(route('admin.review-responses.approve', $review->response), [
+            'reason' => 'The property response meets publication policy.',
+        ])->assertRedirect(route('admin.reviews.show', $review));
+        $review->response->refresh();
+        $this->assertSame('approved', $review->response->moderation_status);
+        $this->assertNotNull($review->response->published_at);
+    }
+
     public function test_verification_admin_can_hide_and_restore_a_review_without_deleting_it(): void
     {
         $this->seed(AccessControlSeeder::class);

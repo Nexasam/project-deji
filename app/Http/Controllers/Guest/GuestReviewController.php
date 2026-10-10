@@ -30,6 +30,6 @@ class GuestReviewController extends Controller
         $reviews->submit($record, $request->user(), $data);
 
         return redirect()->route('guest.bookings.show', $record)
-            ->with('status', 'Thank you. Your verified-stay review is now live.');
+            ->with('status', 'Thank you. Your verified-stay review was submitted for moderation.');
     }
 }

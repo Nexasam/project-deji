@@ -40,14 +40,13 @@ class OwnerCalendarOperationsTest extends TestCase
             ->assertSee('Block property dates')
             ->assertSee('Quick reasons')
             ->assertSee('Dates are checked against every booking and synchronized calendar')
-            ->assertSee('Demo view');
+            ->assertDontSee('Demo view');
 
-        $this->actingAs($owner)->get(route('owner.calendar', ['view' => 'demo']))
+        $this->actingAs($owner)->get(route('owner.calendar', ['view' => 'demo', 'month' => '2026-09']))
             ->assertOk()
-            ->assertSee('Sample data')
-            ->assertSee('Figma calendar preview')
-            ->assertSee('LOCK STATE')
-            ->assertSee('Bluewater Suite 4B')
-            ->assertDontSee('Turnover clean');
+            ->assertSee('Calendar overview')
+            ->assertSee('Turnover clean')
+            ->assertDontSee('Sample data')
+            ->assertDontSee('Figma calendar preview');
     }
 }

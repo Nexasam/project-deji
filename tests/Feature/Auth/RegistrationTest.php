@@ -33,6 +33,22 @@ class RegistrationTest extends TestCase
         $response->assertRedirect(route('verification.notice', absolute: false));
     }
 
+    public function test_eight_character_password_is_accepted(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+
+        $this->post('/register', [
+            'name' => 'Eight Character User',
+            'email' => 'eight@example.com',
+            'password' => 'Test1234',
+            'password_confirmation' => 'Test1234',
+            'terms' => '1',
+        ])->assertSessionHasNoErrors()
+            ->assertRedirect(route('verification.notice', absolute: false));
+
+        $this->assertAuthenticated();
+    }
+
     public function test_guest_registration_returns_to_the_selected_marketplace_stay(): void
     {
         $this->seed(AccessControlSeeder::class);

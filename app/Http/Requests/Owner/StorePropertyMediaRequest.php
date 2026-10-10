@@ -15,7 +15,8 @@ class StorePropertyMediaRequest extends FormRequest
     {
         return [
             'media' => ['sometimes', 'array', 'max:10'],
-            'media.*' => ['file', 'mimetypes:image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm', 'max:51200'],
+            'media.*' => ['file', 'mimetypes:image/jpeg,image/png,image/webp', 'max:20480'],
+            'youtube_url' => ['nullable', 'string', 'max:2048'],
         ];
     }
 
@@ -23,5 +24,10 @@ class StorePropertyMediaRequest extends FormRequest
     public function mediaFiles(): array
     {
         return array_values($this->file('media', []));
+    }
+
+    public function youtubeUrl(): ?string
+    {
+        return $this->filled('youtube_url') ? $this->string('youtube_url')->trim()->toString() : null;
     }
 }

@@ -3,13 +3,44 @@
 @section('content')
 <x-navbar />
 <main class="min-h-screen bg-[#f3f3f2] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-<div class="mx-auto max-w-[1380px]">
+<div class="mx-auto max-w-[1380px]" x-data="{
+    shared: false,
+    saved: @js(auth()->check() ? auth()->user()->favourites()->where('property_id', $property->id)->exists() : false),
+    saving: false,
+    async shareStay() {
+        const payload = { title: @js($property->marketplaceListing->public_title), text: 'View this stay on Verified Shortlet', url: window.location.href };
+        try {
+            if (navigator.share) await navigator.share(payload);
+            else { await navigator.clipboard.writeText(window.location.href); this.shared = true; window.showToast('Property link copied'); setTimeout(() => this.shared = false, 2500); }
+        } catch (error) {
+            if (error?.name !== 'AbortError') window.showToast('Could not share this property. Please try again.');
+        }
+    },
+    async toggleSaved() {
+        if (this.saving) return;
+        this.saving = true;
+        const next = !this.saved;
+        try {
+            const response = await fetch(next ? @js(route('guest.favourites.store', $property)) : @js(route('guest.favourites.destroy', $property)), {
+                method: next ? 'POST' : 'DELETE',
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                credentials: 'same-origin'
+            });
+            if (!response.ok) throw new Error('Favourite request failed');
+            const result = await response.json();
+            this.saved = result.favourited;
+            if (window.Alpine?.store('favourites')) this.saved ? window.Alpine.store('favourites').increment() : window.Alpine.store('favourites').decrement();
+            window.showToast(result.message);
+        } catch (error) { window.showToast('Could not update favourites. Please try again.'); }
+        finally { this.saving = false; }
+    }
+}">
     @php
         $coverMedia = $property->media->firstWhere('is_primary', true) ?? $property->media->firstWhere('media_type', \App\Enums\PropertyMediaType::Image);
         $coverImage = $coverMedia?->external_url ?: ($coverMedia?->storage_path ? '/storage/'.ltrim($coverMedia->storage_path, '/') : '/image.png');
         $blockedIntervals = $property->bookings->map(fn($booking) => ['start' => $booking->arrival_date->toDateString(), 'end' => $booking->departure_date->toDateString()])
             ->concat($property->availabilityBlocks->map(fn($block) => ['start' => $block->starts_on->toDateString(), 'end' => $block->ends_on->toDateString()]))->values();
-        $gallery = $property->media->map(fn($media) => ['url' => $media->external_url ?: ($media->storage_path ? '/storage/'.ltrim($media->storage_path, '/') : '/image.png'), 'type' => $media->media_type->value, 'title' => $media->title ?: $property->name])->values();
+        $gallery = $property->media->map(fn($media) => ['url' => $media->youtubeEmbedUrl() ?: ($media->external_url ?: ($media->storage_path ? Storage::disk($media->storage_disk)->url($media->storage_path) : '/image.png')), 'type' => $media->media_type->value, 'youtube' => filled($media->youtubeEmbedUrl()), 'title' => $media->title ?: $property->name])->values();
         if ($gallery->isEmpty()) $gallery->push(['url' => '/image.png', 'type' => 'image', 'title' => $property->name]);
         $promotions = $property->promotions->filter(fn($promotion) => $promotion->discount_type->value === 'percentage')->map(fn($promotion) => ['minimum_nights' => $promotion->minimum_stay_nights ?? 1, 'percentage' => (float)$promotion->discount_value])->values();
         $hostSource = trim((string) ($property->business?->primary_contact_name ?: $property->owner_name ?: ''));
@@ -20,16 +51,16 @@
         $hostingYears = $hostingSince ? max(1, (int) floor($hostingSince->diffInYears(now()))) : null;
     @endphp
     <div class="flex flex-wrap items-end justify-between gap-4">
-	        <div><h1 class="text-3xl font-black text-slate-950">{{ $property->marketplaceListing->public_title }}</h1><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Explore stays &gt; {{ $property->marketplaceListing->public_title }}</p><p class="mt-2 text-sm font-semibold text-slate-700">⌖ {{ collect([data_get($property->address, 'line_1'), data_get($property->address, 'city'), data_get($property->address, 'state')])->filter()->join(', ') }}</p></div>
-        <div class="flex gap-2"><button type="button" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black">Share</button>@auth<button type="button" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black">♡ Save</button>@endauth</div>
+	        <div><div class="flex flex-wrap items-center gap-3"><h1 class="text-3xl font-black text-slate-950">{{ $property->marketplaceListing->public_title }}</h1>@if($property->is_test)<span class="rounded-full bg-violet-950 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Test property</span>@endif</div><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Explore stays &gt; {{ $property->marketplaceListing->public_title }}</p><p class="mt-2 text-sm font-semibold text-slate-700">⌖ {{ collect([data_get($property->address, 'line_1'), data_get($property->address, 'city'), data_get($property->address, 'state')])->filter()->join(', ') }}</p></div>
+        <div class="flex gap-2"><button type="button" @click="shareStay" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-slate-400 hover:bg-slate-50"><span x-text="shared ? '✓ Copied' : '↗ Share'"></span></button>@auth<button type="button" @click="toggleSaved" :disabled="saving" :aria-pressed="saved" class="rounded-xl border px-5 py-3 text-sm font-black transition disabled:opacity-60" :class="saved ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 hover:bg-slate-50'"><span x-text="saving ? 'Saving…' : (saved ? '♥ Saved' : '♡ Save')"></span></button>@endauth</div>
     </div>
     <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)] lg:items-start" x-data="stayBookingCalendar(@js($blockedIntervals), @js($gallery), {{ (float)$property->default_nightly_price }}, {{ $property->capacity }}, @js($promotions), @js(route('marketplace.checkout.quote', $property->marketplaceListing->slug)))">
         <div class="min-w-0">
             <div class="grid gap-3 md:grid-cols-[1.8fr_1fr]">
                 <div class="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-900 shadow-sm md:aspect-auto md:min-h-[430px]">
-                    <template x-if="activeMedia.type==='video'"><video controls preload="metadata" :src="activeMedia.url" class="h-full w-full object-contain"></video></template>
+                    <template x-if="activeMedia.type==='video' && activeMedia.youtube"><iframe :src="activeMedia.url" :title="activeMedia.title" class="h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></template>
+                    <template x-if="activeMedia.type==='video' && !activeMedia.youtube"><video controls preload="metadata" :src="activeMedia.url" class="h-full w-full object-contain"></video></template>
                     <template x-if="activeMedia.type==='image'"><img :src="activeMedia.url" x-on:error="$event.target.src='/image.png'" :alt="activeMedia.title" class="h-full w-full object-cover"></template>
-                    <button x-show="activeMedia.type==='video'" type="button" class="absolute inset-0 m-auto grid size-16 place-items-center rounded-full bg-orange-600 text-2xl text-white">▶</button>
                 </div>
                 <div class="hidden grid-rows-2 gap-3 md:grid"><template x-for="(media,index) in gallery.slice(0,4)" :key="media.url+index"><button type="button" @click="activeIndex=index" class="relative min-h-0 overflow-hidden rounded-2xl bg-slate-100"><template x-if="media.type==='image'"><img :src="media.url" :alt="media.title" class="h-full w-full object-cover"></template><template x-if="media.type==='video'"><div class="grid h-full place-items-center bg-slate-800 text-3xl text-white">▶</div></template><span x-show="index===3 && gallery.length>4" class="absolute inset-0 grid place-items-center bg-slate-950/60 text-sm font-black text-white" x-text="'View all '+gallery.length+' photos'"></span></button></template></div>
             </div>

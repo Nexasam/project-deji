@@ -13,7 +13,7 @@
 </head>
 <body class="public-surface bg-white text-gray-900 antialiased">
     @yield('content')
-    
+    <x-toast />
     @stack('scripts')
 </body>
 </html>

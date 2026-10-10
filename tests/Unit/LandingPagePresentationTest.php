@@ -127,17 +127,22 @@ class LandingPagePresentationTest extends TestCase
         $this->assertStringNotContainsString('hidden items-center gap-2 sm:flex', $landing);
         $this->assertStringContainsString('<x-marketplace-property-tile', $landing);
         $this->assertStringContainsString('AI Insights preview', $landing);
-        $this->assertStringContainsString('Generated from verified marketplace data', $landing);
+        $this->assertStringContainsString('Generated from marketplace data', $landing);
         $this->assertStringContainsString('qualityTitle', $tile);
         $this->assertStringContainsString('pricingTitle', $tile);
         $this->assertStringContainsString('$fallbackPromotion', $tile);
-        $this->assertStringContainsString('Long-stay offer', $tile);
-        $this->assertStringContainsString(':price-unit="$showsTotalPrice ? \'total\' : \'/ night\'"', $tile);
+        $this->assertStringNotContainsString('Long-stay offer', $tile);
+        $this->assertStringContainsString(':price-unit="$showsTotalPrice ? \'\' : \'/ night\'"', $tile);
+        $this->assertStringContainsString(':beds="$property->beds"', $tile);
+        $this->assertStringContainsString('$discountPercent.\'% long-stay discount\'', $tile);
+        $this->assertStringContainsString('\'₦\'.number_format($subtotal)', $tile);
 
         $css = file_get_contents(dirname(__DIR__, 2).'/resources/css/components.css');
         $this->assertStringContainsString('.marketplace-row-rail .card-listing', $css);
         $this->assertStringContainsString('.marketplace-row-rail .card-img-wrap', $css);
         $this->assertMatchesRegularExpression('/@media\s*\(max-width:\s*767px\).*?\.marketplace-row-rail\s*>\s*div\s*\{[^}]*width:\s*246px;[^}]*min-width:\s*246px;/s', $css);
+        $this->assertStringContainsString('.card-capacity', $css);
+        $this->assertStringContainsString('text-decoration: line-through', $css);
     }
 
     public function test_marketplace_booking_confirmation_shows_a_complete_live_quote(): void
@@ -168,8 +173,7 @@ class LandingPagePresentationTest extends TestCase
         $this->assertStringContainsString('primary_contact_name', $view);
         $this->assertStringContainsString('sm:grid-cols-2', $view);
         $this->assertStringNotContainsString('min-w-[620px]', $view);
-        $this->assertStringContainsString("if(!this.checkIn||day.date<=this.checkIn){this.checkIn=day.date;this.checkOut='';return}", $view);
-        $this->assertStringNotContainsString('if(!this.checkIn||this.checkOut||day.date<=this.checkIn)', $view);
+        $this->assertStringContainsString("if(!this.checkIn||this.checkOut||day.date<=this.checkIn){this.checkIn=day.date;this.checkOut='';return}", $view);
     }
 
     public function test_landing_search_bar_is_a_live_filter_control(): void
@@ -196,6 +200,8 @@ class LandingPagePresentationTest extends TestCase
         $css = file_get_contents(dirname(__DIR__, 2).'/resources/css/components.css');
 
         $this->assertStringContainsString('.search-mobile-toggle', $css);
+        $this->assertStringContainsString('.search-mobile-toggle.is-expanded', $css);
+        $this->assertStringContainsString('min-height: 48px', $css);
         $this->assertMatchesRegularExpression('/@media\s*\(max-width:\s*767px\).*?\.search-bar\s*\{[^}]*display:\s*none;.*?\.search-bar\.is-expanded\s*\{[^}]*display:\s*flex;/s', $css);
     }
 

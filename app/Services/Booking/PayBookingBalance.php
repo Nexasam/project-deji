@@ -42,7 +42,7 @@ final class PayBookingBalance
             }
 
             $reference = 'BAL-'.$booking->reference.'-'.Str::upper(Str::random(6));
-            $result = $this->gateway->charge($reference, (int) round($outstanding * 100), $booking->currency);
+            $result = $this->gateway->charge($reference, (int) round($outstanding * 100), $booking->currency, ['booking_id' => $booking->id, 'provider' => $provider]);
 
             Payment::query()->create([
                 'business_id' => $booking->business_id,
@@ -54,13 +54,18 @@ final class PayBookingBalance
                 'method' => 'card',
                 'provider' => $provider,
                 'provider_reference' => $result->providerReference,
-                'status' => $result->successful ? 'completed' : 'failed',
+                'status' => $result->pending ? 'pending' : ($result->successful ? 'completed' : 'failed'),
                 'transaction_at' => now(),
                 'verified_by' => $guest->id,
                 'verified_at' => $result->successful ? now() : null,
                 'provider_metadata' => $result->metadata + ['payment_option' => 'balance', 'initiated_by' => $guest->id],
                 'created_by' => $guest->id,
             ]);
+
+            if ($result->pending) {
+                $booking->setAttribute('payment_authorization_url', $result->authorizationUrl);
+                return $booking;
+            }
 
             if (! $result->successful) {
                 throw ValidationException::withMessages(['payment' => 'The balance payment could not be completed. Please check the gateway configuration or try again.']);

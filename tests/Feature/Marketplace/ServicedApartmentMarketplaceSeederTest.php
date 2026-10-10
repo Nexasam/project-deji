@@ -11,7 +11,7 @@ class ServicedApartmentMarketplaceSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeder_repeatably_creates_two_operators_with_five_marketplace_apartments_each(): void
+    public function test_seeder_repeatably_creates_one_isolated_sandbox_operator_with_ten_marketplace_apartments(): void
     {
         $seeder = 'Database\\Seeders\\ServicedApartmentMarketplaceSeeder';
         $this->assertTrue(class_exists($seeder), 'Marketplace seeder has not been implemented.');
@@ -19,13 +19,10 @@ class ServicedApartmentMarketplaceSeederTest extends TestCase
         $this->seed($seeder);
         $this->seed($seeder);
 
-        $businesses = Business::query()->whereIn('email', [
-            'owner@lagoonstays.test',
-            'owner@coastlineresidences.test',
-        ])->withCount('properties')->orderBy('email')->get();
+        $businesses = Business::query()->where('email', 'owner@coastlineresidences.test')->withCount('properties')->get();
 
-        $this->assertCount(2, $businesses);
-        $this->assertSame([5, 5], $businesses->pluck('properties_count')->all());
+        $this->assertCount(1, $businesses);
+        $this->assertSame([10], $businesses->pluck('properties_count')->all());
         $this->assertSame(10, Property::query()->whereIn('business_id', $businesses->pluck('id'))->count());
 
         Property::query()->whereIn('business_id', $businesses->pluck('id'))->each(function (Property $property): void {

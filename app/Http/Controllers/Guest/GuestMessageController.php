@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\Booking\BookingMessageService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -41,7 +42,7 @@ class GuestMessageController extends Controller
         return view('guest.messages.show', compact('booking'));
     }
 
-    public function store(Request $request, string $booking, BookingMessageService $messages): RedirectResponse
+    public function store(Request $request, string $booking, BookingMessageService $messages): JsonResponse|RedirectResponse
     {
         $data = $request->validate([
             'content' => ['required', 'string', 'min:2', 'max:2000'],
@@ -52,7 +53,18 @@ class GuestMessageController extends Controller
             ->with(['business', 'property', 'guest'])
             ->findOrFail($booking);
 
-        $messages->guestMessage($booking, $request->user(), $data['content']);
+        $message = $messages->guestMessage($booking, $request->user(), $data['content']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => [
+                    'id' => $message->id,
+                    'content' => $message->content,
+                    'time' => $message->occurred_at->format('H:i'),
+                    'sender' => 'You',
+                ],
+            ], 201);
+        }
 
         return redirect()->route('guest.bookings.messages.show', $booking)->with('status', 'Message sent to the property team.');
     }

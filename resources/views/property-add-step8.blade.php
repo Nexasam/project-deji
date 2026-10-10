@@ -121,6 +121,11 @@
                             <p class="mt-2 text-xs leading-5 text-gray-600">Example: 10% off when guests stay 7 nights or more. This appears in marketplace totals when guests search with dates.</p>
                         </div>
                     </div>
+                    <div class="mb-6 rounded-xl border border-slate-200 bg-white p-4">
+                        <label class="flex items-center gap-3 font-bold text-gray-900"><input type="checkbox" name="tax_enabled" value="1" @checked(old('tax_enabled', $property->tax_enabled)) class="rounded border-slate-300 text-orange-600 focus:ring-orange-500"> Add tax separately to this property's bookings</label>
+                        <label class="mt-4 block text-sm font-bold text-gray-800">Tax rate (%)<input type="number" name="tax_rate" min="0" max="100" step="0.01" value="{{ old('tax_rate', $property->tax_rate ?? 0) }}" class="mt-2 w-full rounded-lg border-slate-300 px-4 py-3"></label>
+                        <p class="mt-2 text-xs text-slate-500">Tax is calculated after discounts and shown separately during checkout.</p>
+                    </div>
 
                     {{-- Multiple Bookable Rooms Checkbox --}}
                     <div class="flex items-start gap-3">

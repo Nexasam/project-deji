@@ -9,6 +9,7 @@ use App\Models\OperationalTask;
 use App\Models\Property;
 use App\Models\User;
 use App\Services\Notifications\ProductNotificationService;
+use App\Services\Platform\PlatformSettings;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -19,31 +20,39 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('calendars:sync', function () {
+Artisan::command('calendars:sync {--scheduled}', function (PlatformSettings $settings) {
+    if ($this->option('scheduled') && ! (bool) $settings->get('calendar.sync_enabled', true)) {
+        $this->info('Automatic calendar synchronization is disabled.');
+        return self::SUCCESS;
+    }
+    $interval = max(5, min(1440, (int) $settings->get('calendar.sync_interval_minutes', 15)));
     $count = 0;
-    ExternalCalendarConnection::query()->where('status', 'active')->whereNotNull('credentials')->each(function ($connection) use (&$count) {
+    ExternalCalendarConnection::query()->where('status', 'active')->whereNotNull('credentials')
+        ->when($this->option('scheduled'), fn ($query) => $query->where(fn ($due) => $due->whereNull('last_synced_at')->orWhere('last_synced_at', '<=', now()->subMinutes($interval))))
+        ->each(function ($connection) use (&$count) {
         SyncExternalCalendarConnection::dispatch($connection->id);
         $count++;
     });
     $this->info("Queued {$count} external calendar sync(s).");
 })->purpose('Queue imports for all active external property calendars');
 
-Schedule::command('calendars:sync')->everyFifteenMinutes()->withoutOverlapping();
+Schedule::command('calendars:sync --scheduled')->everyFiveMinutes()->withoutOverlapping();
 
-Artisan::command('calendars:notify-stale', function (ProductNotificationService $notifications) {
+Artisan::command('calendars:notify-stale', function (ProductNotificationService $notifications, PlatformSettings $settings) {
+    $staleAfter = max(5, min(1440, (int) $settings->get('calendar.stale_after_minutes', 45)));
     $count = 0;
     ExternalCalendarConnection::query()->with(['business', 'property'])
         ->where('status', 'active')->where('sync_status', '!=', 'stale_alerted')
-        ->where(function ($query): void {
-            $query->where('last_synced_at', '<', now()->subMinutes(45))
-                ->orWhere(function ($neverSynced): void {
-                    $neverSynced->whereNull('last_synced_at')->where('created_at', '<', now()->subMinutes(45));
+        ->where(function ($query) use ($staleAfter): void {
+            $query->where('last_synced_at', '<', now()->subMinutes($staleAfter))
+                ->orWhere(function ($neverSynced) use ($staleAfter): void {
+                    $neverSynced->whereNull('last_synced_at')->where('created_at', '<', now()->subMinutes($staleAfter));
                 });
-        })->each(function (ExternalCalendarConnection $connection) use ($notifications, &$count): void {
+        })->each(function (ExternalCalendarConnection $connection) use ($notifications, &$count, $staleAfter): void {
             $connection->update(['sync_status' => 'stale_alerted']);
             $data = ['url' => route('owner.properties.show', $connection->property).'#calendar-sync', 'property_id' => $connection->property_id, 'connection_id' => $connection->id];
             $title = 'Calendar sync is stale';
-            $message = ucfirst($connection->provider)." calendar for {$connection->property->name} has not synchronized in over 45 minutes. Review it before accepting offline bookings.";
+            $message = ucfirst($connection->provider)." calendar for {$connection->property->name} has not synchronized in over {$staleAfter} minutes. Review it before accepting offline bookings.";
             $notifications->businessOwners($connection->business, 'calendar_sync_stale', $title, $message, $data);
             $notifications->platformAdmins($connection->business, 'calendar_sync_stale', $title, $message, $data);
             $count++;

@@ -82,7 +82,7 @@ class MarketplaceCheckoutTest extends TestCase
     public function test_property_owner_cannot_book_their_own_marketplace_property(): void
     {
         $this->seed(ServicedApartmentMarketplaceSeeder::class);
-        $owner = User::query()->where('email', 'owner@lagoonstays.test')->firstOrFail();
+        $owner = User::query()->where('email', 'owner@coastlineresidences.test')->firstOrFail();
 
         $this->actingAs($owner)->post('/stays/lekki-admiralty-waterfront/checkout', [
             'arrival_date' => '2026-11-10',
@@ -103,7 +103,7 @@ class MarketplaceCheckoutTest extends TestCase
         $guest = User::factory()->create(['identity_verification_status' => IdentityVerificationStatus::Verified]);
         $this->app->instance(PaymentGateway::class, new class implements PaymentGateway
         {
-            public function charge(string $reference, int $amountMinor, string $currency): PaymentResult
+            public function charge(string $reference, int $amountMinor, string $currency, array $context = []): PaymentResult
             {
                 return new PaymentResult(false, 'SIM-FAILED', ['simulated' => true]);
             }

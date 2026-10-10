@@ -24,13 +24,12 @@ final class RegisterUserService
                 'name' => $attributes['name'], 'email' => $attributes['email'],
                 'phone_number' => $attributes['phone_number'] ?? null,
                 'account_type' => $attributes['account_type'] ?? 'individual',
-                'identity_verification_status' => filled($attributes['nin'] ?? null) ? IdentityVerificationStatus::Verified : IdentityVerificationStatus::Unverified,
+                'identity_verification_status' => filled($attributes['nin'] ?? null) ? IdentityVerificationStatus::Pending : IdentityVerificationStatus::Unverified,
                 'identity_verification' => [
-                    'mode' => 'simulated',
                     'nin_last4' => filled($attributes['nin'] ?? null) ? substr((string) $attributes['nin'], -4) : null,
                     'bvn_last4' => filled($attributes['bvn'] ?? null) ? substr((string) $attributes['bvn'], -4) : null,
                     'business_name' => $attributes['business_name'] ?? null,
-                    'verified_at' => filled($attributes['nin'] ?? null) ? now()->toIso8601String() : null,
+                    'submitted_at' => filled($attributes['nin'] ?? null) ? now()->toIso8601String() : null,
                 ],
                 'password' => Hash::make($attributes['password']),
             ]);

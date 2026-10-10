@@ -19,7 +19,7 @@
             </header>
 
             <main class="mx-auto max-w-6xl px-5 py-8 lg:px-8 lg:py-10">
-                <div class="mb-7 max-w-3xl"><p class="text-xs font-extrabold uppercase tracking-[0.16em] text-orange-600">Step 3 · Media</p><h2 class="mt-2 text-3xl font-extrabold tracking-tight">Show guests the property</h2><p class="mt-2 text-sm leading-6 text-slate-600">Upload clear images and short videos. The first image becomes the primary property image.</p></div>
+                <div class="mb-7 max-w-3xl"><p class="text-xs font-extrabold uppercase tracking-[0.16em] text-orange-600">Step 3 · Media</p><h2 class="mt-2 text-3xl font-extrabold tracking-tight">Show guests the property</h2><p class="mt-2 text-sm leading-6 text-slate-600">Upload clear images and optionally add one YouTube walkthrough. The first image becomes the primary property image.</p></div>
 
                 @if (session('status'))<div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif
                 @if ($errors->any())<div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"><p class="font-extrabold">Some files could not be uploaded.</p><ul class="mt-1 list-inside list-disc">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
@@ -33,6 +33,8 @@
                                     <div class="aspect-video bg-slate-200">
                                         @if ($item->media_type->value === 'image')
                                             <img src="{{ Storage::disk($item->storage_disk)->url($item->storage_path) }}" alt="{{ $item->alt_text ?: $property->name }}" class="h-full w-full object-cover">
+                                        @elseif($item->youtubeEmbedUrl())
+                                            <iframe src="{{ $item->youtubeEmbedUrl() }}" title="{{ $item->title ?: 'Property walkthrough' }}" loading="lazy" class="h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                                         @else
                                             <video src="{{ Storage::disk($item->storage_disk)->url($item->storage_path) }}" controls preload="metadata" class="h-full w-full object-cover"></video>
                                         @endif
@@ -49,10 +51,18 @@
                     <section class="property-form-section p-6 sm:p-8">
                         <label class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center transition hover:border-orange-400 hover:bg-orange-50/40">
                             <span class="flex size-14 items-center justify-center rounded-2xl bg-white text-orange-600 shadow-sm"><svg class="size-7" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V5m0 0L8 9m4-4 4 4M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                            <span class="mt-4 text-base font-extrabold text-slate-900">Choose images or videos</span>
-                            <span class="mt-1 text-xs leading-5 text-slate-500">JPEG, PNG, WebP, MP4, MOV or WebM · up to 10 files · 50 MB each</span>
-                            <input type="file" name="media[]" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" multiple class="mt-5 block max-w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-600 file:px-4 file:py-2 file:font-bold file:text-white">
+                            <span class="mt-4 text-base font-extrabold text-slate-900">Choose property images</span>
+                            <span class="mt-1 text-xs leading-5 text-slate-500">JPEG, PNG or WebP · up to 10 files · 20 MB each</span>
+                            <input type="file" name="media[]" accept="image/jpeg,image/png,image/webp" multiple class="mt-5 block max-w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-600 file:px-4 file:py-2 file:font-bold file:text-white">
                         </label>
+                    </section>
+
+                    @php($youtubeVideo = $mediaItems->first(fn($item) => $item->media_type->value === 'video' && $item->youtubeEmbedUrl()))
+                    <section class="property-form-section p-6 sm:p-8">
+                        <h3 class="font-extrabold">YouTube walkthrough <span class="font-normal text-slate-500">(optional)</span></h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Upload the walkthrough to YouTube as <strong>Public</strong> or <strong>Unlisted</strong>. Open the video, choose <strong>Share → Copy link</strong>, then paste that link below. YouTube Studio, playlist and channel URLs are not accepted.</p>
+                        <input type="url" name="youtube_url" value="{{ old('youtube_url', $youtubeVideo?->external_url) }}" placeholder="https://youtu.be/VIDEO_ID" class="mt-4 block w-full rounded-xl border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:ring-orange-500">
+                        <p class="mt-2 text-xs text-slate-500">Only the link is stored; the video remains hosted by YouTube and is embedded on the property page.</p>
                     </section>
 
                     <div class="sticky bottom-4 z-30 flex flex-col-reverse justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl shadow-slate-200/60 backdrop-blur sm:flex-row sm:items-center"><a href="{{ route('owner.properties.setup.amenities', $property) }}" class="rounded-xl border border-slate-300 px-5 py-3 text-center text-sm font-bold text-slate-700 hover:bg-slate-50">Back to amenities</a><button type="submit" class="property-form-submit rounded-xl bg-orange-600 px-6 py-3 text-sm font-extrabold text-white hover:bg-orange-700">Save and continue</button></div>

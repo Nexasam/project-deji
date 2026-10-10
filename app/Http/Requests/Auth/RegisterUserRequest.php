@@ -22,8 +22,8 @@ class RegisterUserRequest extends FormRequest
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],
             'phone_number' => ['nullable', 'string', 'max:32', 'regex:/^\+?[0-9\s()-]{7,32}$/'],
             'business_name' => ['nullable', 'required_if:account_type,business', 'string', 'max:255'],
-            'nin' => ['nullable', 'string', 'max:32'],
-            'bvn' => ['nullable', 'required_if:account_type,business', 'string', 'max:32'],
+            'nin' => ['nullable', 'string', 'regex:/^\d{11}$/'],
+            'bvn' => ['nullable', 'string', 'regex:/^\d{11}$/'],
             'password' => app(PasswordPolicyRules::class)->rules(),
             'terms' => ['accepted'],
         ];

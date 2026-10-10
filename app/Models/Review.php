@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use LogicException;
 
-#[Fillable(['business_id', 'property_id', 'booking_id', 'guest_user_id', 'rating', 'cleanliness_rating', 'communication_rating', 'location_rating', 'value_rating', 'accuracy_rating', 'title', 'content', 'is_verified_stay', 'moderation_status', 'sentiment', 'sentiment_score', 'submitted_at', 'published_at', 'status', 'created_by', 'updated_by'])]
+#[Fillable(['business_id', 'property_id', 'booking_id', 'guest_user_id', 'rating', 'questionnaire_version', 'weighted_score', 'score_breakdown', 'cleanliness_rating', 'communication_rating', 'location_rating', 'value_rating', 'accuracy_rating', 'title', 'content', 'is_verified_stay', 'moderation_status', 'sentiment', 'sentiment_score', 'submitted_at', 'published_at', 'status', 'created_by', 'updated_by'])]
 class Review extends Model
 {
     use HasUuids;
@@ -24,7 +24,7 @@ class Review extends Model
 
     protected function casts(): array
     {
-        return ['rating' => 'integer', 'is_verified_stay' => 'boolean', 'sentiment_score' => 'decimal:4', 'submitted_at' => 'datetime', 'published_at' => 'datetime'];
+        return ['rating' => 'integer', 'questionnaire_version'=>'integer', 'weighted_score'=>'decimal:2', 'score_breakdown'=>'array', 'is_verified_stay' => 'boolean', 'sentiment_score' => 'decimal:4', 'submitted_at' => 'datetime', 'published_at' => 'datetime'];
     }
 
     public function property(): BelongsTo

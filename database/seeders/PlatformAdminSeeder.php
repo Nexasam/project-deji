@@ -11,10 +11,19 @@ class PlatformAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $email = config('platform.initial_admin.email');
-        $admin = User::query()->updateOrCreate(['email' => $email], [
-            'name' => 'Verified Shortlet Admin',
-            'password' => config('platform.initial_admin.password'),
+        $this->createOwner(config('platform.initial_admin.email'), config('platform.initial_admin.password'), 'Verified Shortlet Platform Owner');
+        $this->createOwner(config('platform.settlement_approver.email'), config('platform.settlement_approver.password'), 'Verified Shortlet Settlement Approver');
+    }
+
+    private function createOwner(?string $email, ?string $password, string $name): void
+    {
+        if (blank($email) || blank($password)) {
+            return;
+        }
+
+        $admin = User::query()->updateOrCreate(['email' => trim($email)], [
+            'name' => $name,
+            'password' => $password,
             'email_verified_at' => now(),
             'timezone' => 'Africa/Lagos',
             'status' => 'active',

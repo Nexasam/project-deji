@@ -5,8 +5,8 @@
     <main class="mx-auto max-w-4xl px-4 py-6 lg:px-8">
         @if(session('status'))<div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif
         @if($errors->any())<div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->first() }}</div>@endif
-        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div class="space-y-4 bg-slate-50 p-5 sm:p-6">
+        <section x-data="asyncMessageThread()" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div x-ref="messages" class="max-h-[620px] space-y-4 overflow-y-auto bg-slate-50 p-5 sm:p-6" aria-live="polite">
                 @forelse($booking->interactions->where('interaction_type', 'message') as $message)
                     @php($mine = $message->user_id === auth()->id())
                     <article class="flex {{ $mine ? 'justify-end' : 'justify-start' }}">
@@ -17,12 +17,12 @@
                         </div>
                     </article>
                 @empty
-                    <div class="rounded-2xl bg-white p-6 text-center text-sm text-slate-500">No guest messages yet.</div>
+                    <div x-ref="emptyState" class="rounded-2xl bg-white p-6 text-center text-sm text-slate-500">No guest messages yet.</div>
                 @endforelse
             </div>
-            <form method="POST" action="{{ route('owner.bookings.messages.store', $booking) }}" class="border-t border-slate-100 p-5 sm:p-6">@csrf
+            <form method="POST" action="{{ route('owner.bookings.messages.store', $booking) }}" @submit.prevent="send" class="border-t border-slate-100 p-5 sm:p-6">@csrf
                 <label class="block text-sm font-bold text-slate-700">Reply to guest<textarea name="content" required minlength="2" maxlength="2000" rows="4" class="mt-2 w-full rounded-2xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" placeholder="Type your reply…">{{ old('content') }}</textarea></label>
-                <div class="mt-4 flex justify-end"><button class="rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white hover:bg-orange-700">Send reply</button></div>
+                <p x-cloak x-show="error" x-text="error" class="mt-2 text-sm font-semibold text-red-600"></p><div class="mt-4 flex justify-end"><button :disabled="sending" class="min-w-32 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white hover:bg-orange-700 disabled:cursor-wait disabled:opacity-60"><span x-text="sending ? 'Sending…' : 'Send reply'"></span></button></div>
             </form>
         </section>
     </main>

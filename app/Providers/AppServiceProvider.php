@@ -10,6 +10,10 @@ use App\Models\BusinessMembership;
 use App\Models\UserRole;
 use App\Support\ActiveBusinessContext;
 use Illuminate\Support\ServiceProvider;
+use App\Services\Notifications\PlatformMailConfigurator;
+use App\Services\Storage\PlatformStorageConfigurator;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,8 +35,15 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot(): void
+    public function boot(PlatformMailConfigurator $mail, PlatformStorageConfigurator $storage): void
     {
-        //
+        try {
+            if (Schema::hasTable('platform_settings')) {
+                $mail->apply();
+                $storage->apply();
+            }
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 }

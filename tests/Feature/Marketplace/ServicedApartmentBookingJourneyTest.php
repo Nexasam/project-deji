@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Marketplace;
 
+use App\Enums\IdentityVerificationStatus;
 use App\Models\Booking;
 use App\Models\User;
+use App\Services\Business\BusinessOnboardingService;
 use Database\Seeders\ServicedApartmentMarketplaceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -25,6 +27,9 @@ class ServicedApartmentBookingJourneyTest extends TestCase
             'name' => 'Tuesday Acceptance Guest', 'email' => 'tuesday.guest@example.com',
             'password' => 'SecurePass123', 'password_confirmation' => 'SecurePass123', 'terms' => '1',
         ])->assertRedirect('/stays/lekki-admiralty-waterfront');
+        $guest = User::query()->where('email', 'tuesday.guest@example.com')->firstOrFail();
+        $guest->update(['identity_verification_status' => IdentityVerificationStatus::Verified]);
+        $this->actingAs($guest->fresh());
 
         $this->post('/stays/lekki-admiralty-waterfront/checkout', [
             'arrival_date' => '2026-12-24', 'departure_date' => '2026-12-26',
@@ -35,13 +40,21 @@ class ServicedApartmentBookingJourneyTest extends TestCase
         $this->get(route('guest.bookings.show', $booking))->assertOk()
             ->assertSee($booking->reference)->assertSee('Admiralty Waterfront Residence')->assertSee('Confirmed');
 
-        $lagoonOwner = User::query()->where('email', 'owner@lagoonstays.test')->firstOrFail();
         $coastlineOwner = User::query()->where('email', 'owner@coastlineresidences.test')->firstOrFail();
-        $this->actingAs($lagoonOwner)->get(route('owner.bookings'))->assertOk()
+        $unrelatedOwner = User::factory()->create();
+        app(BusinessOnboardingService::class)->onboard($unrelatedOwner, [
+            'name' => 'Unrelated Live Host',
+            'country_code' => 'NG',
+            'business_type' => 'serviced_apartments',
+            'timezone' => 'Africa/Lagos',
+            'currency' => 'NGN',
+        ]);
+
+        $this->actingAs($coastlineOwner)->get(route('owner.bookings'))->assertOk()
             ->assertSee($booking->reference)->assertSee('Tuesday Acceptance Guest');
         $this->get(route('owner.bookings.show', $booking))->assertOk()->assertSee($booking->reference);
 
-        $this->actingAs($coastlineOwner)->get(route('owner.bookings'))->assertOk()->assertDontSee($booking->reference);
+        $this->actingAs($unrelatedOwner)->get(route('owner.bookings'))->assertOk()->assertDontSee($booking->reference);
         $this->get(route('owner.bookings.show', $booking))->assertNotFound();
     }
 }

@@ -25,6 +25,12 @@ final class ModerateMarketplaceContent
         return $this->transition($review, $actor, $reason, 'approved', 'platform.review.restored', 'Restored guest review');
     }
 
+    public function approveReview(Review $review, User $actor, string $reason): Review
+    {
+        /** @var Review */
+        return $this->transition($review, $actor, $reason, 'approved', 'platform.review.approved', 'Approved guest review');
+    }
+
     public function hideResponse(ReviewResponse $response, User $actor, string $reason): ReviewResponse
     {
         /** @var ReviewResponse */
@@ -37,6 +43,12 @@ final class ModerateMarketplaceContent
         return $this->transition($response, $actor, $reason, 'approved', 'platform.review_response.restored', 'Restored owner response');
     }
 
+    public function approveResponse(ReviewResponse $response, User $actor, string $reason): ReviewResponse
+    {
+        /** @var ReviewResponse */
+        return $this->transition($response, $actor, $reason, 'approved', 'platform.review_response.approved', 'Approved owner response');
+    }
+
     private function transition(Model $content, User $actor, string $reason, string $status, string $event, string $description): Model
     {
         if (mb_strlen(trim($reason)) < 10) {
@@ -46,7 +58,7 @@ final class ModerateMarketplaceContent
         return DB::transaction(function () use ($content, $actor, $reason, $status, $event, $description): Model {
             $content = $content->newQuery()->lockForUpdate()->findOrFail($content->getKey());
             $before = ['moderation_status' => $content->moderation_status, 'published_at' => $content->published_at?->toIso8601String()];
-            $content->update(['moderation_status' => $status, 'updated_by' => $actor->id]);
+            $content->update(['moderation_status' => $status, 'published_at' => $status === 'approved' ? ($content->published_at ?: now()) : $content->published_at, 'updated_by' => $actor->id]);
             $content->refresh();
             $this->audit->record($actor, $event, $content, "{$description} {$content->getKey()}.", $before, [
                 'moderation_status' => $content->moderation_status,

@@ -6,7 +6,7 @@
     <title>Add Property - Step 5 - Verified Shortlet</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 font-sans antialiased" x-data="{previews:[],videoUrl:'',videoDuration:'',previewFiles(event){this.previews.forEach(item=>URL.revokeObjectURL(item.url));this.previews=Array.from(event.target.files).filter(file=>file.type.startsWith('image/')).map(file=>({name:file.name,url:URL.createObjectURL(file)}))}}">
+<body class="bg-gray-100 font-sans antialiased" x-data="{previews:[],previewFiles(event){this.previews.forEach(item=>URL.revokeObjectURL(item.url));this.previews=Array.from(event.target.files).filter(file=>file.type.startsWith('image/')).map(file=>({name:file.name,url:URL.createObjectURL(file)}))}}">
     <div class="min-h-screen flex flex-col">
         {{-- Header --}}
         <header class="bg-white border-b border-gray-200">
@@ -46,7 +46,7 @@
                             <svg class="w-10 h-10 text-[#FF5A00] mb-3" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
                             </svg>
-                            <label class="text-sm font-semibold text-[#FF5A00] hover:underline cursor-pointer">Click to upload<input type="file" name="media[]" accept="image/*,video/mp4,video/quicktime" multiple class="sr-only" @change="previewFiles($event)"></label>
+                            <label class="text-sm font-semibold text-[#FF5A00] hover:underline cursor-pointer">Click to upload<input type="file" name="media[]" accept="image/jpeg,image/png,image/webp" multiple class="sr-only" @change="previewFiles($event)"></label>
                             <p class="text-sm text-gray-600">PNG or JPG, up to 10 photos. First photo becomes the cover image.</p>
                         </div>
                     </div>
@@ -87,41 +87,14 @@
                         Upload selected photos
                     </button>
 
-                    {{-- Video Section --}}
+                    {{-- YouTube Video Section --}}
                     <div class="border-t border-gray-200 pt-6">
-                        <h3 class="text-base font-bold text-gray-900 mb-2">Video <span class="text-sm font-normal text-gray-500">(optional, 1 max)</span></h3>
-                        
-                        {{-- Video Upload Zone --}}
-                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 mb-4 text-center hover:border-[#FF5A00] transition-colors cursor-pointer">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-10 h-10 text-[#FF5A00] mb-3" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
-                                </svg>
-                                <p class="text-sm font-semibold text-gray-900 mb-1">Click to upload a walkthrough video</p>
-                                <p class="text-sm text-gray-600">One video only, up to 10 seconds and 100MB. Fits keeps things fast for guests on mobile data.</p>
-                            </div>
-                        </div>
-
-                        {{-- Uploaded Video --}}
-                        <div x-show="videoUrl" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-8 h-8 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900" x-text="videoUrl"></p>
-                                    <p class="text-xs text-gray-600" x-text="videoDuration"></p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button class="text-sm font-medium text-gray-700 hover:text-gray-900">39MB</button>
-                                <button @click="videoUrl = ''; videoDuration = ''" class="text-gray-500 hover:text-red-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                        @php($youtubeVideo = $property->media->first(fn($item) => $item->media_type->value === 'video' && $item->youtubeEmbedUrl()))
+                        <h3 class="text-base font-bold text-gray-900">YouTube walkthrough <span class="text-sm font-normal text-gray-500">(optional, one video)</span></h3>
+                        <p class="mt-2 text-sm leading-6 text-gray-600">Upload your walkthrough to YouTube, set it to <strong>Public</strong> or <strong>Unlisted</strong>, copy the video link and paste it below. Do not paste YouTube Studio or channel links.</p>
+                        <input type="url" name="youtube_url" value="{{ old('youtube_url', $youtubeVideo?->external_url) }}" placeholder="https://youtu.be/VIDEO_ID" class="mt-4 w-full rounded-lg border-gray-300 px-4 py-3 text-sm focus:border-[#FF5A00] focus:ring-[#FF5A00]">
+                        <ol class="mt-4 list-inside list-decimal space-y-1 rounded-lg bg-orange-50 p-4 text-xs leading-5 text-orange-950"><li>Open the video in the YouTube app or website.</li><li>Select <strong>Share</strong>, then <strong>Copy link</strong>.</li><li>Paste that link above and save this step.</li></ol>
+                        @if($youtubeVideo)<div class="mt-4 aspect-video overflow-hidden rounded-xl bg-black"><iframe src="{{ $youtubeVideo->youtubeEmbedUrl() }}" title="Property walkthrough" class="h-full w-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>@endif
                     </div>
                 </div>
 

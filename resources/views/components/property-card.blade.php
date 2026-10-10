@@ -3,6 +3,7 @@
     'name',
     'location',
     'guests',
+    'beds' => null,
     'price',
     'rating',
     'priceLabel' => null,
@@ -17,7 +18,8 @@
     'unfavouriteUrl' => null,
     'isFavourite' => false,
     'href' => null,
-    'verified' => true
+    'verified' => true,
+    'isTest' => false
 ])
 
 <article
@@ -52,6 +54,12 @@
             </div>
         @endif
 
+        @if($isTest)
+            <div class="absolute bottom-2 left-2 z-10 rounded-full border border-violet-200 bg-violet-950/90 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur">
+                Test property
+            </div>
+        @endif
+
         <button
             type="button"
             class="heart-btn"
@@ -82,9 +90,17 @@
                 <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 {{ $location }}
             </span>
-            <span class="card-guests">
-                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                {{ $guests }} guests
+            <span class="card-capacity">
+                <span class="card-guests">
+                    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    {{ $guests }} {{ Str::plural('guest', $guests) }}
+                </span>
+                @if((int) $beds > 0)
+                    <span class="card-beds">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v13M21 12v8M3 16h18M7 12V8a2 2 0 0 1 2-2h3a3 3 0 0 1 3 3v3M3 12h18"/></svg>
+                        {{ $beds }} {{ Str::plural('bed', $beds) }}
+                    </span>
+                @endif
             </span>
         </div>
 

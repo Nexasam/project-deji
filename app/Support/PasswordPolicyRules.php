@@ -11,7 +11,7 @@ final class PasswordPolicyRules
 {
     public function rules(): array
     {
-        $settings = ['minimum_length' => 12, 'requires_uppercase' => true, 'requires_lowercase' => true, 'requires_number' => true, 'requires_symbol' => false];
+        $settings = ['minimum_length' => 8, 'requires_uppercase' => true, 'requires_lowercase' => true, 'requires_number' => true, 'requires_symbol' => false];
 
         try {
             if (Schema::hasTable('password_policies')) {

@@ -50,6 +50,12 @@ class AdminReviewController extends Controller
         return redirect()->route('admin.reviews.show', $review)->with('status', 'Review hidden from the marketplace.');
     }
 
+    public function approve(Request $request, Review $review, ModerateMarketplaceContent $moderator): RedirectResponse
+    {
+        $moderator->approveReview($review, $request->user(), $this->reason($request));
+        return redirect()->route('admin.reviews.show', $review)->with('status', 'Review approved and published.');
+    }
+
     public function restore(Request $request, Review $review, ModerateMarketplaceContent $moderator): RedirectResponse
     {
         $moderator->restoreReview($review, $request->user(), $this->reason($request));
@@ -62,6 +68,12 @@ class AdminReviewController extends Controller
         $moderator->hideResponse($response, $request->user(), $this->reason($request));
 
         return redirect()->route('admin.reviews.show', $response->review_id)->with('status', 'Owner response hidden from the marketplace.');
+    }
+
+    public function approveResponse(Request $request, ReviewResponse $response, ModerateMarketplaceContent $moderator): RedirectResponse
+    {
+        $moderator->approveResponse($response, $request->user(), $this->reason($request));
+        return redirect()->route('admin.reviews.show', $response->review_id)->with('status', 'Owner response approved and published.');
     }
 
     public function restoreResponse(Request $request, ReviewResponse $response, ModerateMarketplaceContent $moderator): RedirectResponse

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Platform\PlatformAudit;
+use App\Models\Business;
+use App\Models\Property;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -41,6 +43,11 @@ class AdminMaintenanceController extends Controller
             'logPath' => $this->logs[$selectedLog],
             'logContent' => $this->tailLog($this->logs[$selectedLog]),
             'commands' => $this->commands,
+            'sandbox' => [
+                'businesses' => Business::query()->where('is_test', true)->count(),
+                'properties' => Property::query()->where('is_test', true)->count(),
+                'bookings' => \App\Models\Booking::query()->whereHas('business', fn ($query) => $query->where('is_test', true))->count(),
+            ],
         ]);
     }
 
@@ -134,6 +141,46 @@ class AdminMaintenanceController extends Controller
 
         return back()
             ->with($exitCode === 0 ? 'status' : 'maintenance_error', $output ?: $data['command'].' finished.');
+    }
+
+    public function clearSandbox(Request $request): RedirectResponse
+    {
+        return $this->runSandboxAction($request, true);
+    }
+
+    public function rebuildSandbox(Request $request): RedirectResponse
+    {
+        return $this->runSandboxAction($request, false);
+    }
+
+    private function runSandboxAction(Request $request, bool $clearOnly): RedirectResponse
+    {
+        $request->validate(['confirm' => ['accepted']]);
+
+        $arguments = [
+            '--execute' => true,
+            '--confirm' => 'REFRESH-PRESENTATION-DATA',
+        ];
+
+        if ($clearOnly) {
+            $arguments['--clear-only'] = true;
+        }
+
+        $exitCode = Artisan::call('presentation:refresh', $arguments);
+        $output = trim(Artisan::output());
+        $action = $clearOnly ? 'cleared' : 'rebuilt';
+
+        $this->record($request, 'platform.maintenance.sandbox_'.$action, 'Sandbox data '.$action.'.', [
+            'confirmed' => true,
+            'clear_only' => $clearOnly,
+            'exit_code' => $exitCode,
+            'output' => mb_substr($output, 0, 4000),
+        ]);
+
+        return back()->with(
+            $exitCode === 0 ? 'status' : 'maintenance_error',
+            $output ?: 'Sandbox '.$action.'.'
+        );
     }
 
     private function tailLog(string $relativePath, int $lines = 220): string

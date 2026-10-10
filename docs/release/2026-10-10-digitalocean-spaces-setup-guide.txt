@@ -1,0 +1,218 @@
+VERIFIED SHORTLET — DIGITALOCEAN SPACES SETUP GUIDE
+====================================================
+
+Purpose
+-------
+
+This guide records how to configure DigitalOcean Spaces as the S3-compatible
+storage service for public Verified Shortlet property images and videos.
+
+Private identity documents, business documents, finance receipts and staff
+evidence remain in protected application storage unless a separate private-file
+migration is designed, tested and approved.
+
+
+1. COST AND BILLING
+===================
+
+DigitalOcean Spaces currently starts at:
+
+- USD 5 per month.
+- 250 GiB included storage.
+- 1 TiB included outbound transfer.
+- USD 0.02/GiB for additional storage.
+- USD 0.01/GiB for additional outbound transfer.
+- Inbound uploads are free.
+
+Creating the first Space starts the Spaces subscription. Destroying every Space
+ends the subscription. DigitalOcean bills the account's primary payment method.
+
+Add a supported payment method under Billing before creating resources. Use a
+company-controlled DigitalOcean account rather than a developer's personal
+account.
+
+Official pricing:
+https://www.digitalocean.com/pricing/spaces-object-storage
+
+
+2. CREATE THE SPACE
+===================
+
+1. Sign in to the DigitalOcean Control Panel.
+2. Open Spaces Object Storage.
+3. Select Create Spaces Bucket.
+4. Select an appropriate available region, preferably near the application and
+   its users, such as London or Frankfurt.
+5. Choose a globally unique bucket name, for example:
+
+   verified-shortlet-media
+
+6. Keep bucket file listing restricted.
+7. Enable the Spaces CDN if faster public property-media delivery is required.
+8. Create the Space.
+9. Record the exact bucket name and region code.
+
+Official creation guide:
+https://docs.digitalocean.com/products/spaces/how-to/create/
+
+
+3. CREATE A LIMITED ACCESS KEY
+==============================
+
+1. Open Spaces Object Storage > Access Keys.
+2. Select Create Access Key.
+3. Choose Limited access.
+4. Select only the Verified Shortlet media Space.
+5. Grant Read/Write/Delete permission.
+6. Name the key clearly, for example:
+
+   verified-shortlet-production
+
+7. Create the key.
+8. Securely copy both values immediately:
+
+   Access Key ID
+   Secret Key
+
+The secret key is displayed only once. Do not put it in Git, screenshots,
+documentation or chat. If it is lost or exposed, regenerate it and update the
+platform configuration.
+
+Official access-key guide:
+https://docs.digitalocean.com/products/spaces/how-to/manage-access/
+
+
+4. DETERMINE THE STORAGE VALUES
+===============================
+
+Example values when the bucket is "verified-shortlet-media" and the region is
+"lon1":
+
+Region:
+lon1
+
+Bucket:
+verified-shortlet-media
+
+S3 endpoint:
+https://lon1.digitaloceanspaces.com
+
+Origin public URL:
+https://verified-shortlet-media.lon1.digitaloceanspaces.com
+
+Default CDN public URL, when CDN is enabled:
+https://verified-shortlet-media.lon1.cdn.digitaloceanspaces.com
+
+Use the exact region and bucket selected in DigitalOcean. Do not copy the
+example values blindly.
+
+
+5. CONFIGURE VERIFIED SHORTLET
+==============================
+
+1. Sign in as the Verified Shortlet platform owner.
+2. Open /admin/settings.
+3. Find the Storage section.
+4. Enter:
+
+Property media storage:
+S3-compatible storage
+
+Object storage access key:
+The DigitalOcean Spaces Access Key ID
+
+Object storage secret:
+The DigitalOcean Spaces Secret Key
+
+Object storage region:
+The selected region code, for example lon1
+
+Object storage bucket:
+The exact Space/bucket name
+
+Object storage endpoint:
+https://REGION.digitaloceanspaces.com
+
+Public media URL:
+Use the CDN URL when CDN is enabled; otherwise use the origin public URL
+
+Use path-style endpoint:
+Disabled
+
+5. Enter a clear audit reason, for example:
+
+   Configured DigitalOcean Spaces for production property-media storage.
+
+6. Save the configuration.
+
+
+6. RUN THE CONNECTION CHECK
+============================
+
+1. Remain on /admin/settings.
+2. Find Storage verification.
+3. Tick the confirmation checkbox.
+4. Select Run storage check.
+
+Expected result:
+
+Media storage write, read and delete checks passed.
+
+This proves that the saved credentials can upload, read and remove an object.
+It does not replace the property-upload acceptance test.
+
+
+7. ACCEPTANCE TEST
+==================
+
+[ ] Upload a new property image through the business-owner property workflow.
+[ ] Confirm the image appears in the owner workspace.
+[ ] Confirm the image appears on the public marketplace.
+[ ] Confirm its URL uses the expected Spaces or Spaces CDN domain.
+[ ] Replace or delete the image and confirm the old object is handled correctly.
+[ ] Test an allowed video if video upload is part of launch scope.
+[ ] Confirm invalid file types and oversized files are rejected.
+[ ] Confirm private application documents remain inaccessible publicly.
+
+
+8. EXISTING LOCAL MEDIA
+=======================
+
+Switching the storage driver affects new property-media uploads. It does not
+automatically copy existing local files into DigitalOcean Spaces.
+
+Before migrating existing media:
+
+1. Back up the current uploads.
+2. Copy each existing object to Spaces.
+3. Preserve or update its database storage disk, path and public URL safely.
+4. Verify the marketplace and owner workspace visually.
+5. Delete local copies only after migration evidence and rollback backups exist.
+
+
+9. SECURITY AND OWNERSHIP
+=========================
+
+- Keep the DigitalOcean account under client/platform ownership.
+- Use a dedicated limited-access key for Verified Shortlet.
+- Do not use a full DigitalOcean personal access token in the application.
+- Rotate a leaked key immediately.
+- Keep bucket file listing restricted.
+- Public property media may be publicly readable; private records must remain on
+  a protected storage path.
+- Record the account owner, billing owner and key-rotation contact in the
+  production runbook.
+
+
+STATUS
+======
+
+Current decision: Deferred for later configuration.
+
+Until this guide is completed, Verified Shortlet continues using its selected
+local storage configuration. Cloud storage must not be marked PASS until the
+connection check and the complete property-media acceptance test succeed.
+
+
+END OF DIGITALOCEAN SPACES SETUP GUIDE
+======================================

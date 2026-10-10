@@ -14,12 +14,6 @@ class OwnerCalendarController extends Controller
 {
     public function __invoke(Request $request, ActiveBusinessContext $context, OwnerCalendarWorkspace $workspace, BusinessPermissionService $permissions): View
     {
-        if ($request->query('view') === 'demo') {
-            return view('owner.demo.calendar', [
-                'business' => $context->business,
-            ]);
-        }
-
         $filters = $request->validate(['month' => ['nullable', 'date_format:Y-m'], 'property' => ['nullable', 'uuid']]);
         $month = CarbonImmutable::createFromFormat('!Y-m', $filters['month'] ?? now()->format('Y-m'));
 

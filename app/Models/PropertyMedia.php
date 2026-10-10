@@ -45,4 +45,13 @@ class PropertyMedia extends Model
     {
         return $this->belongsTo(Property::class);
     }
+
+    public function youtubeEmbedUrl(): ?string
+    {
+        if ($this->media_type !== PropertyMediaType::Video || blank($this->external_url)) return null;
+        $url = (string) $this->external_url;
+        if (preg_match('~(?:youtube(?:-nocookie)?\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})~i', $url, $matches) !== 1) return null;
+
+        return 'https://www.youtube-nocookie.com/embed/'.$matches[1].'?rel=0';
+    }
 }

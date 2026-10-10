@@ -1,6 +1,6 @@
 # MVP 1 Production Runbook
 
-This runbook covers the owner-operated pilot with simulated payments. It does not approve taking real card payments.
+This runbook covers the production launch of Verified Shortlet. Provider credentials and live acceptance evidence are required before public traffic is enabled.
 
 ## Namecheap staging with presentation data
 
@@ -51,6 +51,7 @@ SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
 CACHE_STORE=database
 QUEUE_CONNECTION=database
+ALLOW_SYNC_QUEUE=false
 FILESYSTEM_DISK=local
 
 MAIL_MAILER=smtp
@@ -58,12 +59,14 @@ MAIL_HOST=<smtp_host>
 MAIL_PORT=587
 MAIL_USERNAME=<smtp_username>
 MAIL_PASSWORD=<smtp_password>
-MAIL_ENCRYPTION=tls
+MAIL_SCHEME=smtp
 MAIL_FROM_ADDRESS=no-reply@staging.example.com
 MAIL_FROM_NAME="Verified Shortlet Staging"
 
 PLATFORM_ADMIN_EMAIL=<private_super_admin_email>
 PLATFORM_ADMIN_PASSWORD=<unique_staging_admin_password>
+PLATFORM_APPROVER_EMAIL=<private_settlement_approver_email>
+PLATFORM_APPROVER_PASSWORD=<second_unique_staging_password>
 ```
 
 Never commit `.env`. Use a unique staging super-admin password. The specialised presentation administrators and business personas are demonstration accounts, so protect the staging subdomain with cPanel directory privacy/HTTP authentication or an equivalent access restriction and remove the demo accounts before a public production launch.
@@ -97,8 +100,7 @@ All business staff use `DemoPassword123!`. The standard presentation records are
 | Persona | Email | Password |
 |---|---|---|
 | Guest | `guest.demo@verifiedshortlet.test` | `DemoPassword123!` |
-| Coastline owner | `owner@coastlineresidences.test` | `Password123!` |
-| Lagoon owner | `owner@lagoonstays.test` | `Password123!` |
+| Sandbox host | `owner@coastlineresidences.test` | `Password123!` |
 | Property manager | `manager.demo@verifiedshortlet.test` | `DemoPassword123!` |
 | Reception | `reception.demo@verifiedshortlet.test` | `DemoPassword123!` |
 | Accountant | `accountant.demo@verifiedshortlet.test` | `DemoPassword123!` |
@@ -111,6 +113,8 @@ All business staff use `DemoPassword123!`. The standard presentation records are
 | Disputes administrator | `disputes.admin@verifiedshortlet.test` | `DemoPassword123!` |
 
 The super-administrator uses the `PLATFORM_ADMIN_EMAIL` and `PLATFORM_ADMIN_PASSWORD` configured in staging. Business personas log in at `/login`; platform administrators log in at `/admin/login`.
+
+All presentation properties belong to the single **Verified Shortlet Sandbox Host** business and carry an explicit **Test property** badge. A platform owner can open **Admin → Maintenance → Presentation sandbox** to clear or rebuild only this isolated dataset. The guarded cleanup performs a safety audit and refuses to proceed if recognized sandbox records are connected to unrecognized/live records.
 
 ### Seed verification
 
@@ -158,6 +162,7 @@ DB_ENGINE=InnoDB
 SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=database
+ALLOW_SYNC_QUEUE=false
 FILESYSTEM_DISK=local
 
 MAIL_MAILER=smtp
@@ -165,15 +170,30 @@ MAIL_HOST=<smtp-host>
 MAIL_PORT=587
 MAIL_USERNAME=<smtp-user>
 MAIL_PASSWORD=<secret>
-MAIL_ENCRYPTION=tls
+MAIL_SCHEME=smtp
 MAIL_FROM_ADDRESS=no-reply@your-production-domain.example
 MAIL_FROM_NAME="Verified Shortlet"
 
 PLATFORM_ADMIN_EMAIL=<initial-admin-email>
 PLATFORM_ADMIN_PASSWORD=<one-time-strong-secret>
+PLATFORM_APPROVER_EMAIL=<settlement-approver-email>
+PLATFORM_APPROVER_PASSWORD=<second-one-time-strong-secret>
 ```
 
 The web user must be able to write `storage/` and `bootstrap/cache/`. The private disk (`storage/app/private`) must not be web-accessible. Only `public/storage` should link to `storage/app/public`.
+
+### Current shared-host exception
+
+The current shared host does not provide a persistent supervised queue worker. For the controlled launch test, replace the production cache/queue values above with:
+
+```dotenv
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+ALLOW_SYNC_QUEUE=true
+FILESYSTEM_DISK=local
+```
+
+This is an explicit operating exception: queued notifications execute during the web request and may make responses slower. The production preflight accepts it only because `ALLOW_SYNC_QUEUE=true` records that decision. When persistent workers become available, restore `CACHE_STORE=database`, `QUEUE_CONNECTION=database`, set `ALLOW_SYNC_QUEUE=false`, start a worker and monitor failed jobs.
 
 ## Deploy
 
@@ -186,9 +206,53 @@ The web user must be able to write `storage/` and `bootstrap/cache/`. The privat
 7. Move any legacy public property documents: `php artisan documents:migrate-private --dry-run`, then `php artisan documents:migrate-private`.
 8. Create the public-media link if absent: `php artisan storage:link`.
 9. Cache production configuration: `php artisan optimize`.
-10. Restart queue workers: `php artisan queue:restart`.
-11. Return service: `php artisan up`.
-12. Smoke-test marketplace search, an owner login, notifications, one manual calendar block, and an iCal sync.
+10. Run the enforced production baseline: `php artisan app:go-live-preflight`.
+11. Restart queue workers with `php artisan queue:restart` when `QUEUE_CONNECTION=database`. Skip this command for the documented shared-host `sync` exception.
+12. Return service: `php artisan up`.
+13. Smoke-test marketplace search, an owner login, notifications, one manual calendar block, and an iCal sync.
+
+For a clean go-live database, seed only the two configured platform-owner accounts after migrations:
+
+```bash
+php artisan db:seed --class=Database\\Seeders\\GoLivePlatformOwnerSeeder --force
+```
+
+Do not run the default `DatabaseSeeder` in production: it intentionally creates marketplace and presentation records. The go-live seeder creates access-control definitions, the primary platform owner and the separate settlement approver only. Their email addresses must differ.
+
+## Platform provider setup
+
+After seeding, sign in as the primary platform owner and configure providers through **Platform Configuration**. Secrets saved there are protected server-side and must not be copied into screenshots or documentation.
+
+### Email
+
+- Gmail/Google Workspace: provider `gmail`, host `smtp.gmail.com`, port `587`, scheme `smtp` (STARTTLS), full mailbox username and a Google App Password.
+- Brevo: provider `brevo`, host `smtp-relay.brevo.com`, port `587`, scheme `smtp`, Brevo SMTP login and SMTP key.
+- Send a configuration test email and then test registration verification, password reset and booking notifications.
+
+### Business and guest identity
+
+- Keep the identity environment in `test` for controlled acceptance without live Dojah credentials.
+- In `live`, configure the Dojah App ID and private key before accepting onboarding.
+- Business onboarding sends the administrator's NIN and BVN to the configured verifier after explicit consent. The database retains masked last-four digits, provider references and results—not the complete numbers.
+- Guest settings use the same verifier for NIN. Platform administrators cannot manually change provider identity results.
+
+### Payments
+
+- In Test mode, internal test checkout may be enabled for non-financial acceptance when provider test keys are unavailable.
+- In Live mode, internal checkout is ignored and valid provider credentials are mandatory.
+- Configure provider callbacks and webhooks, then verify signatures, idempotency, installments and refunds with controlled transactions.
+
+### Media and walkthroughs
+
+- Use `local` media storage on the current shared host until S3-compatible storage is activated.
+- Property photographs and authorized documents continue through the configured filesystem.
+- Property walkthrough videos are not uploaded. Hosts paste a public or unlisted YouTube URL; the application validates, canonicalizes and embeds it.
+- Do not use YouTube for identity, business or other private documents.
+
+### Calendars and AI
+
+- Keep scheduled iCal synchronization enabled and test it with a genuine Airbnb/Booking.com-compatible public `.ics` feed.
+- Keep AI disabled until an approved API key, spending limit and data-use policy are configured. Core booking remains available without AI.
 
 ## Scheduler
 
@@ -201,6 +265,8 @@ Install one cron entry under the same OS user as the application:
 Verify with `php artisan schedule:list`. The schedule queues iCal imports every 15 minutes, checks stale calendar connections every 15 minutes, and escalates overdue operational work every five minutes.
 
 ## Queue worker
+
+This section applies when `QUEUE_CONNECTION=database`. For the current documented shared-host exception (`QUEUE_CONNECTION=sync` and `ALLOW_SYNC_QUEUE=true`), no worker is started; monitor web-request duration and email failures instead.
 
 Run a supervised worker; do not rely on a terminal session:
 

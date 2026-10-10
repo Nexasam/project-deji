@@ -62,8 +62,8 @@ class PresentationDemoSeederTest extends TestCase
         $users->each(fn (User $user) => $this->assertTrue(Hash::check(PresentationDemoSeeder::PASSWORD, $user->password)));
 
         $manager = $users->firstWhere('email', 'manager.demo@verifiedshortlet.test');
-        $this->assertCount(2, $manager->businessMemberships()->where('status', 'active')->get());
-        $this->assertSame('Coastline Residences', $manager->resolvedBusinessContext()->business->name);
+        $this->assertCount(1, $manager->businessMemberships()->where('status', 'active')->get());
+        $this->assertSame('Verified Shortlet Sandbox Host', $manager->resolvedBusinessContext()->business->name);
 
         $cleaner = $users->firstWhere('email', 'cleaner.demo@verifiedshortlet.test');
         $chevron = Property::query()->where('code', 'CSR-003')->firstOrFail();
@@ -75,10 +75,9 @@ class PresentationDemoSeederTest extends TestCase
         ]);
         $this->actingAs($cleaner)->get(route('owner.entry'))->assertRedirect(route('staff.tasks.index'));
 
-        $this->assertSame(2, Business::query()->whereIn('email', [
-            'owner@lagoonstays.test',
-            'owner@coastlineresidences.test',
-        ])->count());
+        $this->assertSame(1, Business::query()->where('is_test', true)->count());
+        $this->assertSame(11, Property::query()->where('is_test', true)->count());
+        $this->assertSame(0, Property::query()->where('is_test', false)->count());
 
         $reviewProperty = Property::query()->where('code', 'DEMO-REVIEW-001')->firstOrFail();
         $this->assertSame('Eko Pearl Executive Residence', $reviewProperty->name);

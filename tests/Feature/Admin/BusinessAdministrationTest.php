@@ -92,6 +92,21 @@ class BusinessAdministrationTest extends TestCase
         $this->assertSame('active', $business->fresh()->status->value);
     }
 
+    public function test_verification_admin_can_review_but_cannot_manually_set_provider_identity_results(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->administrator('platform_verification_admin');
+        $business = Business::factory()->verified()->create(['verification_payload' => [
+            'nin_status' => 'verified', 'nin_last4' => '8901', 'nin_provider' => 'dojah', 'nin_provider_reference' => 'NIN-1001',
+            'bvn_status' => 'verified', 'bvn_last4' => '4321', 'bvn_provider' => 'dojah', 'bvn_provider_reference' => 'BVN-1001',
+        ]]);
+
+        $this->actingAs($admin)->get(route('admin.businesses.show', $business))
+            ->assertOk()->assertSee('NIN-1001')->assertSee('BVN-1001')
+            ->assertDontSee('Save identity decision');
+        $this->post("/admin/businesses/{$business->id}/identity", [])->assertNotFound();
+    }
+
     public function test_support_admin_has_read_only_business_access(): void
     {
         $this->seed(AccessControlSeeder::class);

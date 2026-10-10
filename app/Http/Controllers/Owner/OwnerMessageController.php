@@ -7,6 +7,7 @@ use App\Services\Access\BusinessPermissionService;
 use App\Services\Booking\BookingMessageService;
 use App\Support\ActiveBusinessContext;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -34,7 +35,7 @@ class OwnerMessageController extends Controller
         return view('owner.messages.show', ['business' => $context->business, 'booking' => $record]);
     }
 
-    public function store(Request $request, ActiveBusinessContext $context, BusinessPermissionService $permissions, string $booking, BookingMessageService $messages): RedirectResponse
+    public function store(Request $request, ActiveBusinessContext $context, BusinessPermissionService $permissions, string $booking, BookingMessageService $messages): JsonResponse|RedirectResponse
     {
         $data = $request->validate([
             'content' => ['required', 'string', 'min:2', 'max:2000'],
@@ -42,7 +43,18 @@ class OwnerMessageController extends Controller
 
         $record = $this->findBooking($context, $permissions, $booking);
 
-        $messages->ownerMessage($record, $request->user(), $data['content']);
+        $message = $messages->ownerMessage($record, $request->user(), $data['content']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => [
+                    'id' => $message->id,
+                    'content' => $message->content,
+                    'time' => $message->occurred_at->format('d M, H:i'),
+                    'sender' => 'You',
+                ],
+            ], 201);
+        }
 
         return redirect()->route('owner.bookings.messages.show', $record)->with('status', 'Message sent to guest.');
     }

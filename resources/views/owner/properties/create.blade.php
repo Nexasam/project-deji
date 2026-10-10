@@ -193,6 +193,12 @@
                                 <span class="property-form-help">Your starting base rate before fees.</span>
                                 @error('default_nightly_price')<span class="property-form-error">{{ $message }}</span>@enderror
                             </label>
+                            <div class="property-form-label">
+                                <label class="flex items-center gap-2"><input type="checkbox" name="tax_enabled" value="1" @checked(old('tax_enabled', $property?->tax_enabled)) class="rounded border-slate-300 text-orange-600"> Add tax separately</label>
+                                <input type="number" name="tax_rate" min="0" max="100" step="0.01" value="{{ old('tax_rate', $property?->tax_rate ?? 0) }}" placeholder="Tax rate (%)" class="property-form-control mt-2 @error('tax_rate') is-invalid @enderror">
+                                <span class="property-form-help">Optional; displayed separately in guest checkout.</span>
+                                @error('tax_rate')<span class="property-form-error">{{ $message }}</span>@enderror
+                            </div>
                         </div>
                     </section>
 

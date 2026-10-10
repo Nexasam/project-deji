@@ -15,6 +15,35 @@
         <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">Run fixed operational actions without SSH. Every action requires confirmation and is written to platform audit history.</p>
     </section>
 
+    <section class="overflow-hidden rounded-3xl border border-violet-200 bg-white shadow-sm">
+        <div class="grid gap-6 bg-violet-950 p-6 text-white lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+                <p class="text-xs font-black uppercase tracking-[.16em] text-violet-300">Presentation sandbox</p>
+                <h3 class="mt-2 text-2xl font-black">One isolated test host</h3>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-violet-100">The sandbox belongs to <strong>Verified Shortlet Sandbox Host</strong>. Its properties, bookings, staff tasks and guest journeys can be cleared or rebuilt without selecting live businesses.</p>
+            </div>
+            <dl class="grid grid-cols-3 gap-2 text-center">
+                @foreach(['businesses' => 'Hosts', 'properties' => 'Properties', 'bookings' => 'Bookings'] as $key => $label)
+                    <div class="min-w-24 rounded-2xl bg-white/10 px-4 py-3"><dt class="text-[10px] font-black uppercase tracking-wider text-violet-200">{{ $label }}</dt><dd class="mt-1 text-2xl font-black">{{ $sandbox[$key] }}</dd></div>
+                @endforeach
+            </dl>
+        </div>
+        <div class="grid gap-5 p-5 md:grid-cols-2 sm:p-6">
+            <form method="POST" action="{{ route('admin.maintenance.sandbox.rebuild') }}" class="rounded-2xl border border-violet-200 bg-violet-50 p-5">@csrf
+                <h4 class="text-lg font-black text-violet-950">Rebuild sandbox</h4>
+                <p class="mt-2 text-sm leading-6 text-violet-800">Deletes only recognized sandbox data, then recreates the host, test properties, guest bookings, staff accounts, tasks, messages and review cases.</p>
+                <label class="mt-4 flex items-start gap-3 rounded-xl border border-violet-200 bg-white px-4 py-3 text-sm font-bold text-violet-950"><input type="checkbox" name="confirm" value="1" required class="mt-1 rounded border-violet-300 text-violet-700 focus:ring-violet-500"><span>I confirm I want to rebuild the test sandbox.</span></label>
+                <button class="mt-3 w-full rounded-xl bg-violet-700 px-5 py-3 text-sm font-black text-white hover:bg-violet-800">Clear and reseed sandbox</button>
+            </form>
+            <form method="POST" action="{{ route('admin.maintenance.sandbox.clear') }}" class="rounded-2xl border border-red-200 bg-red-50 p-5">@csrf
+                <h4 class="text-lg font-black text-red-950">Clear sandbox</h4>
+                <p class="mt-2 text-sm leading-6 text-red-800">Removes the sandbox host and all related test records. Nothing is recreated until you choose “Rebuild sandbox”.</p>
+                <label class="mt-4 flex items-start gap-3 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-bold text-red-950"><input type="checkbox" name="confirm" value="1" required class="mt-1 rounded border-red-300 text-red-700 focus:ring-red-500"><span>I confirm I want to remove all test sandbox data.</span></label>
+                <button class="mt-3 w-full rounded-xl bg-red-700 px-5 py-3 text-sm font-black text-white hover:bg-red-800">Clear sandbox only</button>
+            </form>
+        </div>
+    </section>
+
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,.65fr)]">
         <section x-data="{ logsOpen: false }" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">

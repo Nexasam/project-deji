@@ -24,6 +24,9 @@ class StoreBusinessOnboardingRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'phone_number' => ['nullable', 'string', 'max:32'],
             'address_line' => ['nullable', 'string', 'max:500'],
+            'nin' => ['required', 'string', 'regex:/^\d{11}$/'],
+            'bvn' => ['required', 'string', 'regex:/^\d{11}$/'],
+            'identity_consent' => ['accepted'],
         ];
     }
 
@@ -34,7 +37,7 @@ class StoreBusinessOnboardingRequest extends FormRequest
 
     public function businessAttributes(): array
     {
-        $data = $this->safe()->except('address_line');
+        $data = $this->safe()->except(['address_line', 'nin', 'bvn', 'identity_consent']);
         $data['address'] = $this->filled('address_line') ? ['line' => $this->string('address_line')->toString()] : null;
 
         return $data;

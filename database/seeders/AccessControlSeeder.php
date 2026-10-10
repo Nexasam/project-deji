@@ -372,7 +372,7 @@ class AccessControlSeeder extends Seeder
         $this->upsertWithId('password_policies', ['system_key' => 'platform-default'], [
             'business_id' => null,
             'name' => 'Platform Default',
-            'minimum_length' => 12,
+            'minimum_length' => 8,
             'requires_uppercase' => true,
             'requires_lowercase' => true,
             'requires_number' => true,

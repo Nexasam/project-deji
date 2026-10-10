@@ -24,10 +24,6 @@ class NotificationController extends Controller
                 : collect(),
         ];
 
-        if ($request->query('view') === 'demo' && $activeBusinessContext) {
-            return view('owner.demo.notifications', $contextData);
-        }
-
         $filters = $request->validate([
             'status' => ['nullable', 'in:all,unread,read'],
             'q' => ['nullable', 'string', 'max:100'],

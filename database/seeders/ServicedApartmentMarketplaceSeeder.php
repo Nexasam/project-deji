@@ -33,6 +33,7 @@ class ServicedApartmentMarketplaceSeeder extends Seeder
                         'country_code' => 'NG', 'business_type' => 'serviced_apartments',
                         'timezone' => 'Africa/Lagos', 'currency' => 'NGN',
                     ]);
+                $business->forceFill(['is_test' => true])->save();
 
                 foreach ($operator['apartments'] as $index => $data) {
                     $this->seedApartment($business, $owner, $data, $index);
@@ -54,7 +55,8 @@ class ServicedApartmentMarketplaceSeeder extends Seeder
 	            'readiness_status' => 'ready', 'operational_status' => 'available',
 	            'maintenance_status' => 'not_required', 'status' => 'active',
 	            'host_phone_number' => '+234 801 234 '.str_pad((string) (5600 + $index), 4, '0', STR_PAD_LEFT),
-	            'superhost_badge_enabled' => $index % 3 === 0,
+            'superhost_badge_enabled' => $index % 3 === 0,
+            'is_test' => true,
 	            'check_in_instructions' => [
 	                'key_pickup' => 'Show your booking reference at the estate gate and collect the access card from the gateman.',
 	                'access_notes' => 'Check in from 2:00 PM. Parking is available in the visitor bay; call the host if security needs confirmation.',
@@ -118,11 +120,16 @@ class ServicedApartmentMarketplaceSeeder extends Seeder
             ['CSR','Old Ikoyi Quiet Retreat','old-ikoyi-quiet-retreat','Ikoyi','15 Glover Road',145000,2,3,4,2,['ikoyi','business','family'],'Quiet serviced accommodation surrounded by greenery.','1600585154340'],
             ['CSR','Elegushi Coastal Apartment','elegushi-coastal-apartment','Lekki','9 Oba Elegushi Road',90000,2,2,4,2,['lekki','beachfront'],'An easy coastal stay close to the beach and nightlife.','1493809842364'],
         ];
-        $make = fn (array $row, int $i): array => array_combine(['prefix','name','slug','area','address','price','bedrooms','beds','capacity','bathrooms','categories','description','photo'], $row) + ['code' => $row[0].'-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT)];
+        $prefixCounts = [];
+        $mappedApartments = array_map(function (array $row) use (&$prefixCounts): array {
+            $prefixCounts[$row[0]] = ($prefixCounts[$row[0]] ?? 0) + 1;
+
+            return array_combine(['prefix','name','slug','area','address','price','bedrooms','beds','capacity','bathrooms','categories','description','photo'], $row)
+                + ['code' => $row[0].'-'.str_pad((string) $prefixCounts[$row[0]], 3, '0', STR_PAD_LEFT)];
+        }, $apartments);
 
         return [
-            ['owner' => 'Amara Okafor', 'email' => 'owner@lagoonstays.test', 'business' => 'Lagoon Stays', 'apartments' => array_map($make, array_slice($apartments, 0, 5), array_keys(array_slice($apartments, 0, 5)))],
-            ['owner' => 'Tunde Balogun', 'email' => 'owner@coastlineresidences.test', 'business' => 'Coastline Residences', 'apartments' => array_map($make, array_slice($apartments, 5), array_keys(array_slice($apartments, 5)))],
+            ['owner' => 'Tunde Balogun', 'email' => 'owner@coastlineresidences.test', 'business' => 'Verified Shortlet Sandbox Host', 'apartments' => $mappedApartments],
         ];
     }
 }

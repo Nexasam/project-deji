@@ -1,0 +1,617 @@
+VERIFIED SHORTLET — CLIENT GO-LIVE TESTING GUIDE
+=================================================
+
+Purpose
+-------
+
+This guide helps the Verified Shortlet team test the complete platform journey before go-live.
+
+It is written for the client and client testing team. It does not contain server commands, secret keys, deployment instructions or technical implementation details.
+
+Important responsibility boundary
+---------------------------------
+
+Two separated platform-owner accounts manage and protect Verified Shortlet: the primary platform owner and the settlement approver. Neither account creates a live host's business, property, staff or bookings.
+
+The correct responsibility flow is:
+
+1. The primary platform owner configures and supervises the platform.
+2. The business owner or property host registers independently.
+3. The business owner completes business onboarding.
+4. The platform owner reviews and approves or rejects the business.
+5. The business owner creates and submits properties.
+6. The platform owner reviews and publishes or rejects properties.
+7. Guests register, verify their identity and make bookings.
+8. The business owner manages staff, operations and guest stays.
+
+The optional Presentation Sandbox is different. It contains disposable records created for demonstrations. Every sandbox property is clearly marked “Test property” and must not be treated as a live host or property.
+
+
+BEFORE THE TEST
+===============
+
+Prepare five separate browser sessions or devices:
+
+Browser Session A: Platform owner
+Browser Session B: Business/property owner
+Browser Session C: Guest
+Browser Session D: Cleaner or another staff member
+Browser Session E: Settlement approver
+
+Do not use one browser session for every account. Separate sessions make permissions and notifications easier to verify.
+
+Before starting, the testing coordinator should confirm:
+
+[ ] The staging or production URL opens securely.
+[ ] Both platform-owner accounts can sign in using separate credentials.
+[ ] Email delivery is working.
+[ ] Payment Test mode or Live mode has been selected by the platform owner.
+[ ] Test email addresses and phone numbers are available.
+[ ] Every tester understands their assigned role.
+[ ] No passwords or secret provider keys will be placed in screenshots or shared messages.
+
+
+PART 1 — PLATFORM-OWNER PREPARATION
+===================================
+
+Who performs this: Primary platform owner
+
+1. Sign in through the platform administration login page.
+2. Open Platform Configuration.
+3. Confirm the correct payment environment is selected.
+4. Confirm the required payment providers are enabled.
+5. Confirm email delivery is enabled and send a test email.
+6. Confirm identity verification is configured for the current test environment.
+7. Review platform fees and installment-payment settings.
+8. Review notification and calendar synchronization settings.
+9. Confirm the platform audit page is available.
+
+Expected result:
+
+[ ] Configuration saves successfully.
+[ ] The test email is received.
+[ ] Only the platform owner can access sensitive platform configuration.
+[ ] Guests and business owners cannot see provider credentials or environment controls.
+
+
+PART 2 — BUSINESS-OWNER REGISTRATION
+====================================
+
+Who performs this: Prospective business/property owner
+
+1. Open the registration page in Browser Session B.
+2. Enter the owner's name, email address, phone number and password.
+3. Choose the business/property-host registration path.
+4. Submit the registration.
+5. Open the verification email and verify the email address.
+6. Continue to business onboarding.
+7. Enter the business or trading name.
+8. Enter the primary contact information.
+9. Enter the business address and business type.
+10. Provide the available registration details.
+11. Enter the business administrator's 11-digit NIN and BVN.
+12. Read and accept the identity-verification consent statement.
+13. Submit the business for review. The identity provider runs the checks during submission.
+
+Expected result:
+
+[ ] The owner can register without platform-owner assistance.
+[ ] The email-verification message is delivered.
+[ ] The new business appears in the owner's workspace.
+[ ] The business shows a pending-review status.
+[ ] The owner cannot approve their own business.
+[ ] Only masked NIN/BVN digits, provider references and results are retained; full numbers are not displayed to platform administrators.
+
+
+PART 3 — PLATFORM BUSINESS VERIFICATION
+=======================================
+
+Who performs this: Platform owner
+
+1. Return to Browser Session A.
+2. Open Businesses.
+3. Select the newly registered business.
+4. Review the submitted business details and contact information.
+5. Review the property owner or business host's NIN and BVN verification results returned by the configured identity provider.
+6. Approve or reject the business and provide a clear reason.
+7. Open the audit history and confirm the decision was recorded.
+
+Important:
+
+The identity provider verifies NIN and BVN during onboarding. The platform owner reviews the masked results and provider references as part of the wider business-approval decision. The platform owner cannot manually mark NIN or BVN as verified.
+
+Expected result:
+
+[ ] The approved business becomes Verified.
+[ ] A rejected business receives a clear reason.
+[ ] The decision records the reviewing platform owner, time and reason.
+[ ] Property approval remains a separate process.
+[ ] Payout remains unavailable until all required identity and bank-account checks pass.
+
+
+PART 4 — PROPERTY CREATION
+==========================
+
+Who performs this: Business owner only
+
+Initial property creation and submission must be performed strictly by the business owner—not by staff or the platform owner.
+
+1. Return to Browser Session B.
+2. Open Properties and select Add property.
+3. Enter the complete property name and address.
+4. Select the property type.
+5. Enter capacity, bedrooms, beds and bathrooms.
+6. Add amenities and inventory information.
+7. Set check-in and checkout times.
+8. Add house rules.
+9. Add arrival and key-collection instructions.
+10. Set the nightly price.
+11. Add any longer-stay promotion or eligible date-range offer.
+12. Upload property photographs and requested documents.
+13. Paste an optional YouTube walkthrough link. Use a public or unlisted video that the host is authorized to share; do not upload the video file to Verified Shortlet.
+14. Add the public marketplace title, summary and description.
+15. Add an external calendar connection if available.
+16. Preview the property and confirm the YouTube video embeds correctly when supplied.
+17. Submit it for platform review.
+
+Expected result:
+
+[ ] All property sections save correctly.
+[ ] Input fields and uploads work on desktop and mobile.
+[ ] A valid YouTube URL embeds correctly, and an invalid/non-YouTube URL is rejected clearly.
+[ ] The property shows Pending review.
+[ ] The property is not publicly bookable before approval.
+[ ] The property owner cannot approve or publish their own property.
+
+
+PART 5 — PROPERTY REVIEW AND PUBLICATION
+========================================
+
+Who performs this: Platform owner
+
+1. Return to Browser Session A.
+2. Open Properties.
+3. Select the newly submitted property.
+4. Review its address, images, documents, capacity and description.
+5. Review pricing, promotions, check-in/checkout times and house rules.
+6. Review calendar and availability information.
+7. Approve and publish the property, or reject it with a correction reason.
+8. Enable the Super host badge only when the platform's qualification requirements have been met.
+
+Expected result:
+
+[ ] Approved property appears on the marketplace.
+[ ] Rejected property displays a useful reason to the business owner.
+[ ] No generic Verified watermark appears on marketplace property cards.
+[ ] Super host appears only when enabled by the platform owner.
+[ ] A Test property badge appears only on Presentation Sandbox properties.
+
+
+PART 6 — GUEST REGISTRATION AND IDENTITY
+========================================
+
+Who performs this: Guest
+
+1. Open the registration page in Browser Session C.
+2. Register as an individual guest.
+3. Verify the email address.
+4. Open Guest Settings.
+5. Enter the requested NIN information.
+6. Select Verify.
+7. Confirm the identity status updates successfully.
+8. Configure notification preferences using the on/off controls.
+
+Expected result:
+
+[ ] Guest registration succeeds.
+[ ] Email verification succeeds.
+[ ] NIN verification gives clear success or failure feedback.
+[ ] An unverified guest cannot proceed with payment where identity is required.
+[ ] Notification preferences save successfully.
+
+
+PART 7 — MARKETPLACE, SHARE AND FAVOURITES
+==========================================
+
+Who performs this: Guest
+
+1. Open the marketplace.
+2. Search by location, date and number of guests.
+3. Confirm the search section remains accessible while scrolling.
+4. Browse horizontal property sections on desktop and mobile.
+5. Open the new property.
+6. Confirm the full property address, host, amenities, capacity and house rules appear.
+7. Select Share.
+8. Select Save.
+9. Open Favourites and confirm the property appears.
+10. Remove it from Favourites and confirm the count updates without navigating away.
+
+Expected result:
+
+[ ] Search results match the selected filters.
+[ ] Property cards remain consistent in size and alignment.
+[ ] Share opens the device share option or copies the property URL.
+[ ] Save and Remove work without opening the property unintentionally.
+[ ] The favourite count updates immediately.
+
+
+PART 8 — AVAILABILITY AND PRICING
+=================================
+
+Who performs this: Guest
+
+1. Open the property's availability calendar.
+2. Confirm booked dates are clearly unavailable.
+3. Confirm available dates are clearly shown.
+4. Select a check-in date.
+5. Select a checkout date.
+6. Change only the checkout date and confirm the check-in date remains selected.
+7. Change the check-in date without reloading the page.
+8. Confirm the price updates as dates change.
+9. Confirm eligible longer-stay discounts appear automatically.
+10. Confirm the marketplace card's date-range offer remains visually aligned with standard nightly-price cards.
+
+Expected result:
+
+[ ] Date selection is smooth and changeable.
+[ ] Booked dates cannot be selected.
+[ ] Check-in is not unnecessarily reset when checkout changes.
+[ ] Night count, discount and total update correctly.
+[ ] The property details page still shows the nightly-price breakdown.
+
+
+PART 9 — BOOKING AND PAYMENT
+============================
+
+Who performs this: Guest
+
+1. Select valid check-in and checkout dates.
+2. Enter adults and children.
+3. Enter the guest phone number.
+4. Enter an optional special request.
+5. Continue to checkout.
+6. Select Paystack or Flutterwave.
+7. Choose full payment for the main test.
+8. Accept the house rules and cancellation policy.
+9. Complete payment.
+
+Also test installment payment when enabled:
+
+1. Choose an amount that is not below the configured minimum deposit.
+2. Complete the first payment.
+3. Confirm the outstanding balance and due date are visible.
+4. Confirm full payment is required before check-in.
+
+Expected result:
+
+[ ] The booking is created once—never duplicated by repeated clicks.
+[ ] A successful full payment confirms the booking.
+[ ] A receipt is available.
+[ ] The guest sees the amount paid and any outstanding balance.
+[ ] The property owner sees the payment and owner balance.
+[ ] The platform owner sees the payment and platform fee allocation.
+[ ] Guest, property owner and platform owner receive the relevant notifications.
+[ ] Fully paid arrival instructions become visible to the guest.
+
+
+PART 10 — DOUBLE-BOOKING AND CALENDAR PROTECTION
+================================================
+
+1. Open the same property in a separate browser session.
+2. Attempt to select the newly booked dates.
+3. Confirm those dates are unavailable.
+4. If a genuine external calendar feed is available, add it from the owner's calendar settings.
+5. Run or wait for calendar synchronization.
+6. Confirm the imported dates become unavailable.
+7. Confirm the Verified Shortlet calendar export can be read by an external calendar platform.
+
+Expected result:
+
+[ ] Native bookings block overlapping bookings.
+[ ] Imported calendar events block overlapping bookings.
+[ ] The calendar shows one connected range for each stay rather than repeated disconnected labels.
+[ ] Calendar synchronization does not expose private guest or payment information.
+
+
+PART 11 — OWNER BOOKING WORKSPACE
+=================================
+
+Who performs this: Business owner
+
+1. Open Notifications and locate the new-booking notification.
+2. Open Bookings and find the booking reference.
+3. Review dates, guest numbers, payment status and special request.
+4. Use Messages to reply to the guest.
+5. Confirm the reply appears immediately without reloading the page.
+6. Confirm Call guest/host actions show only when a usable phone number exists.
+7. Open Finance and confirm the gross payment, fee and owner balance.
+8. Open Calendar and confirm the complete occupied range.
+
+Expected result:
+
+[ ] Booking, payment, messages, calendar, finance and operations refer to the same record.
+[ ] Messages send without a full-page reload.
+[ ] The recipient receives a new-message notification.
+
+
+PART 12 — STAFF, ROLES AND PROPERTY ACCESS
+==========================================
+
+Who performs this: Business owner
+
+1. Open Team.
+2. Create or select a Cleaner role.
+3. Give the role task-viewing and task-completion access.
+4. Do not give the cleaner Finance access.
+5. Invite a cleaner.
+6. Assign the cleaner to only the property used for this test.
+7. Create or review Accountant access.
+8. Give the accountant appropriate Finance access without cleaning or property-operation controls.
+9. Review Reception, Operations Manager, Maintenance, Inspector and Support roles.
+10. Demonstrate read-only and read/write access where relevant.
+11. Deactivate and reactivate a team member.
+
+Expected result:
+
+[ ] Roles control which functions a staff member may use.
+[ ] Property assignments separately control which properties they may access.
+[ ] Business dashboard analytics remain owner-only where configured.
+[ ] Unauthorized direct URLs return a forbidden response.
+
+
+PART 13 — CLEANING AND PRE-ARRIVAL OPERATIONS
+==============================================
+
+Who performs this: Business owner/operations manager and cleaner
+
+1. The owner or operations manager opens Operations.
+2. Locate the readiness task connected to the booking.
+3. Assign it to the cleaner for the test property.
+4. The cleaner signs in through Browser Session D.
+5. The cleaner opens Assigned tasks.
+6. Start the task.
+7. Complete the checklist.
+8. Add notes and evidence where required.
+9. Complete the task.
+10. Attempt to open Finance and unrestricted Bookings directly.
+
+Expected result:
+
+[ ] Cleaner sees only assigned task and property information.
+[ ] Cleaner can update permitted task fields.
+[ ] Cleaner cannot access Finance or unrelated bookings/properties.
+[ ] The business owner can see the task progress.
+
+
+PART 14 — CHECK-IN AND GUEST SUPPORT
+====================================
+
+Who performs this: Owner/reception, guest and support team
+
+1. Confirm the booking is fully paid.
+2. Confirm arrival instructions are complete.
+3. Owner or reception checks the guest in.
+4. Guest opens the booking and reads:
+   - complete property address;
+   - access and key instructions;
+   - Wi-Fi or property guidance;
+   - house rules;
+   - emergency contact;
+   - Message host and Call host actions.
+5. Guest sends a message.
+6. Confirm the message appears immediately without reloading.
+7. Guest creates a maintenance or support request.
+8. Support or operations assigns and resolves it.
+9. Guest confirms the updated status.
+
+Expected result:
+
+[ ] Arrival information is hidden until the required payment condition is met.
+[ ] Authorized staff can check the guest in.
+[ ] Messages and support requests remain linked to the booking.
+[ ] The guest receives clear status updates.
+
+
+PART 15 — CHECKOUT, TURNOVER AND INSPECTION
+===========================================
+
+1. Owner or reception checks the guest out.
+2. Record key return, property condition and handover notes.
+3. Cleaner completes the turnover-cleaning task.
+4. Inspector completes the inspection and evidence requirements.
+5. Owner confirms the operational work is complete.
+
+Expected result:
+
+[ ] Property moves from Occupied to Cleaning/Inspection and then Available.
+[ ] The completed stay becomes eligible for review.
+[ ] Future guests can book only after the property is available again.
+
+
+PART 16 — REVIEWS AND MODERATION
+================================
+
+Who performs this: Guest, business owner and platform owner
+
+Guest:
+
+1. Open the completed booking.
+2. Submit ratings and written feedback.
+
+Platform owner:
+
+1. Open Reviews.
+2. Review the booking and payment context.
+3. Review the applicable scoring questions and result.
+4. Approve, hide or reject the review with a reason.
+
+Business owner:
+
+1. Respond to the approved property review.
+2. Submit a good, neutral or bad guest-stay review from the completed booking.
+
+Expected result:
+
+[ ] Guest review does not become public before platform moderation.
+[ ] Approved review appears publicly.
+[ ] Hidden or rejected content remains unavailable publicly.
+[ ] Business-owner response remains linked to the review.
+[ ] The guest-stay review is distinct from booking messages.
+
+
+PART 17 — OWNER SETTLEMENT
+==========================
+
+Who performs this: Primary platform owner and settlement approver using separate sessions
+
+1. Confirm the business is verified.
+2. Confirm the property owner or business host's required identity checks have passed.
+3. Confirm the settlement bank account is verified.
+4. Open Settlements.
+5. Review available owner-balance allocations.
+6. The primary platform owner creates a settlement batch.
+7. Confirm the primary platform owner cannot approve the batch they created.
+8. Open Browser Session E and sign in as the separately configured settlement approver.
+9. The settlement approver reviews and approves the batch.
+10. Record completion with the external transfer reference.
+11. Test reversal only where permitted and provide a reason.
+
+Expected result:
+
+[ ] Unverified businesses cannot receive settlement.
+[ ] The same balance cannot be settled twice.
+[ ] The settlement creator cannot approve their own batch.
+[ ] A different authenticated platform owner can approve the batch.
+[ ] Settlement actions record the person, time and reason.
+[ ] The business owner can see the relevant balance and settlement status.
+
+
+PART 18 — PLATFORM SAFETY AND ADMINISTRATION
+============================================
+
+Who performs this: Platform owner
+
+Demonstrate:
+
+[ ] Business suspension and reactivation.
+[ ] User lock and unlock.
+[ ] Property unpublish and rejection controls.
+[ ] Review moderation.
+[ ] Dispute management.
+[ ] Platform audit history.
+[ ] Notification delivery.
+[ ] Maintenance status visibility.
+
+Do not run deployment, migration or code-update actions during a client presentation unless the technical team has approved the exact action and confirmed a backup exists.
+
+
+OPTIONAL — PRESENTATION SANDBOX
+===============================
+
+Who performs this: Platform owner
+
+Use this only when the team wants disposable demonstration data.
+
+1. Open Admin Maintenance.
+2. Find Presentation sandbox.
+3. Review the current sandbox record counts.
+4. Select Clear and reseed sandbox to restore the complete demonstration journey.
+5. Confirm every sandbox property displays “Test property”.
+6. Select Clear sandbox only when the team wants to remove all sandbox records.
+
+Expected result:
+
+[ ] Exactly one sandbox host is created.
+[ ] All sandbox properties carry the Test property badge.
+[ ] Live businesses and properties remain unchanged.
+[ ] The action appears in platform audit history.
+
+
+FINAL CLIENT ACCEPTANCE CHECKLIST
+=================================
+
+Record Pass, Fail or Not Tested beside every item.
+
+[ ] Platform-owner configuration is restricted and saves correctly.
+[ ] The primary platform owner and settlement approver can sign in separately.
+[ ] Test email is received.
+[ ] Business owner registers independently.
+[ ] Business onboarding works.
+[ ] Business NIN/BVN verification requires consent and returns provider evidence without exposing full numbers.
+[ ] Platform owner reviews and verifies the business.
+[ ] Business owner creates and submits the property.
+[ ] Platform owner approves and publishes the property.
+[ ] Optional YouTube property walkthrough saves and embeds correctly.
+[ ] Guest registers and completes identity verification.
+[ ] Search, Share, Save and Favourites work.
+[ ] Date selection and price calculation work smoothly.
+[ ] Full payment confirms one booking and produces a receipt.
+[ ] Installment payment and outstanding balance work when enabled.
+[ ] Guest, owner and platform notifications are received.
+[ ] Booked and external-calendar dates cannot be double-booked.
+[ ] Messages send without reloading the page.
+[ ] Call host/guest actions work where a phone number exists.
+[ ] Arrival instructions unlock at the correct payment stage.
+[ ] Cleaner sees only assigned work and property.
+[ ] Accountant sees permitted Finance information only.
+[ ] Unauthorized pages return a forbidden response.
+[ ] Check-in works.
+[ ] Guest support request works.
+[ ] Checkout, cleaning and inspection work.
+[ ] Guest review waits for platform moderation.
+[ ] Owner response and guest-stay review work.
+[ ] Owner balance and settlement controls work.
+[ ] Settlement creation and approval are performed by different platform-owner accounts.
+[ ] Desktop presentation is accepted.
+[ ] Mobile presentation is accepted.
+[ ] No unexplained repeated errors are present.
+
+
+ISSUE RECORDING FORMAT
+======================
+
+For every failed check, record:
+
+Date and time:
+Tester:
+Role/account used:
+Page or feature:
+What was attempted:
+Expected result:
+Actual result:
+Screenshot or video:
+Booking/property reference:
+Severity: Critical / High / Medium / Low
+
+Do not include passwords, secret keys, private calendar tokens, full NIN/BVN values or payment-card information in an issue report.
+
+
+CLIENT SIGN-OFF
+===============
+
+Platform owner representative:
+Name:
+Decision: Accepted / Accepted with conditions / Not accepted
+Date:
+Comments:
+
+Business-owner representative:
+Name:
+Decision: Accepted / Accepted with conditions / Not accepted
+Date:
+Comments:
+
+Guest-experience representative:
+Name:
+Decision: Accepted / Accepted with conditions / Not accepted
+Date:
+Comments:
+
+Technical observer:
+Name:
+Date:
+Outstanding items:
+
+
+END OF CLIENT GO-LIVE TESTING GUIDE
+===================================

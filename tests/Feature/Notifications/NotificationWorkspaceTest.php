@@ -35,15 +35,13 @@ class NotificationWorkspaceTest extends TestCase
             ->assertSee('New reservation confirmed')
             ->assertDontSee('Calendar sync needs attention')
             ->assertSee('Mark as read')
-            ->assertSee('Demo view');
+            ->assertDontSee('Demo view');
 
         $this->actingAs($owner)->get(route('notifications.index', ['view' => 'demo']))
             ->assertOk()
-            ->assertSee('Sample data')
-            ->assertSee('Figma notifications preview')
             ->assertSee('Recent activity')
-            ->assertSee('Payment received')
-            ->assertDontSee('New reservation confirmed');
+            ->assertDontSee('Sample data')
+            ->assertSee('New reservation confirmed');
     }
 
     public function test_user_can_mark_only_their_own_notification_as_read(): void

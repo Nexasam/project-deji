@@ -53,6 +53,21 @@ class GuestMessagesTest extends TestCase
         ]);
     }
 
+    public function test_guest_message_can_be_sent_asynchronously(): void
+    {
+        $guest = User::factory()->create();
+        $booking = Booking::factory()->create(['guest_user_id' => $guest->id]);
+
+        $this->actingAs($guest)
+            ->postJson(route('guest.bookings.messages.store', $booking), [
+                'content' => 'Can you confirm the gate access details?',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('message.content', 'Can you confirm the gate access details?')
+            ->assertJsonPath('message.sender', 'You')
+            ->assertJsonStructure(['message' => ['id', 'content', 'time', 'sender']]);
+    }
+
     public function test_messages_empty_state_allows_guest_to_start_from_existing_booking(): void
     {
         $guest = User::factory()->create();

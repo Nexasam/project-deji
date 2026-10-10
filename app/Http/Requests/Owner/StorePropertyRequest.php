@@ -26,6 +26,8 @@ class StorePropertyRequest extends FormRequest
             'bathrooms' => ['required', 'numeric', 'min:0', 'max:500'],
             'description' => ['nullable', 'string', 'max:5000'],
             'default_nightly_price' => ['nullable', 'numeric', 'min:0', 'max:999999999999999'],
+            'tax_enabled' => ['sometimes', 'boolean'],
+            'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 
@@ -34,6 +36,7 @@ class StorePropertyRequest extends FormRequest
         $this->merge([
             'name' => trim((string) $this->name),
             'country_code' => strtoupper(trim((string) $this->country_code)),
+            'tax_enabled' => $this->boolean('tax_enabled'),
         ]);
     }
 

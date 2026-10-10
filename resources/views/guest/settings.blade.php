@@ -10,6 +10,7 @@
         <p class="mt-1 text-sm text-slate-500">Verified Shortlet &gt; Settings</p>
 
         @if(session('status') === 'profile-updated')<div class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-800">Your settings were updated successfully.</div>@endif
+        @if(session('status') === 'identity-verified')<div class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-800">Your NIN was verified successfully.</div>@endif
 
         <div class="mt-6 grid gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
             <aside class="h-fit overflow-hidden rounded-2xl border border-slate-200 bg-white py-3 shadow-sm">
@@ -34,7 +35,11 @@
                                 <label class="text-xs font-black uppercase tracking-wide text-slate-500">Email<input name="email" type="email" value="{{ old('email', $user->email) }}" required autocomplete="username" class="mt-2 block w-full" placeholder="you@example.com"><x-input-error class="mt-2" :messages="$errors->get('email')" /></label>
                                 <label class="text-xs font-black uppercase tracking-wide text-slate-500">Phone number<input name="phone_number" type="tel" value="{{ old('phone_number', $user->phone_number) }}" autocomplete="tel" class="mt-2 block w-full" placeholder="+234 801 234 5678"><x-input-error class="mt-2" :messages="$errors->get('phone_number')" /></label>
                                 <label class="text-xs font-black uppercase tracking-wide text-slate-500">NIN verification
-                                    <input name="nin" value="" inputmode="numeric" class="mt-2 block w-full" placeholder="{{ $user->identity_verification_status->value === 'verified' ? 'Verified · enter again only to update' : 'Enter NIN for verification' }}">
+                                    <span class="mt-2 flex overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100">
+                                        <input name="nin" value="" inputmode="numeric" maxlength="11" autocomplete="off" class="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-sm font-medium text-slate-900 outline-none ring-0 focus:ring-0" placeholder="{{ $user->identity_verification_status->value === 'verified' ? 'Verified · enter only to update' : 'Enter your 11-digit NIN' }}">
+                                        <button type="submit" class="m-1.5 shrink-0 rounded-lg bg-slate-950 px-4 py-2 text-xs font-black normal-case tracking-normal text-white transition hover:bg-orange-600">Verify</button>
+                                    </span>
+                                    <x-input-error class="mt-2" :messages="$errors->get('nin')" />
                                     <span class="mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-black {{ $user->identity_verification_status->value === 'verified' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">{{ str($user->identity_verification_status->value)->title() }}</span>
                                 </label>
                             </div>

@@ -67,20 +67,24 @@
 function aiConcierge() {
     return {
         inputText: '', messages: [], messageId: 0,
-        sendMessage() {
+        async sendMessage() {
             if (!this.inputText.trim()) return;
             const question = this.inputText;
             this.messages.push({ id: this.messageId++, type: 'user', text: question });
             this.inputText = '';
-            setTimeout(() => this.messages.push({ id: this.messageId++, type: 'bot', text: this.getAIResponse(question) }), 350);
+            try {
+                const response = await fetch(@js(route('ai.marketplace-concierge')), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ question })
+                });
+                const data = await response.json();
+                this.messages.push({ id: this.messageId++, type: 'bot', text: response.ok ? data.answer : data.message });
+            } catch (error) {
+                this.messages.push({ id: this.messageId++, type: 'bot', text: 'The stay concierge is temporarily unavailable. Please browse the published stays or contact support.' });
+            }
         },
         sendQuickMessage(text) { this.inputText = text; this.sendMessage(); },
-        getAIResponse(question) {
-            const value = question.toLowerCase();
-            if (value.includes('beachfront') || value.includes('100k')) return 'Try the beachfront stays in Lekki and Victoria Island, then set your maximum nightly price to ₦100k.';
-            if (value.includes('business')) return 'Choose Business stays for serviced apartments with reliable power, wifi and easy access to Lagos commercial districts.';
-            return 'Tell me your location, budget, dates or stay type and I’ll help narrow the verified stays.';
-        }
     }
 }
 </script>

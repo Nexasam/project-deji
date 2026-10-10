@@ -6,9 +6,12 @@ use App\Jobs\SendNotificationEmail;
 use App\Models\Business;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\Platform\PlatformSettings;
 
 final class ProductNotificationService
 {
+    public function __construct(private readonly PlatformSettings $settings) {}
+
     public function user(User $user, ?Business $business, string $type, string $title, string $message, array $data = []): Notification
     {
         $notification = Notification::query()->create([
@@ -16,7 +19,7 @@ final class ProductNotificationService
             'title' => $title, 'message' => $message, 'data' => $data,
             'read_at' => null, 'status' => 'active',
         ]);
-        if (filled($user->email)) {
+        if (filled($user->email) && (bool) $this->settings->get('notifications.email_delivery_enabled', true)) {
             $delivery = $notification->deliveries()->create([
                 'business_id' => $business?->id,
                 'channel' => 'email',

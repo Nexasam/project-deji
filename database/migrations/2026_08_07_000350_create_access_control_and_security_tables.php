@@ -186,7 +186,7 @@ return new class extends Migration
             $table->foreignUuid('business_id')->nullable()->constrained('businesses')->restrictOnDelete();
             $table->string('system_key', 100)->nullable()->unique();
             $table->string('name');
-            $table->unsignedSmallInteger('minimum_length')->default(12);
+            $table->unsignedSmallInteger('minimum_length')->default(8);
             $table->boolean('requires_uppercase')->default(true);
             $table->boolean('requires_lowercase')->default(true);
             $table->boolean('requires_number')->default(true);

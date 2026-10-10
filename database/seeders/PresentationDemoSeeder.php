@@ -41,15 +41,14 @@ class PresentationDemoSeeder extends Seeder
     public function run(): void
     {
         $coastline = Business::query()->where('email', 'owner@coastlineresidences.test')->first();
-        $lagoon = Business::query()->where('email', 'owner@lagoonstays.test')->first();
-        if (! $coastline || ! $lagoon) {
+        if (! $coastline) {
             throw new RuntimeException('Run ServicedApartmentMarketplaceSeeder before PresentationDemoSeeder.');
         }
 
         $chevron = $this->property($coastline, 'CSR-003');
-        $admiralty = $this->property($lagoon, 'LAG-001');
+        $admiralty = $this->property($coastline, 'LAG-001');
 
-        DB::transaction(function () use ($coastline, $lagoon, $chevron, $admiralty): void {
+        DB::transaction(function () use ($coastline, $chevron, $admiralty): void {
             app(ManageExternalCalendarConnection::class)->ensureExport($chevron);
             app(ManageExternalCalendarConnection::class)->ensureExport($admiralty);
             $this->reviewProperty($coastline);
@@ -78,14 +77,6 @@ class PresentationDemoSeeder extends Seeder
 
             $this->roleSpecificDemoRecords($coastline, $chevron);
 
-            // The property manager deliberately belongs to two businesses so the
-            // presentation can demonstrate safe active-business switching.
-            $manager = User::query()->where('email', 'manager.demo@verifiedshortlet.test')->firstOrFail();
-            $this->membership($manager, $lagoon, 'property_manager', [$admiralty]);
-            $this->activateContext(
-                $manager,
-                $coastline->memberships()->where('user_id', $manager->id)->firstOrFail()
-            );
         });
     }
 
@@ -200,7 +191,7 @@ class PresentationDemoSeeder extends Seeder
         $this->bookingMessage($business, $upcoming, $owner, $guest, 'owner-arrival-reply', 'Thanks Zainab. We will confirm after cleaning, but 2pm remains the guaranteed check-in time.', 'Owner replied with check-in guidance.', 'outbound', now()->subHours(3));
         $this->bookingMessage($business, $case, $guest, $owner, 'guest-case-followup', 'Please confirm when the review case is resolved. I added photos in the thread.', 'Guest followed up on review case.', 'inbound', now()->subDay());
 
-        $this->notification($business, $owner, 'demo_payment_received', 'Payment received', 'A simulated ₦420,000 payment is attached to VS-DEMO-UPCOMING-01.', ['url' => route('owner.finance')]);
+        $this->notification($business, $owner, 'test_payment_received', 'Payment received', 'A ₦420,000 test payment is attached to VS-DEMO-UPCOMING-01.', ['url' => route('owner.finance')]);
         $this->notification($business, User::query()->where('email', 'accountant.demo@verifiedshortlet.test')->firstOrFail(), 'demo_finance_queue', 'Finance queue ready', 'Review paid, unpaid and refunded demo bookings in the Finance workspace.', ['url' => route('owner.finance')]);
         $this->notification($business, User::query()->where('email', 'cleaner.demo@verifiedshortlet.test')->firstOrFail(), 'demo_cleaning_task', 'Cleaning task assigned', 'Turnover clean for Chevron Family Residence is ready on your staff task board.', ['url' => route('staff.tasks.index')]);
     }
@@ -232,6 +223,7 @@ class PresentationDemoSeeder extends Seeder
             'readiness_status' => 'ready',
             'operational_status' => 'available',
             'maintenance_status' => 'not_required',
+            'is_test' => true,
             'information_completed_at' => now(),
             'media_completed_at' => now(),
             'verification_submitted_at' => now(),
@@ -372,11 +364,11 @@ class PresentationDemoSeeder extends Seeder
                     'currency' => 'NGN',
                     'method' => 'card',
                     'provider' => 'paystack',
-                    'provider_reference' => $reference.'-SIMULATED',
+                    'provider_reference' => $reference.'-TEST',
                     'status' => 'completed',
                     'transaction_at' => now(),
                     'verified_at' => now(),
-                    'notes' => 'Simulated presentation payment.',
+                    'notes' => 'Test-mode presentation payment.',
                     'created_by' => $guest->id,
                 ]);
 
@@ -392,11 +384,11 @@ class PresentationDemoSeeder extends Seeder
                         'currency' => 'NGN',
                         'method' => 'card',
                         'provider' => 'paystack',
-                        'provider_reference' => $reference.'-SIMULATED-REFUND',
+                        'provider_reference' => $reference.'-TEST-REFUND',
                         'status' => 'completed',
                         'transaction_at' => now(),
                         'verified_at' => now(),
-                        'notes' => 'Simulated presentation refund.',
+                        'notes' => 'Test-mode presentation refund.',
                         'created_by' => $guest->id,
                     ]);
                 }
@@ -557,11 +549,11 @@ class PresentationDemoSeeder extends Seeder
             'currency' => 'NGN',
             'method' => 'card',
             'provider' => 'paystack',
-            'provider_reference' => 'VS-DEMO-CASE01-SIMULATED',
+            'provider_reference' => 'VS-DEMO-CASE01-TEST',
             'status' => 'completed',
             'transaction_at' => now()->subDays(13),
             'verified_at' => now()->subDays(13),
-            'notes' => 'Simulated completed-stay presentation payment.',
+            'notes' => 'Test-mode completed-stay presentation payment.',
             'created_by' => $guest->id,
         ]);
 

@@ -232,6 +232,7 @@ class OwnerPropertyController extends Controller
     ): RedirectResponse {
         $draft = $this->draftProperty($context, $property);
         $service->store($draft, $request->user(), $request->mediaFiles());
+        $service->storeYouTube($draft, $request->user(), $request->youtubeUrl());
         if (! $draft->media()->where('media_type', 'image')->exists()) {
             return back()->withErrors(['media' => 'Upload at least one image before continuing.']);
         }
