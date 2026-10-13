@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Platform\PlatformAudit;
+use App\Services\Maintenance\PurgeNonTestWorkData;
 use App\Models\Business;
 use App\Models\Property;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\Process\Process;
 
@@ -29,7 +31,10 @@ class AdminMaintenanceController extends Controller
         'bookings:notify-upcoming-arrivals' => 'Notify upcoming arrivals',
     ];
 
-    public function __construct(private readonly PlatformAudit $audit) {}
+    public function __construct(
+        private readonly PlatformAudit $audit,
+        private readonly PurgeNonTestWorkData $workDataPurge,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -48,6 +53,7 @@ class AdminMaintenanceController extends Controller
                 'properties' => Property::query()->where('is_test', true)->count(),
                 'bookings' => \App\Models\Booking::query()->whereHas('business', fn ($query) => $query->where('is_test', true))->count(),
             ],
+            'workDataCleanup' => $this->workDataPurge->preview(),
         ]);
     }
 
@@ -151,6 +157,31 @@ class AdminMaintenanceController extends Controller
     public function rebuildSandbox(Request $request): RedirectResponse
     {
         return $this->runSandboxAction($request, false);
+    }
+
+    public function clearWorkData(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'confirm' => ['accepted'],
+            'confirmation_phrase' => ['required', 'string', Rule::in(['DELETE-NON-TEST-WORK-DATA'])],
+        ]);
+
+        $exitCode = Artisan::call('work-data:clear', [
+            '--execute' => true,
+            '--confirm' => 'DELETE-NON-TEST-WORK-DATA',
+        ]);
+        $output = trim(Artisan::output());
+
+        $this->record($request, 'platform.maintenance.non_test_work_data_cleared', 'Non-test work data cleanup executed.', [
+            'confirmed' => true,
+            'exit_code' => $exitCode,
+            'output' => mb_substr($output, 0, 4000),
+        ]);
+
+        return back()->with(
+            $exitCode === 0 ? 'status' : 'maintenance_error',
+            $output ?: 'Non-test work data cleanup finished.'
+        );
     }
 
     private function runSandboxAction(Request $request, bool $clearOnly): RedirectResponse

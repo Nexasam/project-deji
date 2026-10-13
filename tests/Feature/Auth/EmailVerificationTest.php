@@ -38,16 +38,27 @@ class EmailVerificationTest extends TestCase
 
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $response->assertRedirect(route('owner.entry', absolute: false).'?verified=1');
+        $response->assertRedirect(route('guest.dashboard', absolute: false).'?verified=1');
     }
 
-    public function test_verified_user_is_redirected_from_verification_prompt_to_owner_entry(): void
+    public function test_verified_individual_is_redirected_from_verification_prompt_to_guest_workspace(): void
     {
         $user = User::factory()->create(['email_verified_at' => now()]);
 
         $response = $this->actingAs($user)->get(route('verification.notice'));
 
-        $response->assertRedirect(route('owner.entry', absolute: false));
+        $response->assertRedirect(route('guest.dashboard', absolute: false));
+    }
+
+    public function test_verified_business_account_is_redirected_to_business_onboarding(): void
+    {
+        $user = User::factory()->create([
+            'account_type' => 'business',
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($user)->get(route('verification.notice'))
+            ->assertRedirect(route('owner.onboarding.business.create', absolute: false));
     }
 
     public function test_email_is_not_verified_with_invalid_hash(): void

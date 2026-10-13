@@ -17,7 +17,7 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
+    public function test_individuals_are_sent_to_the_guest_workspace_after_login(): void
     {
         $user = User::factory()->create();
 
@@ -27,7 +27,19 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('owner.entry', absolute: false));
+        $response->assertRedirect(route('guest.dashboard', absolute: false));
+    }
+
+    public function test_business_accounts_are_sent_to_business_onboarding_after_login(): void
+    {
+        $user = User::factory()->create(['account_type' => 'business']);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('owner.onboarding.business.create', absolute: false));
+
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_guest_login_returns_to_the_selected_marketplace_stay(): void

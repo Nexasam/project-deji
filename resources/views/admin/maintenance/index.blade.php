@@ -44,6 +44,33 @@
         </div>
     </section>
 
+    <section class="overflow-hidden rounded-3xl border border-red-300 bg-white shadow-sm">
+        <div class="grid gap-5 bg-red-950 p-6 text-white lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+                <p class="text-xs font-black uppercase tracking-[.16em] text-red-300">Destructive cleanup</p>
+                <h3 class="mt-2 text-2xl font-black">Clear non-test work data</h3>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-red-100">Removes live/non-test businesses, their properties, bookings, finance, operations and connected users. Presentation data, platform administrators and global configuration remain protected.</p>
+            </div>
+            <dl class="grid grid-cols-3 gap-2 text-center">
+                <div class="min-w-24 rounded-2xl bg-white/10 px-4 py-3"><dt class="text-[10px] font-black uppercase tracking-wider text-red-200">Businesses</dt><dd class="mt-1 text-2xl font-black">{{ $workDataCleanup['counts']['businesses'] ?? 0 }}</dd></div>
+                <div class="min-w-24 rounded-2xl bg-white/10 px-4 py-3"><dt class="text-[10px] font-black uppercase tracking-wider text-red-200">Users</dt><dd class="mt-1 text-2xl font-black">{{ $workDataCleanup['counts']['users'] ?? 0 }}</dd></div>
+                <div class="min-w-24 rounded-2xl bg-white/10 px-4 py-3"><dt class="text-[10px] font-black uppercase tracking-wider text-red-200">All records</dt><dd class="mt-1 text-2xl font-black">{{ array_sum($workDataCleanup['counts']) }}</dd></div>
+            </dl>
+        </div>
+        <form method="POST" action="{{ route('admin.maintenance.work-data.clear') }}" class="grid gap-5 p-5 lg:grid-cols-[1fr_minmax(320px,.7fr)] lg:items-end sm:p-6">@csrf
+            <div>
+                <p class="text-sm leading-6 text-slate-600"><strong class="text-slate-950">Preserved:</strong> {{ $workDataCleanup['test_businesses'] }} test {{ Str::plural('business', $workDataCleanup['test_businesses']) }}, {{ $workDataCleanup['protected_users'] }} protected {{ Str::plural('user', $workDataCleanup['protected_users']) }}, platform settings, access configuration, amenities and infrastructure tables.</p>
+                <label class="mt-4 block text-sm font-bold text-slate-800">Type the exact confirmation phrase
+                    <input name="confirmation_phrase" required autocomplete="off" placeholder="DELETE-NON-TEST-WORK-DATA" class="mt-2 w-full font-mono">
+                </label>
+            </div>
+            <div>
+                <label class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-950"><input type="checkbox" name="confirm" value="1" required class="mt-1 rounded border-red-300 text-red-700 focus:ring-red-500"><span>I understand this permanently removes every previewed non-test work record.</span></label>
+                <x-ui.button type="submit" variant="danger" class="mt-3 w-full">Permanently clear non-test work data</x-ui.button>
+            </div>
+        </form>
+    </section>
+
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,.65fr)]">
         <section x-data="{ logsOpen: false }" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">

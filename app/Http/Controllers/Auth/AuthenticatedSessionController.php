@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Services\PlatformPermissionService;
 use App\Support\IntendedUrl;
+use App\Support\UserWorkspaceDestination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +26,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request, PlatformPermissionService $permissions): RedirectResponse
+    public function store(LoginRequest $request, UserWorkspaceDestination $destination): RedirectResponse
     {
         $request->authenticate();
 
@@ -34,14 +34,10 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
         $hasBusinessAccess = $user->businessMemberships()->where('status', 'active')->exists();
-        $fallback = match (true) {
-            $permissions->isPlatformAdministrator($user) => route('admin.dashboard', absolute: false),
-            $hasBusinessAccess => route('owner.entry', absolute: false),
-            $user->hasActiveGlobalRole('guest') => route('guest.dashboard', absolute: false),
-            default => route('owner.entry', absolute: false),
-        };
+        $isBusinessAccount = $user->account_type === 'business';
+        $fallback = $destination->url($user);
 
-        return $permissions->isPlatformAdministrator($user) || $hasBusinessAccess
+        return $hasBusinessAccess || $isBusinessAccount || $destination->routeName($user) === 'admin.dashboard'
             ? redirect($fallback)
             : redirect()->intended($fallback);
     }

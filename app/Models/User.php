@@ -164,6 +164,10 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function canAccessGuestWorkspace(): bool
     {
+        if ($this->account_type === 'business') {
+            return false;
+        }
+
         if (! $this->hasActiveGlobalRole('guest')) {
             return false;
         }

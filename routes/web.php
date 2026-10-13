@@ -147,6 +147,7 @@ Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->
         Route::post('/maintenance/commands/run', [AdminMaintenanceController::class, 'runCommand'])->name('maintenance.commands.run');
         Route::post('/maintenance/sandbox/clear', [AdminMaintenanceController::class, 'clearSandbox'])->name('maintenance.sandbox.clear');
         Route::post('/maintenance/sandbox/rebuild', [AdminMaintenanceController::class, 'rebuildSandbox'])->name('maintenance.sandbox.rebuild');
+        Route::post('/maintenance/work-data/clear', [AdminMaintenanceController::class, 'clearWorkData'])->name('maintenance.work-data.clear');
     });
     Route::get('/audit', AdminAuditController::class)->middleware('platform.permission:platform.audit.view')->name('audit.index');
     Route::get('/properties', [AdminPropertyController::class, 'index'])->middleware('platform.permission:platform.property.view')->name('properties.index');
