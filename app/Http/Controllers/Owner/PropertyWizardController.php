@@ -195,8 +195,8 @@ class PropertyWizardController extends Controller
 
     private function location(Request $r, Property $p): void
     {
-        $d = $r->validate(['state' => 'required|string|max:120', 'city' => 'required|string|max:120', 'address_line' => 'required|string|max:500', 'latitude' => 'nullable|numeric|between:-90,90', 'longitude' => 'nullable|numeric|between:-180,180']);
-        $p->update(['address' => ['state' => $d['state'], 'city' => $d['city'], 'line_1' => $d['address_line'], 'country_code' => $p->business->country_code], 'latitude' => $d['latitude'] ?? null, 'longitude' => $d['longitude'] ?? null, 'updated_by' => $r->user()->id]);
+        $d = $r->validate(['state' => 'required|string|max:120', 'city' => 'required|string|max:120', 'address_line' => 'required|string|max:500', 'hide_exact_location' => 'required|boolean', 'latitude' => 'nullable|numeric|between:-90,90', 'longitude' => 'nullable|numeric|between:-180,180']);
+        $p->update(['address' => ['state' => $d['state'], 'city' => $d['city'], 'line_1' => $d['address_line'], 'country_code' => $p->business->country_code, 'hide_exact_location' => (bool) $d['hide_exact_location']], 'latitude' => $d['latitude'] ?? null, 'longitude' => $d['longitude'] ?? null, 'updated_by' => $r->user()->id]);
     }
 
     private function basics(Request $r, Property $p): void

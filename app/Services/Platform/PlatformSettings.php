@@ -15,6 +15,11 @@ final class PlatformSettings
 
     /** @var array<string, array{group:string,label:string,description:string,type:string,default:mixed}> */
     public const DEFINITIONS = [
+        'appearance.brand_name' => ['group' => 'appearance', 'label' => 'Platform name', 'description' => 'The public name used across navigation and customer-facing pages.', 'type' => 'string', 'default' => 'Verified Shortlet'],
+        'appearance.logo_asset' => ['group' => 'appearance', 'label' => 'Primary logo asset', 'description' => 'A public asset path such as /logo.png. Use one complete logo consistently instead of repeating the name beside it.', 'type' => 'string', 'default' => '/logo.png'],
+        'appearance.font_family' => ['group' => 'appearance', 'label' => 'Interface typeface', 'description' => 'A single readable typeface used across guest, business and platform workspaces.', 'type' => 'string', 'default' => 'system'],
+        'appearance.base_font_size' => ['group' => 'appearance', 'label' => 'Base text size', 'description' => 'Controls the default interface text size. Comfortable is recommended for client-facing use.', 'type' => 'string', 'default' => 'comfortable'],
+        'appearance.accent_color' => ['group' => 'appearance', 'label' => 'Brand accent colour', 'description' => 'Hex colour used for primary actions, links and focus states.', 'type' => 'string', 'default' => '#ea580c'],
         'reviews.auto_publish_verified' => ['group' => 'reviews', 'label' => 'Auto-publish verified-stay reviews', 'description' => 'Reserved for future policy changes. Go-live reviews require platform moderation.', 'type' => 'boolean', 'default' => false],
         'reviews.invitation_window_days' => ['group' => 'reviews', 'label' => 'Review invitation window', 'description' => 'Number of days a guest has to submit a verified-stay review.', 'type' => 'integer', 'default' => 30],
         'reviews.questionnaire_version' => ['group' => 'reviews', 'label' => 'Scoring questionnaire version', 'description' => 'Increase this before changing scoring weights so historical scores retain their original version.', 'type' => 'integer', 'default' => 1],

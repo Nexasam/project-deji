@@ -1,5 +1,7 @@
 # Verified Shortlet — Go-Live Deployment and Client Acceptance Guide
 
+Revision date: 10 October 2026
+
 This guide starts with an empty operational database containing only two separated platform-owner accounts: the primary operator and the settlement approver. From that point onward, each participant creates and manages records within their own responsibility: the property owner registers the business, creates properties and manages staff; the guest registers and makes bookings; and the platform owners verify, approve, moderate and oversee the platform. Platform owners must not create the host's operational records on the host's behalf.
 
 ## 1. Go-live acceptance objective
@@ -184,7 +186,7 @@ In Session B, the prospective property owner—not the platform owner—must:
    - email and phone;
    - Nigerian location;
    - business type and registration information where available.
-   - the business administrator's 11-digit NIN and BVN, with explicit verification consent.
+   - the business administrator's 11-digit NIN, with explicit verification consent. BVN is deferred from onboarding.
 5. Confirm that the owner reaches the business workspace but cannot publish unapproved inventory.
 
 Expected result: one user can hold both guest and business access, with **Dashboard/Business** switching shown only when applicable.
@@ -195,13 +197,13 @@ In Session A:
 
 1. Open **Businesses** and select the newly registered business.
 2. Review the submitted business details and contact information.
-3. Check the property owner or business host's masked NIN and BVN results and provider references returned during onboarding.
+3. Check the property owner or business host's masked NIN result and provider reference returned during onboarding.
 4. Approve or reject the business and provide a clear reason for the decision.
 5. Confirm that the decision, reviewing platform owner and timestamp appear in the platform audit history.
 
-The platform owner cannot manually declare an NIN or BVN valid. The configured identity provider performs verification during onboarding; only masked digits, provider references and results are retained for the wider business-approval decision.
+The platform owner cannot manually declare an NIN valid. The configured identity provider performs verification during onboarding; only masked digits, the provider reference and result are retained for the wider business-approval decision.
 
-Expected result: the business becomes **Verified** after approval. Property approval remains a separate process. Owner settlements remain unavailable until the required business verification, property owner or business host NIN/BVN checks and settlement bank-account verification have all passed.
+Expected result: the business becomes **Verified** after approval. Property approval remains a separate process. Owner settlements remain unavailable until business verification, the host NIN check and settlement bank-account verification have passed.
 
 ## 7. Property creation by the owner
 
@@ -210,7 +212,7 @@ Return to Session B and open **Properties → Add property**. Initial property c
 Complete every wizard section:
 
 1. Property identity and complete address.
-2. Type, capacity, bedrooms, beds and bathrooms.
+2. Type, capacity, whole-number bedrooms, beds and bathrooms (including 0.5 increments).
 3. Amenities and inventory.
 4. Check-in and checkout times.
 5. House rules and arrival instructions.
@@ -320,7 +322,7 @@ Expected result: the same booking connects guest communication, payment, calenda
 
 As the business owner, open **Team**.
 
-1. Create or use a Cleaner role.
+1. Confirm staff roles were not pre-created. Adopt the Cleaner global template or create a Cleaner role from scratch.
 2. Configure module/action access as required:
    - task viewing and completion: read/write;
    - finance: no access;
@@ -334,7 +336,7 @@ As the business owner, open **Team**.
 6. Create or review Reception, Operations Manager, Maintenance, Inspector and Support roles.
 7. Demonstrate deactivation and reactivation of a member.
 
-Expected result: roles determine permitted functionality; property assignment independently limits the records inside that functionality. Direct unauthorized URLs return 403, not merely hidden navigation.
+Expected result: roles determine permitted functionality; property assignment independently limits the records inside that functionality. Direct unauthorized URLs return 403, not merely hidden navigation. Platform administrators and host staff cannot enter the guest workspace by default.
 
 ## 14. Pre-arrival work and cleaner proof
 
@@ -420,7 +422,7 @@ Expected result: approved property review appears publicly; hidden/rejected cont
 
 Using the two platform-owner sessions:
 
-1. Open the business and confirm business/NIN/BVN verification.
+1. Open the business and confirm business and NIN verification.
 2. Open Settlements.
 3. Add and verify the owner's settlement account.
 4. Select available owner-balance allocations and create a batch.
@@ -454,7 +456,7 @@ Mark each item Pass/Fail with evidence:
 - [ ] Property owner—not the platform owner—created and submitted the property.
 - [ ] Gmail test email is received.
 - [ ] Business registration and onboarding work.
-- [ ] Platform business/NIN/BVN verification is audited.
+- [ ] Platform business/NIN verification is audited.
 - [ ] Property wizard, media and documents work.
 - [ ] Optional YouTube walkthrough URL validates and embeds without uploading a video file.
 - [ ] Pending property is not public.
@@ -488,7 +490,7 @@ These are implementation-ready but must not be called live-verified until tested
 - Paystack live transaction, callback, webhook and refund;
 - Flutterwave live transaction, callback, webhook and refund;
 - Gmail/SMTP delivery and queue behavior;
-- Dojah live NIN/BVN verification;
+- Dojah live NIN verification;
 - genuine external iCal import/export;
 - S3-compatible storage migration, when scheduled later;
 - OpenAI concierge, when enabled later;

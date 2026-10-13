@@ -17,7 +17,7 @@ use Illuminate\Validation\ValidationException;
 
 final class BookingOperationsService
 {
-    public function __construct(private readonly ProductNotificationService $notifications) {}
+    public function __construct(private readonly ProductNotificationService $notifications, private readonly AutoAssignOperationalTask $autoAssign) {}
 
     public function onBookingConfirmed(Booking $booking, User $actor): void
     {
@@ -154,13 +154,15 @@ final class BookingOperationsService
 
     private function task(Booking $booking, string $suffix, array $values, User $actor): OperationalTask
     {
-        return OperationalTask::query()->firstOrCreate([
+        $task = OperationalTask::query()->firstOrCreate([
             'business_id' => $booking->business_id, 'reference' => 'TASK-'.$booking->reference.'-'.$suffix,
         ], $values + [
             'property_id' => $booking->property_id, 'booking_id' => $booking->id,
             'status' => 'pending', 'generation_source' => 'system',
             'manual_creation_reason' => null, 'created_by' => $actor->id, 'updated_by' => $actor->id,
         ]);
+
+        return $this->autoAssign->assign($task, $actor);
     }
 
     private function checklist(OperationalTask $task, array $items, User $actor): void

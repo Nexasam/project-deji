@@ -22,8 +22,8 @@ class OwnerRolePermissionsTest extends TestCase
 
     public function test_owner_can_configure_role_module_access_for_their_business(): void
     {
-        [$owner] = $this->ownerWithBusiness('Nexa Stays');
-        $role = Role::query()->where('system_key', 'accountant')->firstOrFail();
+        [$owner, $business] = $this->ownerWithBusiness('Nexa Stays');
+        $role = $this->adoptRole($owner, $business, 'accountant');
 
         $this->actingAs($owner)->patch(route('owner.team.roles.permissions.update', $role), [
             'modules' => $this->modules([
@@ -53,7 +53,7 @@ class OwnerRolePermissionsTest extends TestCase
     {
         [$owner, $business] = $this->ownerWithBusiness('Nexa Stays');
         $property = Property::factory()->for($business)->create();
-        $role = Role::query()->where('system_key', 'accountant')->firstOrFail();
+        $role = $this->adoptRole($owner, $business, 'accountant');
         $staff = $this->staffWithRole($business, $role);
 
         $this->actingAs($owner)->patch(route('owner.team.roles.permissions.update', $role), [
@@ -78,8 +78,8 @@ class OwnerRolePermissionsTest extends TestCase
 
     public function test_non_owner_cannot_change_role_capability_matrix(): void
     {
-        [, $business] = $this->ownerWithBusiness('Nexa Stays');
-        $role = Role::query()->where('system_key', 'accountant')->firstOrFail();
+        [$owner, $business] = $this->ownerWithBusiness('Nexa Stays');
+        $role = $this->adoptRole($owner, $business, 'accountant');
         $staff = $this->staffWithRole($business, $role);
 
         $this->actingAs($staff)->patch(route('owner.team.roles.permissions.update', $role), [
@@ -100,7 +100,7 @@ class OwnerRolePermissionsTest extends TestCase
             ->assertSee('<details class="mt-5 overflow-hidden', false)
             ->assertDontSee('<details open', false)
             ->assertSee(route('owner.team.show', $membership), false)
-            ->assertSee('View access')
+            ->assertSee('Manage access')
             ->assertSee('Dashboard analytics')
             ->assertSee('Read &amp; write', false)
             ->assertSee('Property scope');
@@ -257,6 +257,14 @@ class OwnerRolePermissionsTest extends TestCase
         ]);
 
         return $user;
+    }
+
+    private function adoptRole(User $owner, Business $business, string $systemKey): Role
+    {
+        $template = Role::query()->where('system_key', $systemKey)->firstOrFail();
+        $this->actingAs($owner)->post(route('owner.team.roles.templates.adopt', $template))->assertRedirect(route('owner.team.index'));
+
+        return Role::query()->where('business_id', $business->id)->where('parent_role_id', $template->id)->firstOrFail();
     }
 
     /** @param array<string, string> $overrides */

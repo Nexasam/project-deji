@@ -1,6 +1,8 @@
 VERIFIED SHORTLET — CLIENT GO-LIVE TESTING GUIDE
 =================================================
 
+Revision date: 10 October 2026
+
 Purpose
 -------
 
@@ -43,6 +45,7 @@ Do not use one browser session for every account. Separate sessions make permiss
 Before starting, the testing coordinator should confirm:
 
 [ ] The staging or production URL opens securely.
+[ ] The technical team has confirmed that the go-live deployment preflight passed.
 [ ] Both platform-owner accounts can sign in using separate credentials.
 [ ] Email delivery is working.
 [ ] Payment Test mode or Live mode has been selected by the platform owner.
@@ -65,6 +68,8 @@ Who performs this: Primary platform owner
 7. Review platform fees and installment-payment settings.
 8. Review notification and calendar synchronization settings.
 9. Confirm the platform audit page is available.
+10. If cloud storage is enabled, run the storage connection check.
+11. If the AI concierge is enabled, submit one ordinary marketplace question and one unsafe or unrelated request.
 
 Expected result:
 
@@ -72,6 +77,8 @@ Expected result:
 [ ] The test email is received.
 [ ] Only the platform owner can access sensitive platform configuration.
 [ ] Guests and business owners cannot see provider credentials or environment controls.
+[ ] The storage check passes when cloud storage is enabled; otherwise it is recorded as Not Tested or Deferred.
+[ ] Core marketplace and booking functions remain available when AI is disabled.
 
 
 PART 2 — BUSINESS-OWNER REGISTRATION
@@ -89,7 +96,7 @@ Who performs this: Prospective business/property owner
 8. Enter the primary contact information.
 9. Enter the business address and business type.
 10. Provide the available registration details.
-11. Enter the business administrator's 11-digit NIN and BVN.
+11. Enter the business administrator's 11-digit NIN. BVN is deferred from this onboarding flow.
 12. Read and accept the identity-verification consent statement.
 13. Submit the business for review. The identity provider runs the checks during submission.
 
@@ -100,7 +107,25 @@ Expected result:
 [ ] The new business appears in the owner's workspace.
 [ ] The business shows a pending-review status.
 [ ] The owner cannot approve their own business.
-[ ] Only masked NIN/BVN digits, provider references and results are retained; full numbers are not displayed to platform administrators.
+[ ] Only masked NIN digits, provider references and results are retained; the full number is not displayed to platform administrators.
+
+
+PART 2A — ACCOUNT EMAIL AND PASSWORD RECOVERY
+==============================================
+
+Who performs this: Business owner and guest
+
+1. Sign out after registration.
+2. Use Forgot password with the business owner's email address.
+3. Confirm the password-reset email is received and opens the correct Verified Shortlet domain.
+4. Set a new compliant password and sign in with it.
+5. Repeat the reset request with the guest account where practical.
+
+Expected result:
+
+[ ] Registration verification emails reach both business-owner and guest accounts.
+[ ] Password-reset emails are received and contain valid links.
+[ ] The old password no longer works after a successful reset.
 
 
 PART 3 — PLATFORM BUSINESS VERIFICATION
@@ -112,13 +137,13 @@ Who performs this: Platform owner
 2. Open Businesses.
 3. Select the newly registered business.
 4. Review the submitted business details and contact information.
-5. Review the property owner or business host's NIN and BVN verification results returned by the configured identity provider.
+5. Review the property owner or business host's NIN verification result returned by the configured identity provider.
 6. Approve or reject the business and provide a clear reason.
 7. Open the audit history and confirm the decision was recorded.
 
 Important:
 
-The identity provider verifies NIN and BVN during onboarding. The platform owner reviews the masked results and provider references as part of the wider business-approval decision. The platform owner cannot manually mark NIN or BVN as verified.
+The identity provider verifies NIN during onboarding. The platform owner reviews the masked result and provider reference as part of the wider business-approval decision. The platform owner cannot manually mark NIN as verified. BVN may be introduced later as a separate finance or settlement step.
 
 Expected result:
 
@@ -140,7 +165,7 @@ Initial property creation and submission must be performed strictly by the busin
 2. Open Properties and select Add property.
 3. Enter the complete property name and address.
 4. Select the property type.
-5. Enter capacity, bedrooms, beds and bathrooms.
+5. Enter capacity, whole-number bedrooms and bathrooms in 0.5 increments where a half bathroom applies.
 6. Add amenities and inventory information.
 7. Set check-in and checkout times.
 8. Add house rules.
@@ -292,6 +317,34 @@ Expected result:
 [ ] The platform owner sees the payment and platform fee allocation.
 [ ] Guest, property owner and platform owner receive the relevant notifications.
 [ ] Fully paid arrival instructions become visible to the guest.
+[ ] A failed, cancelled or repeated payment return does not create duplicate successful payments.
+[ ] Provider callbacks and webhooks accept valid provider evidence and reject invalid signatures when live-provider testing is in scope.
+
+
+PART 9A — CANCELLATION AND REFUND
+=================================
+
+Who performs this: Guest, business owner and platform owner
+
+Use a separate controlled booking so the main end-to-end stay can continue.
+
+1. Review the configured free-cancellation window and partial-payment refund penalty.
+2. Cancel an eligible future booking as the guest and provide a reason.
+3. Confirm the dates are released and the guest and business owner are notified.
+4. Confirm the refund amount and any penalty match the configured policy.
+5. Confirm the refund remains Pending or Processing until the payment provider confirms it.
+6. Where provider credentials are available, confirm the provider refund and webhook update the final refund status once only.
+7. Test an owner-initiated cancellation on another controlled booking where practical.
+8. Confirm Finance records the refund and reverses the related platform-fee and owner-balance allocations correctly.
+
+Expected result:
+
+[ ] Cancellation does not create duplicate refund records when retried.
+[ ] Cancelled dates become available again.
+[ ] Guest and business owner receive cancellation notifications.
+[ ] Refund status is not shown as completed before provider confirmation.
+[ ] A verified provider webhook completes the refund once and adjusts financial allocations correctly.
+[ ] Failed provider refunds remain visible for manual finance follow-up.
 
 
 PART 10 — DOUBLE-BOOKING AND CALENDAR PROTECTION
@@ -340,8 +393,8 @@ PART 12 — STAFF, ROLES AND PROPERTY ACCESS
 Who performs this: Business owner
 
 1. Open Team.
-2. Create or select a Cleaner role.
-3. Give the role task-viewing and task-completion access.
+2. Confirm no staff roles were added automatically for the business.
+3. Choose the global Cleaner template or create a Cleaner role from scratch, then give it task-viewing and task-completion access.
 4. Do not give the cleaner Finance access.
 5. Invite a cleaner.
 6. Assign the cleaner to only the property used for this test.
@@ -349,7 +402,12 @@ Who performs this: Business owner
 8. Give the accountant appropriate Finance access without cleaning or property-operation controls.
 9. Review Reception, Operations Manager, Maintenance, Inspector and Support roles.
 10. Demonstrate read-only and read/write access where relevant.
-11. Deactivate and reactivate a team member.
+11. Open the team member's access details, mark the cleaner unavailable for task routing, then make them available again.
+12. Confirm a new cleaning task automatically selects an available cleaner with access to that property.
+13. Deactivate and reactivate a team member from their detailed access page.
+12. Invite a brand-new staff email address and confirm that the staff member receives the password-setup/reset email.
+13. Open the link, set a compliant password and sign in through the normal login page.
+14. Add an existing Verified Shortlet user to the team and confirm they retain their existing password.
 
 Expected result:
 
@@ -357,6 +415,12 @@ Expected result:
 [ ] Property assignments separately control which properties they may access.
 [ ] Business dashboard analytics remain owner-only where configured.
 [ ] Unauthorized direct URLs return a forbidden response.
+[ ] Platform administrators and host staff cannot open the guest workspace unless explicitly eligible.
+[ ] Businesses opt into global role templates or create roles from scratch; staff roles are not pre-created.
+[ ] Available cleaners are automatically routed suitable work and unavailable cleaners are skipped.
+[ ] A maintenance task accepts issue photos from a phone or desktop.
+[ ] A newly created staff account receives a working password-setup/reset email.
+[ ] An existing user retains their account credentials when added to a business team.
 
 
 PART 13 — CLEANING AND PRE-ARRIVAL OPERATIONS
@@ -501,6 +565,7 @@ Demonstrate:
 [ ] Platform audit history.
 [ ] Notification delivery.
 [ ] Maintenance status visibility.
+[ ] Repeated provider callbacks or webhooks do not duplicate payments, refunds or financial allocations.
 
 Do not run deployment, migration or code-update actions during a client presentation unless the technical team has approved the exact action and confirmed a backup exists.
 
@@ -533,11 +598,13 @@ FINAL CLIENT ACCEPTANCE CHECKLIST
 Record Pass, Fail or Not Tested beside every item.
 
 [ ] Platform-owner configuration is restricted and saves correctly.
+[ ] Technical go-live preflight passed before client testing began.
 [ ] The primary platform owner and settlement approver can sign in separately.
 [ ] Test email is received.
+[ ] Business-owner and guest email verification and password reset work.
 [ ] Business owner registers independently.
 [ ] Business onboarding works.
-[ ] Business NIN/BVN verification requires consent and returns provider evidence without exposing full numbers.
+[ ] Business NIN verification requires consent and returns provider evidence without exposing the full number.
 [ ] Platform owner reviews and verifies the business.
 [ ] Business owner creates and submits the property.
 [ ] Platform owner approves and publishes the property.
@@ -547,6 +614,8 @@ Record Pass, Fail or Not Tested beside every item.
 [ ] Date selection and price calculation work smoothly.
 [ ] Full payment confirms one booking and produces a receipt.
 [ ] Installment payment and outstanding balance work when enabled.
+[ ] Cancellation releases dates and applies the configured refund policy.
+[ ] Live payment/refund callbacks and webhooks are verified when provider credentials are available.
 [ ] Guest, owner and platform notifications are received.
 [ ] Booked and external-calendar dates cannot be double-booked.
 [ ] Messages send without reloading the page.
@@ -554,6 +623,7 @@ Record Pass, Fail or Not Tested beside every item.
 [ ] Arrival instructions unlock at the correct payment stage.
 [ ] Cleaner sees only assigned work and property.
 [ ] Accountant sees permitted Finance information only.
+[ ] New staff receive a password-setup email and can sign in.
 [ ] Unauthorized pages return a forbidden response.
 [ ] Check-in works.
 [ ] Guest support request works.
@@ -565,6 +635,21 @@ Record Pass, Fail or Not Tested beside every item.
 [ ] Desktop presentation is accepted.
 [ ] Mobile presentation is accepted.
 [ ] No unexplained repeated errors are present.
+
+
+THIRD-PARTY LIVE EVIDENCE
+=========================
+
+The application workflow may be implemented even when an external provider has not yet been live-verified. Record Pass only after real evidence is available. Otherwise record Not Tested, Blocked or Deferred as agreed by the testing coordinator.
+
+[ ] Gmail/SMTP registration, password-reset, staff-setup and notification emails are received.
+[ ] Paystack live payment, callback, webhook and refund are verified.
+[ ] Flutterwave live payment, callback, webhook and refund are verified.
+[ ] Dojah live NIN verification is verified with approved test identities.
+[ ] A genuine external iCal import blocks dates and the outbound feed is readable externally.
+[ ] S3-compatible storage write/read/delete and public property-media delivery are verified if cloud storage is enabled.
+[ ] The AI concierge is verified only if it is enabled for launch.
+[ ] Actual owner transfer/payout handling is verified after the payout process or provider is approved.
 
 
 ISSUE RECORDING FORMAT
@@ -583,7 +668,7 @@ Screenshot or video:
 Booking/property reference:
 Severity: Critical / High / Medium / Low
 
-Do not include passwords, secret keys, private calendar tokens, full NIN/BVN values or payment-card information in an issue report.
+Do not include passwords, secret keys, private calendar tokens, full NIN values or payment-card information in an issue report.
 
 
 CLIENT SIGN-OFF

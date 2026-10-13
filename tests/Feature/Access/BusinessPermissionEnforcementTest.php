@@ -94,7 +94,9 @@ class BusinessPermissionEnforcementTest extends TestCase
         Notification::fake();
         [$owner, $business] = $this->ownerWithBusiness('Team Stays');
         $property = Property::factory()->for($business)->create(['name' => 'Team Property']);
-        $role = Role::query()->where('system_key', 'operations_manager')->firstOrFail();
+        $template = Role::query()->where('system_key', 'operations_manager')->firstOrFail();
+        $this->actingAs($owner)->post(route('owner.team.roles.templates.adopt', $template))->assertRedirect(route('owner.team.index'));
+        $role = Role::query()->where('business_id', $business->id)->where('parent_role_id', $template->id)->firstOrFail();
 
         $this->actingAs($owner)->post(route('owner.team.store'), [
             'name' => 'Ola Operations',

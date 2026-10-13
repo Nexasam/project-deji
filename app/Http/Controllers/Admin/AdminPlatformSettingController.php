@@ -76,6 +76,11 @@ class AdminPlatformSettingController extends Controller
     private function rules(string $key, string $type): array
     {
         return match ($key) {
+            'appearance.brand_name' => ['required', 'string', 'max:80'],
+            'appearance.logo_asset' => ['required', 'string', 'regex:/^\/[A-Za-z0-9._\/-]+$/', 'max:255'],
+            'appearance.font_family' => ['required', 'string', 'in:system,manrope,inter'],
+            'appearance.base_font_size' => ['required', 'string', 'in:compact,comfortable,large'],
+            'appearance.accent_color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'reviews.invitation_window_days' => ['required', 'integer', 'between:1,90'],
             'reviews.questionnaire_version' => ['required', 'integer', 'between:1,1000'],
             'reviews.cleanliness_weight', 'reviews.communication_weight', 'reviews.location_weight', 'reviews.value_weight', 'reviews.accuracy_weight' => ['required', 'integer', 'between:0,100'],

@@ -63,7 +63,7 @@ class StaffTaskController extends Controller
 
     private function authorizeRoleForTask(ActiveBusinessContext $context, OperationalTask $task): void
     {
-        $role = $context->roleAssignment->role->system_key;
+        $role = $context->roleAssignment->role->system_key ?? $context->roleAssignment->role->parent?->system_key;
         $allowed = [
             'cleaner' => ['cleaning', 'deep_cleaning'],
             'maintenance_technician' => ['maintenance', 'repair'],

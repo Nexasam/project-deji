@@ -33,13 +33,17 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
+        $hasBusinessAccess = $user->businessMemberships()->where('status', 'active')->exists();
         $fallback = match (true) {
             $permissions->isPlatformAdministrator($user) => route('admin.dashboard', absolute: false),
+            $hasBusinessAccess => route('owner.entry', absolute: false),
             $user->hasActiveGlobalRole('guest') => route('guest.dashboard', absolute: false),
             default => route('owner.entry', absolute: false),
         };
 
-        return redirect()->intended($fallback);
+        return $permissions->isPlatformAdministrator($user) || $hasBusinessAccess
+            ? redirect($fallback)
+            : redirect()->intended($fallback);
     }
 
     /**

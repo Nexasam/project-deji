@@ -1,4 +1,14 @@
 import './bootstrap';
+
+// Every rendered surface loads this bundle, so the platform-owned visual theme
+// stays consistent without duplicating per-page asset and typography rules.
+if (! document.querySelector('link[data-platform-theme]')) {
+    const platformTheme = document.createElement('link');
+    platformTheme.rel = 'stylesheet';
+    platformTheme.href = '/platform-theme.css';
+    platformTheme.dataset.platformTheme = 'true';
+    document.head.appendChild(platformTheme);
+}
 import Alpine from 'alpinejs';
 
 // Expose Alpine globally BEFORE start so inline x-data and $store work

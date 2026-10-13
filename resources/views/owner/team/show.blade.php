@@ -49,7 +49,11 @@
                     <div><dt class="text-xs font-bold uppercase tracking-wide text-slate-400">Role</dt><dd class="mt-1 font-extrabold text-slate-900">{{ $role?->name ?? 'No active role' }}</dd></div>
                     <div><dt class="text-xs font-bold uppercase tracking-wide text-slate-400">Job title</dt><dd class="mt-1 font-semibold text-slate-700">{{ $membership->job_title ?: 'Not set' }}</dd></div>
                     <div><dt class="text-xs font-bold uppercase tracking-wide text-slate-400">Joined</dt><dd class="mt-1 font-semibold text-slate-700">{{ $membership->joined_at?->format('d M Y') ?: 'Pending' }}</dd></div>
+                    @if($membership->employee)<div><dt class="text-xs font-bold uppercase tracking-wide text-slate-400">Task routing</dt><dd class="mt-1 font-semibold text-slate-700">{{ data_get($membership->employee->availability, 'enabled', true) ? 'Available for automatic assignment' : 'Unavailable' }}</dd></div>@endif
                 </dl>
+                @if($canChangeRoles && $active && $membership->employee)
+                    <form method="POST" action="{{ route('owner.team.availability.update', $membership) }}" class="mt-5 border-t border-slate-100 pt-4">@csrf @method('PATCH')<input type="hidden" name="enabled" value="{{ data_get($membership->employee->availability, 'enabled', true) ? 0 : 1 }}"><button class="text-xs font-bold text-slate-600 underline decoration-slate-300 underline-offset-4 hover:text-slate-950">{{ data_get($membership->employee->availability, 'enabled', true) ? 'Mark unavailable' : 'Make available for tasks' }}</button></form>
+                @endif
             </div>
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

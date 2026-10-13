@@ -15,7 +15,7 @@ class OwnerEntryController extends Controller
         if ($context) {
             $activeContext = new ActiveBusinessContext($context->business, $context->membership, $context->activeRoleAssignment);
             $user = auth()->user();
-            $taskOnly = in_array($context->activeRoleAssignment->role->system_key, [
+            $taskOnly = in_array($context->activeRoleAssignment->role->system_key ?? $context->activeRoleAssignment->role->parent?->system_key, [
                 'cleaner',
                 'maintenance_technician',
                 'inspector',

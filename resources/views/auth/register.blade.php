@@ -36,13 +36,13 @@
         </section>
 
         <section class="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8 lg:px-12 xl:px-20">
-            <div class="w-full max-w-lg" x-data="{ showPassword: false, showConfirmation: false, accountType: @js(old('account_type', 'individual')) }">
+            <div class="w-full max-w-lg" x-data="{ showPassword: false, showConfirmation: false, accountType: @js(old('account_type', request('account_type', 'individual'))) }">
                 <div class="mb-8 flex items-center justify-between lg:hidden">
                     <a href="{{ route('home') }}" class="flex items-center gap-2.5"><img src="{{ asset('logo1.png') }}" alt="" class="size-10 object-contain"><span class="font-extrabold">Verified Shortlet</span></a>
                     <a href="{{ route('home') }}" class="text-sm font-bold text-slate-500 hover:text-orange-600">Back home</a>
                 </div>
 
-                <div><h2 class="text-3xl font-extrabold tracking-[-0.025em] sm:text-4xl">Create your account</h2><p class="mt-3 text-sm leading-6 text-slate-600">Choose whether you are joining as an individual guest or business operator. Identity checks can be completed now or before payment and payouts.</p></div>
+                <div><h2 class="text-3xl font-bold tracking-[-0.02em] sm:text-4xl" x-text="accountType === 'business' ? 'Create your host account' : 'Create your guest account'"></h2><p class="mt-3 text-sm leading-6 text-slate-600">Start with your account details. Identity verification happens once, in the appropriate guest or business workspace.</p></div>
 
                 <form method="POST" action="{{ route('register') }}" class="mt-7 space-y-4">
                     @csrf
@@ -59,7 +59,7 @@
                                 <label class="cursor-pointer rounded-2xl border p-4 transition" :class="accountType === 'business' ? 'border-orange-500 bg-orange-50' : 'border-slate-200 bg-white'">
                                     <input type="radio" name="account_type" value="business" x-model="accountType" class="sr-only">
                                     <span class="block font-extrabold text-slate-950">Business</span>
-                                    <small class="mt-1 block text-xs leading-5 text-slate-500">Register a property/business profile. BVN/NIN can be completed before payout.</small>
+                                    <small class="mt-1 block text-xs leading-5 text-slate-500">Create a host account, verify your NIN and set up your property business.</small>
                                 </label>
                             </div>
                             @error('account_type')<span class="property-form-error">{{ $message }}</span>@enderror
@@ -83,16 +83,6 @@
                         <label for="phone_number" class="property-form-label">Phone number <span class="property-form-optional">(optional)</span>
                             <input id="phone_number" type="tel" name="phone_number" value="{{ old('phone_number') }}" autocomplete="tel" placeholder="+234 800 000 0000" class="property-form-control mt-2 @error('phone_number') is-invalid @enderror">
                             @error('phone_number')<span class="property-form-error">{{ $message }}</span>@enderror
-                        </label>
-
-                        <label for="nin" class="property-form-label">NIN <span class="property-form-optional">(optional now)</span>
-                            <input id="nin" type="text" name="nin" value="{{ old('nin') }}" inputmode="numeric" placeholder="Enter NIN to unlock payments" class="property-form-control mt-2 @error('nin') is-invalid @enderror">
-                            @error('nin')<span class="property-form-error">{{ $message }}</span>@enderror
-                        </label>
-
-                        <label x-show="accountType === 'business'" x-cloak for="bvn" class="property-form-label">Admin BVN <span class="property-form-optional">(required before payout)</span>
-                            <input id="bvn" type="text" name="bvn" value="{{ old('bvn') }}" inputmode="numeric" placeholder="Required before payout" class="property-form-control mt-2 @error('bvn') is-invalid @enderror">
-                            @error('bvn')<span class="property-form-error">{{ $message }}</span>@enderror
                         </label>
 
                         <label for="password" class="property-form-label">Password

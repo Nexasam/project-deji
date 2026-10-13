@@ -26,8 +26,8 @@ final class SettlementService
         return DB::transaction(function () use ($business, $account, $ids, $creator): SettlementBatch {
             $business = Business::query()->lockForUpdate()->findOrFail($business->id);
             $identity = $business->verification_payload ?? [];
-            if ($business->verification_status->value !== 'verified' || data_get($identity, 'nin_status') !== 'verified' || data_get($identity, 'bvn_status') !== 'verified') {
-                throw ValidationException::withMessages(['business' => 'Business verification, administrator NIN and BVN must be approved before settlement.']);
+            if ($business->verification_status->value !== 'verified' || data_get($identity, 'nin_status') !== 'verified') {
+                throw ValidationException::withMessages(['business' => 'Business verification and the administrator NIN check must be approved before settlement.']);
             }
             if ($account->business_id !== $business->id || $account->status !== 'verified') throw ValidationException::withMessages(['account' => 'A verified settlement account is required.']);
             $ids = array_values(array_unique($ids));

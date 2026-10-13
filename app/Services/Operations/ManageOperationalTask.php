@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 final class ManageOperationalTask
 {
-    public function __construct(private readonly BookingOperationsService $bookingOperations, private readonly ProductNotificationService $notifications) {}
+    public function __construct(private readonly BookingOperationsService $bookingOperations, private readonly ProductNotificationService $notifications, private readonly AutoAssignOperationalTask $autoAssign) {}
 
     public function create(Property $property, ?Employee $employee, User $owner, array $data): OperationalTask
     {
@@ -25,6 +25,19 @@ final class ManageOperationalTask
             $task = OperationalTask::create(['business_id' => $property->business_id, 'property_id' => $property->id, 'assigned_employee_id' => $employee?->id, 'reference' => $reference, 'title' => $data['title'], 'task_type' => $data['task_type'], 'priority' => $data['priority'], 'status' => $employee ? 'assigned' : 'pending', 'due_at' => $data['due_at'], 'notes' => $data['notes'] ?? null, 'generation_source' => 'manual', 'manual_creation_reason' => 'Owner-created operational task', 'created_by' => $owner->id, 'updated_by' => $owner->id]);
             if ($employee) {
                 OperationalTaskAssignment::create(['business_id' => $property->business_id, 'operational_task_id' => $task->id, 'employee_id' => $employee->id, 'assignment_role' => 'primary', 'assignment_status' => 'assigned', 'assigned_by' => $owner->id, 'assigned_at' => now(), 'status' => 'active']);
+            }
+            if (! $employee) {
+                $task = $this->autoAssign->assign($task, $owner);
+            }
+            foreach ($data['evidence'] ?? [] as $file) {
+                $path = $file->store("operations/{$task->business_id}/tasks/{$task->id}", 'local');
+                OperationalTaskAttachment::query()->create([
+                    'business_id' => $task->business_id, 'operational_task_id' => $task->id,
+                    'attachment_type' => 'issue_evidence', 'disk' => 'local', 'path' => $path,
+                    'original_name' => $file->getClientOriginalName(), 'mime_type' => $file->getMimeType(),
+                    'size_bytes' => $file->getSize(), 'checksum' => hash_file('sha256', $file->getRealPath()),
+                    'status' => 'active', 'created_by' => $owner->id, 'updated_by' => $owner->id,
+                ]);
             }
             $this->event($task, 'operations.task.created', null, $task->status->value, $owner, ['assigned_employee_id' => $employee?->id]);
 

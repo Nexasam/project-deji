@@ -32,7 +32,10 @@ class OwnerTeamController extends Controller
                 ->with(['user', 'roles.role', 'employee.propertyAssignments.property'])
                 ->orderByDesc('joined_at')->get(),
             'roles' => $this->rolesForBusiness($context)
-                ->where('status', 'active')->with(['permissions', 'businessPermissionSettings' => fn ($query) => $query->where('business_id', $context->business->id)->where('status', 'active')])->orderBy('hierarchy_level')->get(),
+                ->where('status', 'active')->with(['parent', 'permissions', 'businessPermissionSettings' => fn ($query) => $query->where('business_id', $context->business->id)->where('status', 'active')])->orderBy('hierarchy_level')->get(),
+            'roleTemplates' => Role::query()->whereNull('business_id')->where('scope', 'business')
+                ->where('is_template', true)->whereNot('system_key', 'business_owner')->where('status', 'active')
+                ->with('permissions')->orderBy('hierarchy_level')->get(),
             'properties' => $context->business->properties()->orderBy('name')->get(['id', 'name']),
             'permissionModules' => $this->permissionModules(),
             'roleAccessLevels' => $this->roleAccessLevels($context),
@@ -104,6 +107,51 @@ class OwnerTeamController extends Controller
         ]);
 
         return redirect()->route('owner.team.index')->with('status', "{$role->name} role was created. Set its permissions below before assigning it widely.");
+    }
+
+    public function adoptRoleTemplate(Request $request, ActiveBusinessContext $context, string $template, PlatformAudit $audit): RedirectResponse
+    {
+        if (! $request->user()->hasActiveBusinessRole('business_owner', $context->membership->id)) {
+            abort(403);
+        }
+
+        $source = Role::query()->whereKey($template)->whereNull('business_id')->where('scope', 'business')
+            ->where('is_template', true)->whereNot('system_key', 'business_owner')->where('status', 'active')
+            ->with('permissions')->firstOrFail();
+        $slug = $source->slug;
+        if (Role::query()->where('business_id', $context->business->id)->where('slug', $slug)->where('status', 'active')->exists()) {
+            throw ValidationException::withMessages(['template' => 'This role template is already in your business.']);
+        }
+
+        $role = DB::transaction(function () use ($source, $context, $request): Role {
+            $role = Role::query()->create([
+                'business_id' => $context->business->id,
+                'parent_role_id' => $source->id,
+                'name' => $source->name,
+                'slug' => $source->slug,
+                'system_key' => null,
+                'scope' => 'business',
+                'description' => $source->description ?: "Adapted from the {$source->name} platform template.",
+                'hierarchy_level' => $source->hierarchy_level,
+                'is_system' => false,
+                'is_template' => false,
+                'status' => 'active',
+                'created_by' => $request->user()->id,
+                'updated_by' => $request->user()->id,
+            ]);
+            $role->permissions()->attach($source->permissions->mapWithKeys(fn ($permission) => [$permission->id => [
+                'id' => (string) Str::uuid(), 'status' => 'active', 'created_by' => $request->user()->id,
+                'updated_by' => $request->user()->id, 'created_at' => now(), 'updated_at' => now(),
+            ]])->all());
+
+            return $role;
+        });
+
+        $audit->record($request->user(), 'team.role_template_adopted', $role, "{$source->name} was added to {$context->business->name}.", [], [
+            'template_role_id' => $source->id, 'business_id' => $context->business->id,
+        ]);
+
+        return redirect()->route('owner.team.index')->with('status', "{$role->name} is now available. Review its access before assigning staff.");
     }
 
     public function updateRolePermissions(Request $request, ActiveBusinessContext $context, string $role, PlatformAudit $audit): RedirectResponse
@@ -302,6 +350,18 @@ class OwnerTeamController extends Controller
         return redirect()->route('owner.team.index')->with('status', "{$record->user->name}'s business access was deactivated.");
     }
 
+    public function updateAvailability(Request $request, ActiveBusinessContext $context, string $membership, PlatformAudit $audit): RedirectResponse
+    {
+        $record = $context->business->memberships()->with('employee')->findOrFail($membership);
+        abort_if($record->user_id === $request->user()->id || ! $record->employee, 422);
+        $data = $request->validate(['enabled' => ['required', 'boolean']]);
+        $before = $record->employee->availability;
+        $record->employee->update(['availability' => array_merge($before ?? [], ['enabled' => $data['enabled']]), 'updated_by' => $request->user()->id]);
+        $audit->record($request->user(), 'team.member_availability_changed', $record->employee, "{$record->user->name} availability was changed.", $before ?? [], $record->employee->availability ?? []);
+
+        return back()->with('status', $data['enabled'] ? 'Team member is available for automatic task routing.' : 'Team member is unavailable and will not receive automatic tasks.');
+    }
+
     public function reactivate(Request $request, ActiveBusinessContext $context, string $membership, PlatformAudit $audit): RedirectResponse
     {
         $record = $context->business->memberships()->with(['user', 'roles', 'employee'])->findOrFail($membership);
@@ -381,9 +441,9 @@ class OwnerTeamController extends Controller
     private function rolesForBusiness(ActiveBusinessContext $context)
     {
         return Role::query()->where('scope', 'business')
-            ->where(fn ($query) => $query
-                ->where('is_template', true)
-                ->orWhere('business_id', $context->business->id));
+            ->where(fn ($query) => $query->where('business_id', $context->business->id)
+                ->orWhere('system_key', 'business_owner')
+                ->orWhereHas('assignments.businessMembership', fn ($membership) => $membership->where('business_id', $context->business->id)));
     }
 
     private function properties(array $ids, ActiveBusinessContext $context)
@@ -419,7 +479,8 @@ class OwnerTeamController extends Controller
             'status' => 'active',
         ]);
         $employee->propertyAssignments()->where('assignment_status', 'active')->update(['assignment_status' => 'inactive', 'status' => 'inactive', 'updated_by' => $actor->id]);
-        $assignmentRole = match ($role->system_key) {
+        $roleKey = $role->system_key ?? $role->parent()->value('system_key');
+        $assignmentRole = match ($roleKey) {
             'property_manager', 'operations_manager' => 'property_manager',
             'cleaner' => 'cleaner',
             'inspector' => 'inspector',

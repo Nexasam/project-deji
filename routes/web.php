@@ -50,6 +50,7 @@ use App\Http\Controllers\Owner\OwnerOperationsController;
 use App\Http\Controllers\Owner\OwnerPropertyController;
 use App\Http\Controllers\Owner\OwnerReviewResponseController;
 use App\Http\Controllers\Owner\OwnerTeamController;
+use App\Http\Controllers\PlatformThemeController;
 use App\Http\Controllers\Owner\PropertySetupController;
 use App\Http\Controllers\Owner\PropertyWizardController;
 use App\Http\Controllers\PropertyCalendarFeedController;
@@ -61,16 +62,16 @@ Route::get('/', MarketplaceController::class)->name('home');
 Route::get('/index2', [MarketplaceController::class, 'index2'])->name('home.index2');
 Route::get('/stays/{slug}', MarketplacePropertyController::class)->name('marketplace.show');
 Route::get('/stays/{slug}/reviews', [MarketplacePropertyController::class, 'reviews'])->name('marketplace.reviews');
-Route::get('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'checkout'])->middleware('auth')->name('marketplace.checkout.show');
+Route::get('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'checkout'])->middleware(['auth', 'guest.workspace'])->name('marketplace.checkout.show');
 Route::get('/ical/{export}/{token}.ics', PropertyCalendarFeedController::class)->middleware('throttle:60,1')->name('property-calendar-feed');
 Route::get('/payments/paystack/callback', [PaymentCallbackController::class, 'paystack'])->name('payments.paystack.callback');
 Route::get('/payments/flutterwave/callback', [PaymentCallbackController::class, 'flutterwave'])->name('payments.flutterwave.callback');
 Route::post('/webhooks/paystack', [PaymentWebhookController::class, 'paystack'])->middleware('throttle:120,1')->name('webhooks.paystack');
 Route::post('/webhooks/flutterwave', [PaymentWebhookController::class, 'flutterwave'])->middleware('throttle:120,1')->name('webhooks.flutterwave');
 Route::post('/ai/marketplace-concierge', MarketplaceConciergeController::class)->middleware('throttle:10,1')->name('ai.marketplace-concierge');
-Route::post('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'store'])->middleware('auth')->name('marketplace.checkout.store');
-Route::post('/stays/{slug}/quote', [MarketplaceCheckoutController::class, 'quote'])->middleware('auth')->name('marketplace.checkout.quote');
-Route::middleware('auth')->prefix('guest')->name('guest.')->group(function () {
+Route::post('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'store'])->middleware(['auth', 'guest.workspace'])->name('marketplace.checkout.store');
+Route::post('/stays/{slug}/quote', [MarketplaceCheckoutController::class, 'quote'])->middleware(['auth', 'guest.workspace'])->name('marketplace.checkout.quote');
+Route::middleware(['auth', 'guest.workspace'])->prefix('guest')->name('guest.')->group(function () {
     Route::get('/', GuestDashboardController::class)->name('dashboard');
     Route::get('/calendar', GuestCalendarController::class)->name('calendar');
     Route::get('/settings', [GuestSettingsController::class, 'edit'])->name('settings.edit');
@@ -216,9 +217,11 @@ Route::prefix('owner')->name('owner.')->group(function () {
         Route::get('/team', [OwnerTeamController::class, 'index'])->middleware('permission:employee.invite')->name('team.index');
         Route::post('/team', [OwnerTeamController::class, 'store'])->middleware(['permission:employee.invite', 'business.mutation'])->name('team.store');
         Route::post('/team/roles', [OwnerTeamController::class, 'storeRole'])->middleware(['permission:employee.manage_capabilities', 'business.mutation'])->name('team.roles.store');
+        Route::post('/team/role-templates/{template}', [OwnerTeamController::class, 'adoptRoleTemplate'])->middleware(['permission:employee.manage_capabilities', 'business.mutation'])->name('team.roles.templates.adopt');
         Route::get('/team/{membership}', [OwnerTeamController::class, 'show'])->middleware('permission:employee.invite')->name('team.show');
         Route::patch('/team/{membership}', [OwnerTeamController::class, 'update'])->middleware(['permission:employee.change_role', 'business.mutation'])->name('team.update');
         Route::patch('/team/{membership}/reactivate', [OwnerTeamController::class, 'reactivate'])->middleware(['permission:employee.remove', 'business.mutation'])->name('team.reactivate');
+        Route::patch('/team/{membership}/availability', [OwnerTeamController::class, 'updateAvailability'])->middleware(['permission:employee.change_role', 'business.mutation'])->name('team.availability.update');
         Route::patch('/team/roles/{role}/permissions', [OwnerTeamController::class, 'updateRolePermissions'])->middleware(['permission:employee.manage_capabilities', 'business.mutation'])->name('team.roles.permissions.update');
         Route::delete('/team/{membership}', [OwnerTeamController::class, 'deactivate'])->middleware(['permission:employee.remove', 'business.mutation'])->name('team.deactivate');
 
@@ -250,3 +253,4 @@ Route::prefix('owner/preview')->name('owner.preview.')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+Route::get('/platform-theme.css', PlatformThemeController::class)->name('platform.theme');

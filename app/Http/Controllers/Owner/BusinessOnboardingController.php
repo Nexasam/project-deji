@@ -26,7 +26,6 @@ class BusinessOnboardingController extends Controller
     {
         try {
             $nin = $identity->verifyNin($request->string('nin')->toString());
-            $bvn = $identity->verifyBvn($request->string('bvn')->toString());
         } catch (RuntimeException $exception) {
             throw ValidationException::withMessages(['identity' => $exception->getMessage()]);
         }
@@ -37,11 +36,7 @@ class BusinessOnboardingController extends Controller
             'nin_last4' => substr($request->string('nin')->toString(), -4),
             'nin_provider' => $nin['provider'] ?? null,
             'nin_provider_reference' => $nin['reference'] ?? null,
-            'bvn_status' => 'verified',
-            'bvn_last4' => substr($request->string('bvn')->toString(), -4),
-            'bvn_provider' => $bvn['provider'] ?? null,
-            'bvn_provider_reference' => $bvn['reference'] ?? null,
-            'identity_environment' => $nin['environment'] ?? $bvn['environment'] ?? null,
+            'identity_environment' => $nin['environment'] ?? null,
             'identity_consent_at' => now()->toIso8601String(),
             'identity_verified_at' => now()->toIso8601String(),
         ];

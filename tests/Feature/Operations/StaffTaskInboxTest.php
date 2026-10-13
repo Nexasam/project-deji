@@ -22,6 +22,25 @@ class StaffTaskInboxTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_unassigned_cleaning_work_routes_to_an_available_cleaner(): void
+    {
+        [$owner, $business] = $this->ownerWithBusiness();
+        [, $employee] = $this->staff($business, 'cleaner');
+        $property = Property::factory()->for($business)->create();
+
+        $this->actingAs($owner)->post(route('owner.operations.tasks.store'), [
+            'property_id' => $property->id,
+            'title' => 'Scheduled deep clean',
+            'task_type' => 'deep_cleaning',
+            'priority' => 'normal',
+            'due_at' => now()->addDay()->format('Y-m-d H:i:s'),
+        ])->assertRedirect(route('owner.operations'));
+
+        $task = OperationalTask::query()->where('title', 'Scheduled deep clean')->sole();
+        $this->assertSame($employee->id, $task->assigned_employee_id);
+        $this->assertSame('assigned', $task->status->value);
+    }
+
     public function test_staff_sees_and_updates_only_assigned_tasks(): void
     {
         [$owner, $business] = $this->ownerWithBusiness();

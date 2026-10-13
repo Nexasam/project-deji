@@ -27,7 +27,7 @@ class BusinessContextController extends Controller
             'updated_by' => $request->user()->id,
         ]);
 
-        $taskOnly = in_array($assignment->role->system_key, ['cleaner', 'maintenance_technician', 'inspector'], true);
+        $taskOnly = in_array($assignment->role->system_key ?? $assignment->role->parent?->system_key, ['cleaner', 'maintenance_technician', 'inspector'], true);
 
         return redirect()->route($taskOnly ? 'staff.tasks.index' : 'owner.dashboard')
             ->with('status', "You are now working in {$membership->business->name}.");

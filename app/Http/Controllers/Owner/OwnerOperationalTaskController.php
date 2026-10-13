@@ -15,6 +15,7 @@ class OwnerOperationalTaskController extends Controller
     public function store(StoreOperationalTaskRequest $request, ActiveBusinessContext $context, ManageOperationalTask $service): RedirectResponse
     {
         $data = $request->validated();
+        $data['evidence'] = $request->file('evidence', []);
         $property = $context->business->properties()->findOrFail($data['property_id']);
         $employee = empty($data['assigned_employee_id']) ? null : $context->business->employees()->findOrFail($data['assigned_employee_id']);
         $service->create($property, $employee, $request->user(), $data);

@@ -162,6 +162,34 @@ class User extends Authenticatable implements MustVerifyEmail
             ->exists();
     }
 
+    public function canAccessGuestWorkspace(): bool
+    {
+        if (! $this->hasActiveGlobalRole('guest')) {
+            return false;
+        }
+
+        $isPlatformAdministrator = $this->roleAssignments()
+            ->whereNull('business_membership_id')
+            ->where('status', 'active')
+            ->whereNull('revoked_at')
+            ->whereHas('role', fn ($role) => $role->where('scope', 'platform')->where('status', 'active'))
+            ->exists();
+
+        if ($isPlatformAdministrator) {
+            return false;
+        }
+
+        return ! $this->businessMemberships()
+            ->where('status', 'active')
+            ->whereHas('roles', fn ($assignment) => $assignment
+                ->where('status', 'active')
+                ->whereNull('revoked_at')
+                ->whereHas('role', fn ($role) => $role
+                    ->where('scope', 'business')
+                    ->where(fn ($role) => $role->whereNull('system_key')->orWhere('system_key', '!=', 'business_owner'))))
+            ->exists();
+    }
+
     public function resolvedBusinessContext(): ?UserBusinessContext
     {
         return $this->activeBusinessContext()->where('status', 'active')
