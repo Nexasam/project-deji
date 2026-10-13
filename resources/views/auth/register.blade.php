@@ -70,11 +70,6 @@
                             @error('name')<span class="property-form-error">{{ $message }}</span>@enderror
                         </label>
 
-                        <label x-show="accountType === 'business'" x-cloak for="business_name" class="property-form-label sm:col-span-2">Business name
-                            <input id="business_name" type="text" name="business_name" value="{{ old('business_name') }}" placeholder="e.g. DanastyX Apartments" class="property-form-control mt-2 @error('business_name') is-invalid @enderror">
-                            @error('business_name')<span class="property-form-error">{{ $message }}</span>@enderror
-                        </label>
-
                         <label for="email" class="property-form-label">Email address
                             <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="you@example.com" class="property-form-control mt-2 @error('email') is-invalid @enderror">
                             @error('email')<span class="property-form-error">{{ $message }}</span>@enderror
@@ -101,7 +96,7 @@
                     </label>
                     @error('terms')<span class="property-form-error">{{ $message }}</span>@enderror
 
-                    <button type="submit" class="property-form-submit flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3.5 text-sm font-extrabold text-white hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-100">Create account<svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <x-ui.button type="submit" size="lg" class="w-full">Create account <x-ui.icon name="arrow-right" class="size-4" /></x-ui.button>
                 </form>
 
                 <p class="mt-7 text-center text-sm text-slate-600">Already have an account? <a href="{{ route('login') }}" class="font-extrabold text-orange-600 hover:text-orange-700">Sign in</a></p>

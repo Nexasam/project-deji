@@ -38,22 +38,12 @@
                 <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{{ $errors->first() }}</div>
             @endif
 
-            <section class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-                <div>
-                    <h1 class="text-xl font-extrabold tracking-tight">Property portfolio</h1>
-                    <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-                        <span>{{ $business->name }}</span><span aria-hidden="true">›</span>
-                        <span>All locations</span><span aria-hidden="true">›</span>
-                        <strong class="text-slate-800">{{ $portfolioCount }} {{ Str::plural('property', $portfolioCount) }}</strong>
-                    </div>
-                </div>
-                @if ($canCreateProperty)
-                    <a href="{{ route('owner.properties.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-orange-700">
-                        <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        Add property
-                    </a>
-                @endif
-            </section>
+            <x-owner.page-header eyebrow="Portfolio" title="Properties" description="Create, publish and manage the properties in your business workspace.">
+                <x-slot:meta><span>{{ $business->name }}</span><span aria-hidden="true">·</span><span>{{ $portfolioCount }} {{ Str::plural('property', $portfolioCount) }}</span></x-slot:meta>
+                <x-slot:actions>
+                    @if ($canCreateProperty)<x-ui.button :href="route('owner.properties.create')"><x-ui.icon name="building" class="size-4" />Add property</x-ui.button>@endif
+                </x-slot:actions>
+            </x-owner.page-header>
 
             @if ($portfolioCount > 0)
                 <section class="mt-5" aria-labelledby="location-overview-title">
@@ -105,20 +95,18 @@
 
                 <form method="GET" class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <input type="hidden" name="layout" value="{{ $filters['layout'] }}">
-                    <label class="relative min-w-0 flex-1">
-                        <span class="sr-only">Search properties</span>
-                        <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                        <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Search property, code or location" class="w-full rounded-lg border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm focus:border-orange-500 focus:ring-orange-500">
-                    </label>
+                    <div class="min-w-0 flex-1">
+                        <x-ui.input label="Search properties" label-hidden name="q" type="search" icon="search" :value="$filters['q']" placeholder="Search property, code or location" />
+                    </div>
                     <select name="status" aria-label="Filter properties by publication status" class="rounded-lg border-slate-200 bg-white text-sm focus:border-orange-500 focus:ring-orange-500">
                         <option value="">All statuses</option>
                         @foreach (['published' => 'Published', 'pending' => 'Pending', 'draft' => 'Draft', 'unpublished' => 'Unpublished'] as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <button class="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">Search</button>
+                    <x-ui.button type="submit">Search</x-ui.button>
                     @if ($filters['q'] !== '' || $filters['status'] !== '')
-                        <a href="{{ route('owner.properties.index', ['layout' => $filters['layout']]) }}" class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Reset</a>
+                        <x-ui.button variant="secondary" :href="route('owner.properties.index', ['layout' => $filters['layout']])">Reset</x-ui.button>
                     @endif
                     <div class="inline-flex self-start rounded-lg border border-slate-200 bg-white p-1" aria-label="Property layout">
                         <a href="{{ route('owner.properties.index', array_filter(['q' => $filters['q'], 'status' => $filters['status'], 'layout' => 'grid'])) }}" aria-label="Grid view" class="grid size-8 place-items-center rounded-md {{ $filters['layout'] === 'grid' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100' }}"><svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 3h8v8H3V3Zm10 0h8v8h-8V3ZM3 13h8v8H3v-8Zm10 0h8v8h-8v-8Z"/></svg></a>
@@ -178,9 +166,9 @@
                                         <div class="mt-3 rounded-lg border border-red-100 bg-red-50 p-2.5 text-xs leading-5 text-red-800"><strong>Needs correction:</strong> {{ data_get($property->marketplaceListing->publication_eligibility_details, 'rejection_reason') }}</div>
                                     @endif
                                     @if ($publication === 'draft' && $canEditProperty)
-                                        <a href="{{ route('owner.properties.resume', $property) }}" class="mt-3 inline-flex w-full items-center justify-center rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700">Continue setup</a>
+                                        <x-ui.button :href="route('owner.properties.resume', $property)" size="sm" class="mt-3 w-full">Continue setup</x-ui.button>
                                     @elseif ($publication === 'unpublished' && in_array($verification, ['unverified', 'rejected'], true) && $canManageListing)
-                                        <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}" class="mt-3">@csrf<button class="w-full rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 hover:bg-orange-100">Submit for verification</button></form>
+                                        <form method="POST" action="{{ route('owner.properties.marketplace-verification.submit', $property) }}" class="mt-3">@csrf<x-ui.button type="submit" variant="secondary" size="sm" class="w-full">Submit for verification</x-ui.button></form>
                                     @endif
                                 </div>
                             </article>
@@ -215,11 +203,10 @@
                     @endif
                 </section>
             @else
-                <section class="mt-5 rounded-lg border border-slate-200 bg-white px-6 py-12 text-center">
-                    <div class="mx-auto grid size-14 place-items-center rounded-lg bg-orange-50 text-orange-600"><svg class="size-7" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20H4v-8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.8"/></svg></div>
-                    <h2 class="mt-5 text-lg font-bold">Add your first property</h2>
-                    <p class="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">There are no properties under {{ $business->name }} yet. Create a draft to begin adding operational details, amenities and media.</p>
-                    @if ($canCreateProperty)<a href="{{ route('owner.properties.create') }}" class="mt-6 inline-flex rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-bold text-white">Add first property</a>@endif
+                <section class="mt-5">
+                    <x-ui.empty-state icon="building" title="Add your first property" :description="'There are no properties under '.$business->name.' yet. Create a draft to begin adding operational details, amenities and media.'">
+                        <x-slot:action>@if ($canCreateProperty)<x-ui.button :href="route('owner.properties.create')">Add first property</x-ui.button>@endif</x-slot:action>
+                    </x-ui.empty-state>
                 </section>
             @endif
         </main>

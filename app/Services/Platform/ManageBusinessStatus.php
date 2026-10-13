@@ -13,6 +13,12 @@ final class ManageBusinessStatus
 
     public function verify(Business $business, User $actor, string $reason): Business
     {
+        if (data_get($business->verification_payload, 'nin_status') !== 'verified') {
+            throw ValidationException::withMessages([
+                'identity' => 'The business administrator must complete provider-verified NIN identity verification before this business can be approved.',
+            ]);
+        }
+
         return $this->transition($business, $actor, $reason, ['verification_status' => 'verified'], 'platform.business.verified', 'Verified business');
     }
 

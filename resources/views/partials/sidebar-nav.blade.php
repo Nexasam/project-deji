@@ -16,23 +16,12 @@
      x-transition:leave-end="opacity-0">
 </div>
 
-{{-- Desktop sidebar (always visible md+) --}}
-<aside class="w-[200px] bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
-    @include('partials.sidebar-inner', ['active' => $active, 'mobile' => false])
+{{-- One responsive sidebar. Rendering navigation once prevents duplicate links in
+     screen readers, crawlers and keyboard navigation. --}}
+<aside
+    x-cloak
+    class="owner-sidebar fixed inset-y-0 left-0 z-40 flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white transition-transform duration-200 md:static md:translate-x-0"
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+>
+    @include('partials.sidebar-inner', ['active' => $active, 'mobile' => true])
 </aside>
-
-{{-- Mobile sidebar drawer --}}
-<div x-show="sidebarOpen"
-     x-cloak
-     style="display:none"
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0 -translate-x-full"
-     x-transition:enter-end="opacity-100 translate-x-0"
-     x-transition:leave="transition ease-in duration-150"
-     x-transition:leave-start="opacity-100 translate-x-0"
-     x-transition:leave-end="opacity-0 -translate-x-full"
-     class="fixed inset-y-0 left-0 z-40 w-[200px] md:hidden">
-    <aside class="w-full h-full bg-white border-r border-gray-200 flex flex-col">
-        @include('partials.sidebar-inner', ['active' => $active, 'mobile' => true])
-    </aside>
-</div>

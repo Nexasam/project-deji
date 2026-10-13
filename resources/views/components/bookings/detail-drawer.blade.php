@@ -421,7 +421,7 @@
 <style>
 .bd-ai-block   { background:#111827; border-radius:14px; padding:20px; }
 .bd-insight-card { background:#1f2937; border-radius:10px; padding:14px 16px; }
-.bd-section-label { font-size:10px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:#9ca3af; margin-bottom:12px; display:block; }
+.bd-section-label { font-size:10px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:#9ca3af; margin-bottom:12px; display:block; }
 .bd-info-table { background:#f9fafb; border:1px solid #f3f4f6; border-radius:14px; overflow:hidden; }
 .bd-info-row   { display:flex; align-items:center; justify-content:space-between; padding:11px 16px; border-bottom:1px solid #f3f4f6; gap:12px; }
 .bd-info-row:last-child { border-bottom:none; }

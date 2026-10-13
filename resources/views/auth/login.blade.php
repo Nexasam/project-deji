@@ -54,29 +54,18 @@
                 <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">
                     @csrf
 
-                    <label for="email" class="property-form-label">Email address
-                        <span class="property-form-control-wrap">
-                            <svg class="property-form-control-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-                            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="you@example.com" class="property-form-control has-leading-icon @error('email') is-invalid @enderror" @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
-                        </span>
-                        @error('email')<span id="email-error" class="property-form-error">{{ $message }}</span>@enderror
-                    </label>
+                    <x-ui.input label="Email address" name="email" type="email" icon="mail" :value="old('email')" id="email" required autofocus autocomplete="username" placeholder="you@example.com" />
 
-                    <label for="password" class="property-form-label">Password
-                        <span class="property-form-control-wrap">
-                            <svg class="property-form-control-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8"/></svg>
-                            <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="current-password" placeholder="Enter your password" class="property-form-control has-leading-icon pr-14 @error('password') is-invalid @enderror" @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
-                            <button type="button" @click="showPassword = ! showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900" :aria-label="showPassword ? 'Hide password' : 'Show password'" x-text="showPassword ? 'Hide' : 'Show'"></button>
-                        </span>
-                        @error('password')<span id="password-error" class="property-form-error">{{ $message }}</span>@enderror
-                    </label>
+                    <x-ui.input label="Password" name="password" type="password" icon="lock" id="password" x-bind:type="showPassword ? 'text' : 'password'" required autocomplete="current-password" placeholder="Enter your password">
+                        <x-slot:trailing><button type="button" @click="showPassword=!showPassword" class="ui-input-action" :aria-label="showPassword ? 'Hide password' : 'Show password'" x-text="showPassword ? 'Hide' : 'Show'"></button></x-slot:trailing>
+                    </x-ui.input>
 
                     <div class="flex items-center justify-between gap-4">
                         <label for="remember_me" class="flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-600"><input id="remember_me" type="checkbox" name="remember" class="size-4 rounded border-slate-400 text-orange-600 focus:ring-orange-500">Remember me</label>
                         @if (Route::has('password.request'))<a href="{{ route('password.request') }}" class="text-sm font-bold text-orange-600 hover:text-orange-700">Forgot password?</a>@endif
                     </div>
 
-                    <button type="submit" class="property-form-submit flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3.5 text-sm font-extrabold text-white hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-100">Sign in<svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <x-ui.button type="submit" size="lg" class="w-full">Sign in <x-ui.icon name="arrow-right" class="size-4" /></x-ui.button>
                 </form>
 
                 @if (Route::has('register'))

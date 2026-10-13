@@ -58,17 +58,17 @@ use App\Http\Controllers\Staff\StaffTaskController;
 use App\Http\Controllers\TaskAttachmentController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', MarketplaceController::class)->name('home');
-Route::get('/index2', [MarketplaceController::class, 'index2'])->name('home.index2');
-Route::get('/stays/{slug}', MarketplacePropertyController::class)->name('marketplace.show');
-Route::get('/stays/{slug}/reviews', [MarketplacePropertyController::class, 'reviews'])->name('marketplace.reviews');
+Route::get('/', MarketplaceController::class)->middleware('guest.surface')->name('home');
+Route::get('/index2', [MarketplaceController::class, 'index2'])->middleware('guest.surface')->name('home.index2');
+Route::get('/stays/{slug}', MarketplacePropertyController::class)->middleware('guest.surface')->name('marketplace.show');
+Route::get('/stays/{slug}/reviews', [MarketplacePropertyController::class, 'reviews'])->middleware('guest.surface')->name('marketplace.reviews');
 Route::get('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'checkout'])->middleware(['auth', 'guest.workspace'])->name('marketplace.checkout.show');
 Route::get('/ical/{export}/{token}.ics', PropertyCalendarFeedController::class)->middleware('throttle:60,1')->name('property-calendar-feed');
 Route::get('/payments/paystack/callback', [PaymentCallbackController::class, 'paystack'])->name('payments.paystack.callback');
 Route::get('/payments/flutterwave/callback', [PaymentCallbackController::class, 'flutterwave'])->name('payments.flutterwave.callback');
 Route::post('/webhooks/paystack', [PaymentWebhookController::class, 'paystack'])->middleware('throttle:120,1')->name('webhooks.paystack');
 Route::post('/webhooks/flutterwave', [PaymentWebhookController::class, 'flutterwave'])->middleware('throttle:120,1')->name('webhooks.flutterwave');
-Route::post('/ai/marketplace-concierge', MarketplaceConciergeController::class)->middleware('throttle:10,1')->name('ai.marketplace-concierge');
+Route::post('/ai/marketplace-concierge', MarketplaceConciergeController::class)->middleware(['guest.surface', 'throttle:10,1'])->name('ai.marketplace-concierge');
 Route::post('/stays/{slug}/checkout', [MarketplaceCheckoutController::class, 'store'])->middleware(['auth', 'guest.workspace'])->name('marketplace.checkout.store');
 Route::post('/stays/{slug}/quote', [MarketplaceCheckoutController::class, 'quote'])->middleware(['auth', 'guest.workspace'])->name('marketplace.checkout.quote');
 Route::middleware(['auth', 'guest.workspace'])->prefix('guest')->name('guest.')->group(function () {
@@ -164,6 +164,8 @@ Route::prefix('owner')->name('owner.')->group(function () {
     Route::patch('/business-context', [BusinessContextController::class, 'update'])->middleware('auth')->name('business-context.update');
 
     Route::middleware(['auth', 'business.context'])->group(function () {
+        Route::get('/onboarding/identity', [BusinessOnboardingController::class, 'identity'])->middleware('business.owner')->name('onboarding.identity.edit');
+        Route::post('/onboarding/identity', [BusinessOnboardingController::class, 'storeIdentity'])->middleware('business.owner')->name('onboarding.identity.update');
         Route::get('/dashboard', OwnerDashboardController::class)->middleware('permission:business.view')->name('dashboard');
         Route::get('/properties', [OwnerPropertyController::class, 'index'])->middleware('permission:property.view')->name('properties.index');
         Route::get('/properties/create', fn () => redirect('/owner/properties/create/step1'))->middleware('permission:property.create')->name('properties.create');

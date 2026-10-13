@@ -31,14 +31,10 @@ class OwnerDashboardController extends Controller
 
         $summaryData = $summary->build($context->business, $request->user(), $propertyIds);
         $currency = $context->business->currency;
-        $user = $request->user();
-        $hasGuestActivity = $user->bookings()->exists() || $user->favourites()->exists();
-
         return view('dashboard', [
             'business' => $context->business,
             'properties' => $properties,
             'summary' => $summaryData,
-            'hasGuestActivity' => $hasGuestActivity,
             'summaryCards' => [
                 ['label' => 'Properties', 'value' => $summaryData['propertyCount']],
                 ['label' => 'Published', 'value' => $summaryData['publishedProperties']],

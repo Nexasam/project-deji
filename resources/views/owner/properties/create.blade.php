@@ -40,9 +40,7 @@
                         <div class="flex size-9 items-center justify-center rounded-full bg-orange-600 text-xs font-extrabold text-white">
                             {{ auth()->user() ? str(auth()->user()->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') : 'VS' }}
                         </div>
-                        <a href="{{ route('owner.dashboard') }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-950">
-                            Exit setup
-                        </a>
+                        <x-ui.button variant="secondary" size="sm" :href="route('owner.dashboard')">Exit setup</x-ui.button>
                     </div>
                 </div>
 
@@ -100,14 +98,7 @@
                             </div>
                         </div>
                         <div class="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
-                            <label class="property-form-label sm:col-span-2">Property name <span class="property-form-required">*</span>
-                                <span class="property-form-control-wrap">
-                                    <svg class="property-form-control-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20H4v-8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.8"/></svg>
-                                    <input name="name" value="{{ old('name', $property?->name) }}" required placeholder="e.g. Harbour View Apartment" class="property-form-control has-leading-icon @error('name') is-invalid @enderror" @error('name') aria-invalid="true" aria-describedby="name-error" @enderror>
-                                </span>
-                                <span class="property-form-help">Use the name guests and your team will recognise.</span>
-                                @error('name')<span id="name-error" class="property-form-error">{{ $message }}</span>@enderror
-                            </label>
+                            <x-ui.input label="Property name *" name="name" icon="home" :value="old('name', $property?->name)" help="Use the name guests and your team will recognise." wrapper-class="sm:col-span-2" required placeholder="e.g. Harbour View Apartment" />
                             <label class="property-form-label">Property type <span class="property-form-required">*</span>
                                 <span class="property-form-control-wrap">
                                 <select name="property_type" required class="property-form-control has-select-chevron @error('property_type') is-invalid @enderror" @error('property_type') aria-invalid="true" @enderror>
@@ -119,13 +110,7 @@
                                 </span>
                                 @error('property_type')<span class="property-form-error">{{ $message }}</span>@enderror
                             </label>
-                            <label class="property-form-label">Business workspace
-                                <span class="property-form-control-wrap">
-                                    <svg class="property-form-control-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20V8l8-4 8 4v12M9 20v-5h6v5M8 10h.01M12 10h.01M16 10h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                    <input value="{{ $business->name }}" disabled class="property-form-control has-leading-icon">
-                                </span>
-                                <span class="property-form-help">Assigned securely from your active workspace.</span>
-                            </label>
+                            <x-ui.input label="Business workspace" name="business_workspace" icon="building" :value="$business->name" help="Assigned securely from your active workspace." disabled />
                             <label class="property-form-label sm:col-span-2">Description <span class="property-form-optional">(optional)</span>
                                 <textarea name="description" rows="4" class="property-form-control mt-2 @error('description') is-invalid @enderror" placeholder="Describe the property, its atmosphere and what makes it distinctive.">{{ old('description', $property?->description) }}</textarea>
                                 <span class="property-form-help">A concise operational summary is enough for now.</span>
@@ -144,10 +129,7 @@
                             </div>
                         </div>
                         <div class="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
-                            <label class="property-form-label sm:col-span-2">Street address <span class="property-form-required">*</span>
-                                <span class="property-form-control-wrap"><svg class="property-form-control-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.25 7-12a7 7 0 1 0-14 0c0 5.75 7 12 7 12Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg><input name="address_line" value="{{ old('address_line', data_get($property?->address, 'line_1')) }}" required placeholder="Street, estate or nearby landmark" class="property-form-control has-leading-icon @error('address_line') is-invalid @enderror"></span>
-                                @error('address_line')<span class="property-form-error">{{ $message }}</span>@enderror
-                            </label>
+                            <x-ui.input label="Street address *" name="address_line" icon="location" :value="old('address_line', data_get($property?->address, 'line_1'))" wrapper-class="sm:col-span-2" required placeholder="Street, estate or nearby landmark" />
                             <label class="property-form-label">City / area <span class="property-form-required">*</span>
                                 <input name="city" value="{{ old('city', data_get($property?->address, 'city')) }}" required placeholder="e.g. Lekki" class="property-form-control mt-2 @error('city') is-invalid @enderror">
                                 @error('city')<span class="property-form-error">{{ $message }}</span>@enderror
@@ -205,11 +187,11 @@
                     <div class="sticky bottom-4 z-30 flex flex-col-reverse justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl shadow-slate-200/60 backdrop-blur sm:flex-row sm:items-center">
                         <p class="hidden text-xs text-slate-500 sm:block">Your property will remain private until it is completed, verified and published.</p>
                         <div class="flex flex-col-reverse gap-3 sm:flex-row">
-                            <a href="{{ route('owner.properties.index') }}" class="rounded-xl px-5 py-3 text-center text-sm font-bold text-slate-600 hover:bg-slate-100">Cancel</a>
-                            <button type="submit" class="property-form-submit inline-flex items-center justify-center gap-2 rounded-xl bg-orange-600 px-6 py-3 text-sm font-extrabold text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                            <x-ui.button variant="secondary" :href="route('owner.properties.index')">Cancel</x-ui.button>
+                            <x-ui.button type="submit" size="lg" class="property-form-submit">
                                 Save and continue
                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
+                            </x-ui.button>
                         </div>
                     </div>
                 </form>

@@ -26,6 +26,7 @@ class BusinessAdministrationTest extends TestCase
         $business = Business::factory()->create([
             'name' => 'Oceanview Hospitality',
             'verification_status' => 'pending',
+            'verification_payload' => ['nin_status' => 'verified'],
         ]);
 
         $this->actingAs($admin)->get(route('admin.businesses.index', ['q' => 'Oceanview']))
@@ -98,13 +99,29 @@ class BusinessAdministrationTest extends TestCase
         $admin = $this->administrator('platform_verification_admin');
         $business = Business::factory()->verified()->create(['verification_payload' => [
             'nin_status' => 'verified', 'nin_last4' => '8901', 'nin_provider' => 'dojah', 'nin_provider_reference' => 'NIN-1001',
-            'bvn_status' => 'verified', 'bvn_last4' => '4321', 'bvn_provider' => 'dojah', 'bvn_provider_reference' => 'BVN-1001',
         ]]);
 
         $this->actingAs($admin)->get(route('admin.businesses.show', $business))
-            ->assertOk()->assertSee('NIN-1001')->assertSee('BVN-1001')
+            ->assertOk()->assertSee('NIN-1001')->assertDontSee('BVN-1001')
             ->assertDontSee('Save identity decision');
         $this->post("/admin/businesses/{$business->id}/identity", [])->assertNotFound();
+    }
+
+    public function test_business_cannot_be_approved_before_nin_verification(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->administrator('platform_verification_admin');
+        $business = Business::factory()->create([
+            'verification_status' => 'pending',
+            'verification_payload' => ['nin_status' => 'not_submitted'],
+        ]);
+
+        $this->actingAs($admin)->from(route('admin.businesses.show', $business))
+            ->post(route('admin.businesses.verify', $business), [
+                'reason' => 'The remaining business information has been reviewed.',
+            ])->assertSessionHasErrors('identity');
+
+        $this->assertSame('pending', $business->fresh()->verification_status->value);
     }
 
     public function test_support_admin_has_read_only_business_access(): void

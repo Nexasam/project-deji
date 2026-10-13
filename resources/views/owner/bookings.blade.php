@@ -30,10 +30,10 @@
                 <p class="truncate text-sm font-semibold text-slate-700">{{ $business->name }}</p>
             </div>
             @if ($canCreateBooking)
-                <a href="{{ route('owner.bookings.manual.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-orange-700">
+                <x-ui.button :href="route('owner.bookings.manual.create')" size="sm">
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                     Create booking
-                </a>
+                </x-ui.button>
             @endif
         </header>
 
@@ -58,19 +58,17 @@
                 <div class="border-b border-slate-200 px-4 py-3">
                     <div class="mb-3"><h2 class="text-sm font-bold">Reservation directory</h2><p class="mt-0.5 text-[11px] text-slate-500">Search, filter and open every booking belonging to this business</p></div>
                     <form method="GET" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-12">
-                        <label class="relative sm:col-span-2 lg:col-span-3">
-                            <span class="sr-only">Search bookings</span>
-                            <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                            <input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Guest, property or reference" class="w-full rounded-lg border-slate-200 py-2 pl-9 pr-3 text-xs focus:border-orange-500 focus:ring-orange-500">
-                        </label>
+                        <div class="sm:col-span-2 lg:col-span-3">
+                            <x-ui.input label="Search bookings" label-hidden name="q" icon="search" :value="$filters['q'] ?? ''" placeholder="Guest, property or reference" />
+                        </div>
                         <select name="property" aria-label="Filter by property" class="rounded-lg border-slate-200 text-xs lg:col-span-2"><option value="">All properties</option>@foreach ($properties as $property)<option value="{{ $property->id }}" @selected(($filters['property'] ?? '') === $property->id)>{{ $property->name }}</option>@endforeach</select>
                         <select name="status" aria-label="Filter by status" class="rounded-lg border-slate-200 text-xs lg:col-span-2"><option value="">All statuses</option>@foreach (['confirmed' => 'Confirmed', 'awaiting_payment' => 'Awaiting payment', 'reserved' => 'Reserved', 'checked_in' => 'Checked in', 'completed' => 'Completed', 'cancelled' => 'Cancelled'] as $value => $label)<option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>@endforeach</select>
                         <select name="channel" aria-label="Filter by channel" class="rounded-lg border-slate-200 text-xs lg:col-span-2"><option value="">All channels</option>@foreach (['marketplace' => 'Verified Shortlet', 'walk_in' => 'Walk-in', 'whatsapp' => 'WhatsApp', 'manual' => 'Manual', 'airbnb' => 'Airbnb', 'booking_dot_com' => 'Booking.com'] as $value => $label)<option value="{{ $value }}" @selected(($filters['channel'] ?? '') === $value)>{{ $label }}</option>@endforeach</select>
                         <select name="sort" aria-label="Sort bookings" class="rounded-lg border-slate-200 text-xs lg:col-span-1"><option value="newest">Newest</option><option value="arrival" @selected(($filters['sort'] ?? '') === 'arrival')>Arrival</option></select>
-                        <button class="rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 lg:col-span-2">Apply filters</button>
+                        <x-ui.button type="submit" class="lg:col-span-2">Apply filters</x-ui.button>
                         <label class="lg:col-span-2"><span class="sr-only">Bookings from</span><input type="date" name="from" value="{{ $filters['from'] ?? '' }}" aria-label="Bookings from" class="w-full rounded-lg border-slate-200 text-xs"></label>
                         <label class="lg:col-span-2"><span class="sr-only">Bookings to</span><input type="date" name="to" value="{{ $filters['to'] ?? '' }}" aria-label="Bookings to" class="w-full rounded-lg border-slate-200 text-xs"></label>
-                        <a href="{{ route('owner.bookings') }}" class="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 lg:col-span-1">Reset</a>
+                        <x-ui.button :href="route('owner.bookings')" variant="secondary" class="lg:col-span-1">Reset</x-ui.button>
                     </form>
                 </div>
 

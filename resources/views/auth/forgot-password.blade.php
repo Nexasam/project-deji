@@ -37,14 +37,8 @@
 
                 <form method="POST" action="{{ route('password.email') }}" class="mt-8 space-y-5">
                     @csrf
-                    <label for="email" class="property-form-label">Email address
-                        <span class="property-form-control-wrap">
-                            <svg class="property-form-control-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-                            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email" placeholder="you@example.com" class="property-form-control has-leading-icon @error('email') is-invalid @enderror">
-                        </span>
-                        @error('email')<span class="property-form-error">{{ $message }}</span>@enderror
-                    </label>
-                    <button type="submit" class="property-form-submit flex w-full items-center justify-center rounded-xl bg-orange-600 px-5 py-3.5 text-sm font-extrabold text-white hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-100">Send reset link</button>
+                    <x-ui.input label="Email address" name="email" type="email" icon="mail" :value="old('email')" id="email" required autofocus autocomplete="email" placeholder="you@example.com" />
+                    <x-ui.button type="submit" size="lg" class="w-full">Send reset link</x-ui.button>
                 </form>
                 <p class="mt-7 text-center text-sm text-slate-600"><a href="{{ route('login') }}" class="font-extrabold text-orange-600 hover:text-orange-700">Back to sign in</a></p>
             </div>

@@ -179,15 +179,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return false;
         }
 
-        return ! $this->businessMemberships()
-            ->where('status', 'active')
-            ->whereHas('roles', fn ($assignment) => $assignment
-                ->where('status', 'active')
-                ->whereNull('revoked_at')
-                ->whereHas('role', fn ($role) => $role
-                    ->where('scope', 'business')
-                    ->where(fn ($role) => $role->whereNull('system_key')->orWhere('system_key', '!=', 'business_owner'))))
-            ->exists();
+        return ! $this->businessMemberships()->where('status', 'active')->exists();
     }
 
     public function resolvedBusinessContext(): ?UserBusinessContext

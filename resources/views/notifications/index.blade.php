@@ -27,18 +27,12 @@
         <div class="mb-4 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800"><svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="font-semibold">{{ session('status') }}</p></div>
     @endif
 
-    <section class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-        <div>
-            <h1 class="text-xl font-extrabold tracking-tight">Notifications</h1>
-            <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-                @if ($activeBusinessContext)<span>{{ $activeBusiness->name }}</span><span aria-hidden="true">›</span>@endif
-                <strong class="text-slate-800">{{ $stats['unread'] }} unread {{ Str::plural('notification', $stats['unread']) }}</strong>
-            </div>
-        </div>
-        @if ($stats['unread'] > 0)
-            <form method="POST" action="{{ route('notifications.read-all') }}">@csrf<button class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-orange-700 sm:w-auto"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 12 4 4L18 6M12 16l2 2 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Mark all as read</button></form>
-        @endif
-    </section>
+    <x-owner.page-header eyebrow="Activity" title="Notifications" description="Review booking, payment, calendar and operational updates.">
+        <x-slot:meta>@if ($activeBusinessContext)<span>{{ $activeBusiness->name }}</span><span aria-hidden="true">·</span>@endif<span>{{ $stats['unread'] }} unread {{ Str::plural('notification', $stats['unread']) }}</span></x-slot:meta>
+        <x-slot:actions>
+            @if ($stats['unread'] > 0)<form method="POST" action="{{ route('notifications.read-all') }}">@csrf<x-ui.button type="submit"><x-ui.icon name="bell" class="size-4" />Mark all as read</x-ui.button></form>@endif
+        </x-slot:actions>
+    </x-owner.page-header>
 
     <section class="mt-5 grid grid-cols-3 gap-3" aria-label="Notification summary">
         @foreach ([
@@ -67,9 +61,9 @@
                     </nav>
                     <form method="GET" class="flex gap-2">
                         <input type="hidden" name="status" value="{{ $filters['status'] }}">
-                        <label class="relative min-w-0 flex-1 sm:w-64"><span class="sr-only">Search notifications</span><svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input name="q" value="{{ $filters['q'] }}" placeholder="Search activity" class="w-full rounded-lg border-slate-200 py-2 pl-9 pr-3 text-xs focus:border-orange-500 focus:ring-orange-500"></label>
-                        <button class="rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800">Search</button>
-                        @if ($filters['q'] !== '')<a href="{{ route('notifications.index', ['status' => $filters['status']]) }}" class="grid size-8 place-items-center rounded-lg border border-slate-200 text-slate-500" aria-label="Clear search">×</a>@endif
+                        <x-ui.input label="Search notifications" label-hidden name="q" icon="search" :value="$filters['q']" placeholder="Search activity" class="min-w-0 flex-1 sm:w-64" />
+                        <x-ui.button type="submit">Search</x-ui.button>
+                        @if ($filters['q'] !== '')<x-ui.button :href="route('notifications.index', ['status' => $filters['status']])" variant="secondary" size="icon" aria-label="Clear search"><x-ui.icon name="close" class="size-4" /></x-ui.button>@endif
                     </form>
                 </div>
             </div>
@@ -109,7 +103,9 @@
                     </div>
                 </article>
             @empty
-                <div class="px-5 py-14 text-center"><span class="mx-auto grid size-12 place-items-center rounded-lg bg-slate-100 text-slate-400"><svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0a3 3 0 0 1-6 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3 class="mt-4 text-sm font-bold">{{ $filters['status'] === 'unread' ? 'You are all caught up' : 'No notifications found' }}</h3><p class="mx-auto mt-1 max-w-md text-xs text-slate-500">{{ $filters['q'] !== '' ? 'Try a different search term or clear the current filter.' : 'New booking, payment and operational updates will appear here.' }}</p>@if ($filters['status'] !== 'all' || $filters['q'] !== '')<a href="{{ route('notifications.index') }}" class="mt-4 inline-flex rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">View all activity</a>@endif</div>
+                <x-ui.empty-state class="border-0" icon="bell" :title="$filters['status'] === 'unread' ? 'You are all caught up' : 'No notifications found'" :description="$filters['q'] !== '' ? 'Try a different search term or clear the current filter.' : 'New booking, payment and operational updates will appear here.'">
+                    <x-slot:action>@if ($filters['status'] !== 'all' || $filters['q'] !== '')<x-ui.button :href="route('notifications.index')" variant="secondary">View all activity</x-ui.button>@endif</x-slot:action>
+                </x-ui.empty-state>
             @endforelse
         </div>
 

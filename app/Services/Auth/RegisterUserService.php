@@ -28,7 +28,6 @@ final class RegisterUserService
                 'identity_verification' => [
                     'nin_last4' => filled($attributes['nin'] ?? null) ? substr((string) $attributes['nin'], -4) : null,
                     'bvn_last4' => filled($attributes['bvn'] ?? null) ? substr((string) $attributes['bvn'], -4) : null,
-                    'business_name' => $attributes['business_name'] ?? null,
                     'submitted_at' => filled($attributes['nin'] ?? null) ? now()->toIso8601String() : null,
                 ],
                 'password' => Hash::make($attributes['password']),

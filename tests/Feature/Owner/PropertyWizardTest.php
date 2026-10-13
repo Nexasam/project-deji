@@ -50,6 +50,7 @@ class PropertyWizardTest extends TestCase
 
         $this->actingAs($user)->post("/owner/properties/{$property->id}/create/step2", [
             'state' => 'Lagos', 'city' => 'Lekki', 'address_line' => '12 Admiralty Way',
+            'hide_exact_location' => false,
         ])->assertRedirect("/owner/properties/{$property->id}/create/step3");
 
         $this->assertSame('Lekki', $property->fresh()->address['city']);
@@ -82,7 +83,7 @@ class PropertyWizardTest extends TestCase
         $property = Property::query()->sole();
         $url = fn (int $step) => "/owner/properties/{$property->id}/create/step{$step}";
 
-        $this->post($url(2), ['state' => 'Lagos', 'city' => 'Lekki', 'address_line' => '12 Admiralty Way'])->assertRedirect($url(3));
+        $this->post($url(2), ['state' => 'Lagos', 'city' => 'Lekki', 'address_line' => '12 Admiralty Way', 'hide_exact_location' => false])->assertRedirect($url(3));
         $this->post($url(3), ['property_type' => 'apartment', 'booking_mode' => 'entire', 'capacity' => 4, 'bedrooms' => 2, 'bathrooms' => 2])->assertRedirect($url(4));
         $this->post($url(4), ['amenity_codes' => '[]'])->assertRedirect($url(5));
         $this->post($url(5), ['media' => [UploadedFile::fake()->image('living-room.jpg')]])->assertRedirect($url(6));

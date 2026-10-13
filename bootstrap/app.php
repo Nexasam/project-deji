@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureBusinessMutationAllowed;
 use App\Http\Middleware\EnsureBusinessOwner;
 use App\Http\Middleware\EnsureBusinessPermission;
 use App\Http\Middleware\EnsureGuestWorkspaceAccess;
+use App\Http\Middleware\EnsureGuestSurfaceAccess;
 use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsurePlatformPermission;
 use App\Http\Middleware\EnsurePlatformOwner;
@@ -35,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'business.mutation' => EnsureBusinessMutationAllowed::class,
             'permission' => EnsureBusinessPermission::class,
             'guest.workspace' => EnsureGuestWorkspaceAccess::class,
+            'guest.surface' => EnsureGuestSurfaceAccess::class,
             'platform.admin' => EnsurePlatformAdmin::class,
             'platform.owner' => EnsurePlatformOwner::class,
             'platform.permission' => EnsurePlatformPermission::class,

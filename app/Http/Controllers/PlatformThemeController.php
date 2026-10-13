@@ -22,7 +22,7 @@ final class PlatformThemeController extends Controller
             $accent = '#ea580c';
         }
 
-        $css = ":root{--vs-font:{$font};--vs-base-size:{$size};--vs-accent:{$accent}}html{font-size:var(--vs-base-size)}body,.font-sans,.public-surface{font-family:var(--vs-font)!important}.bg-orange-600{background-color:var(--vs-accent)!important}.text-orange-600,.text-orange-700{color:var(--vs-accent)!important}.border-orange-600{border-color:var(--vs-accent)!important}";
+        $css = ":root{--vs-font:{$font};--vs-base-size:{$size};--vs-accent:{$accent}}html{font-size:var(--vs-base-size)}body,.font-sans,.public-surface,body *:not(code):not(pre):not(kbd):not(samp){font-family:var(--vs-font)!important}.bg-orange-600{background-color:var(--vs-accent)!important}.text-orange-600,.text-orange-700{color:var(--vs-accent)!important}.border-orange-600{border-color:var(--vs-accent)!important}";
 
         return response($css, 200, ['Content-Type' => 'text/css; charset=UTF-8', 'Cache-Control' => 'public, max-age=300']);
     }
