@@ -36,7 +36,7 @@ final class GuestWorkspaceBoundaryTest extends TestCase
         ]);
 
         $this->actingAs($staff)->get(route('guest.dashboard'))->assertForbidden();
-        $this->get(route('home'))->assertForbidden();
+        $this->get(route('home'))->assertRedirect(route('owner.entry'));
     }
 
     public function test_anonymous_visitors_and_guest_only_users_keep_marketplace_access(): void
