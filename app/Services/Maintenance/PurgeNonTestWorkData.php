@@ -2,6 +2,7 @@
 
 namespace App\Services\Maintenance;
 
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -42,6 +43,35 @@ final class PurgeNonTestWorkData
     {
         $plan = $this->preview();
 
+        return $this->executePlan($plan);
+    }
+
+    /** @return array{targets: array<string, array<string>>, counts: array<string, int>, owned_businesses: int} */
+    public function previewUser(User $user): array
+    {
+        $ownedBusinessIds = $this->soleOwnerBusinessIds($user);
+        $targets = $this->expandTargets([
+            'users' => [$user->id],
+            'businesses' => $ownedBusinessIds->all(),
+        ]);
+
+        return [
+            'targets' => $targets,
+            'counts' => collect($targets)->map(fn (array $ids): int => count($ids))->filter()->sortDesc()->all(),
+            'owned_businesses' => $ownedBusinessIds->count(),
+        ];
+    }
+
+    /** @return array{counts: array<string, int>, deleted: int} */
+    public function executeUser(User $user): array
+    {
+        return $this->executePlan($this->previewUser($user));
+    }
+
+    /** @param array{targets: array<string, array<string>>, counts: array<string, int>} $plan @return array{counts: array<string, int>, deleted: int} */
+    private function executePlan(array $plan): array
+    {
+
         return DB::transaction(function () use ($plan): array {
             Schema::disableForeignKeyConstraints();
 
@@ -62,6 +92,33 @@ final class PurgeNonTestWorkData
 
             return ['counts' => $plan['counts'], 'deleted' => $deleted];
         }, 3);
+    }
+
+    private function soleOwnerBusinessIds(User $user): Collection
+    {
+        $candidateIds = DB::table('business_memberships')
+            ->join('user_roles', 'user_roles.business_membership_id', '=', 'business_memberships.id')
+            ->join('roles', 'roles.id', '=', 'user_roles.role_id')
+            ->where('business_memberships.user_id', $user->id)
+            ->where('business_memberships.status', 'active')
+            ->where('user_roles.status', 'active')
+            ->whereNull('user_roles.revoked_at')
+            ->where('roles.system_key', 'business_owner')
+            ->pluck('business_memberships.business_id')
+            ->unique();
+
+        return $candidateIds->filter(function (string $businessId) use ($user): bool {
+            return ! DB::table('business_memberships')
+                ->join('user_roles', 'user_roles.business_membership_id', '=', 'business_memberships.id')
+                ->join('roles', 'roles.id', '=', 'user_roles.role_id')
+                ->where('business_memberships.business_id', $businessId)
+                ->where('business_memberships.user_id', '!=', $user->id)
+                ->where('business_memberships.status', 'active')
+                ->where('user_roles.status', 'active')
+                ->whereNull('user_roles.revoked_at')
+                ->where('roles.system_key', 'business_owner')
+                ->exists();
+        })->values();
     }
 
     private function protectedUserIds(Collection $testBusinessIds): Collection

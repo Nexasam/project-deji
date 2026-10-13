@@ -140,6 +140,7 @@ Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->
         Route::post('/settlements/{settlement}/complete', [\App\Http\Controllers\Admin\AdminSettlementController::class, 'complete'])->name('settlements.complete');
         Route::post('/settlements/{settlement}/reverse', [\App\Http\Controllers\Admin\AdminSettlementController::class, 'reverse'])->name('settlements.reverse');
         Route::get('/maintenance', [AdminMaintenanceController::class, 'index'])->name('maintenance.index');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::post('/maintenance/logs/clear', [AdminMaintenanceController::class, 'clearLog'])->name('maintenance.logs.clear');
         Route::post('/maintenance/git-pull', [AdminMaintenanceController::class, 'gitPull'])->name('maintenance.git-pull');
         Route::post('/maintenance/migrate', [AdminMaintenanceController::class, 'migrate'])->name('maintenance.migrate');

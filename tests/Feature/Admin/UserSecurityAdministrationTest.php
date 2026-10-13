@@ -101,6 +101,52 @@ class UserSecurityAdministrationTest extends TestCase
         $this->assertSame(403, $response->getStatusCode());
     }
 
+    public function test_super_admin_can_purge_an_ordinary_user_and_connected_records(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->administrator('platform_super_admin', 'purge-admin@example.test');
+        $target = User::factory()->create(['email' => 'disposable-user@example.test']);
+        $guestRole = Role::query()->where('system_key', 'guest')->firstOrFail();
+        UserRole::query()->create([
+            'user_id' => $target->id,
+            'role_id' => $guestRole->id,
+            'status' => 'active',
+            'assigned_at' => now(),
+        ]);
+        DB::table('sessions')->insert([
+            'id' => 'disposable-session',
+            'user_id' => $target->id,
+            'payload' => 'payload',
+            'last_activity' => now()->timestamp,
+        ]);
+
+        $this->actingAs($admin)->delete(route('admin.users.destroy', $target), [
+            'confirm' => '1',
+            'confirmation_phrase' => 'DELETE USER '.$target->email,
+        ])->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseMissing('users', ['id' => $target->id]);
+        $this->assertDatabaseMissing('sessions', ['user_id' => $target->id]);
+        $this->assertDatabaseMissing('user_roles', ['user_id' => $target->id]);
+        $this->assertDatabaseHas('users', ['id' => $admin->id]);
+        $this->assertDatabaseHas('audit_events', ['event_type' => 'platform.user.purged']);
+    }
+
+    public function test_platform_administrator_cannot_be_purged(): void
+    {
+        $this->seed(AccessControlSeeder::class);
+        $admin = $this->administrator('platform_super_admin', 'purge-owner@example.test');
+        $target = $this->administrator('platform_support_admin', 'protected-admin@example.test');
+
+        $this->actingAs($admin)->from(route('admin.users.show', $target))
+            ->delete(route('admin.users.destroy', $target), [
+                'confirm' => '1',
+                'confirmation_phrase' => 'DELETE USER '.$target->email,
+            ])->assertSessionHasErrors('user');
+
+        $this->assertDatabaseHas('users', ['id' => $target->id]);
+    }
+
     private function administrator(string $roleKey, string $email): User
     {
         $admin = User::factory()->create(['email' => $email, 'email_verified_at' => now()]);
