@@ -51,6 +51,12 @@
 
                 <x-auth-session-status class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800" :status="session('status')" />
 
+                @if (session('verification_error'))
+                    <div role="alert" class="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
+                        {{ session('verification_error') }}
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">
                     @csrf
 

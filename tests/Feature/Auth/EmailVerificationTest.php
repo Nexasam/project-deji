@@ -52,7 +52,8 @@ class EmailVerificationTest extends TestCase
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
+            ['id' => $user->id, 'hash' => sha1($user->email)],
+            absolute: false,
         );
 
         $response = $this->actingAs($user)->get($verificationUrl);
@@ -89,10 +90,30 @@ class EmailVerificationTest extends TestCase
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1('wrong-email')]
+            ['id' => $user->id, 'hash' => sha1('wrong-email')],
+            absolute: false,
         );
 
-        $this->actingAs($user)->get($verificationUrl);
+        $this->actingAs($user)->get($verificationUrl)
+            ->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('status', 'verification-link-invalid');
+
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_expired_verification_link_offers_a_resend_instead_of_forbidden_page(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->subMinute(),
+            ['id' => $user->id, 'hash' => sha1($user->email)],
+            absolute: false,
+        );
+
+        $this->actingAs($user)->get($verificationUrl)
+            ->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('status', 'verification-link-invalid');
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }

@@ -43,6 +43,15 @@
                     </div>
                 @endif
 
+                @if (session('status') === 'verification-link-invalid')
+                    <div role="alert" class="mt-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm leading-5 text-amber-900">
+                        <svg class="mt-0.5 size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M12 8v5m0 3.25v.01M10.3 4.9 3.4 17a2 2 0 0 0 1.74 3h13.72a2 2 0 0 0 1.74-3L13.7 4.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span><strong class="block font-bold">That link has expired or is no longer valid.</strong>Request a fresh email below and use the newest link.</span>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('verification.send') }}" class="mt-7">
                     @csrf
                     <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
