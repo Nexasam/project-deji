@@ -3,15 +3,36 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Notifications\Auth\VerifyEmailNotification;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class EmailVerificationTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_branded_verification_notification_is_sent(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->unverified()->create(['name' => 'Zainab Guest']);
+        $user->sendEmailVerificationNotification();
+
+        Notification::assertSentTo($user, VerifyEmailNotification::class, function ($notification) use ($user) {
+            $message = $notification->toMail($user);
+
+            $this->assertSame('Verify your email | Verified Shortlet', $message->subject);
+            $this->assertSame('mail.auth.verify-email', $message->view['html']);
+            $this->assertSame('mail.auth.verify-email-text', $message->view['text']);
+            $this->assertSame('Zainab', $message->viewData['firstName']);
+
+            return true;
+        });
+    }
 
     public function test_email_verification_screen_can_be_rendered(): void
     {
