@@ -16,6 +16,21 @@
     --font-weight-black: 700;
 }
 
+:root {
+    --vs-accent: #ea580c;
+    --vs-accent-hover: #c2410c;
+    --vs-ink: #0f172a;
+    --vs-muted: #64748b;
+    --vs-border: #e2e8f0;
+    --vs-surface: #ffffff;
+    --vs-canvas: #f8fafc;
+    --vs-danger: #dc2626;
+    --vs-success: #15803d;
+    --vs-radius-control: 0.75rem;
+    --vs-radius-card: 1rem;
+    --vs-content-width: 90rem;
+}
+
 html {
     font-family: 'Manrope', 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
 }
@@ -25,6 +40,44 @@ body,
     font-family: 'Manrope', 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.5;
+}
+
+.public-surface :where(a, button):focus-visible {
+    outline: 2px solid var(--vs-accent);
+    outline-offset: 3px;
+}
+
+.public-surface :where(button, select, textarea),
+.public-surface :where(input:not([type='checkbox']):not([type='radio']):not([type='file'])) {
+    min-height: 2.75rem;
+}
+
+.staff-surface :where(button, a, input, select, textarea):focus-visible {
+    outline: 2px solid var(--vs-accent);
+    outline-offset: 3px;
+}
+
+.staff-surface :where(input, select, textarea):not([type='checkbox']):not([type='file']) {
+    min-height: 2.75rem;
+}
+
+.staff-surface :where(h1, h2, h3, h4, label, button, a) {
+    font-weight: 600;
+}
+
+body:has(.admin-sidebar) :where(h1, h2, h3, h4, label, button, a) {
+    font-weight: 600;
+}
+
+body:has(.admin-sidebar) aside a {
+    min-height: 2.75rem;
+}
+
+body:has(.admin-sidebar) aside a:focus-visible,
+body:has(.admin-sidebar) header button:focus-visible,
+body:has(.admin-sidebar) header a:focus-visible {
+    outline: 2px solid var(--vs-accent);
+    outline-offset: 3px;
 }
 
 /* One typography source for every public, guest, owner and admin surface. */
@@ -50,6 +103,58 @@ body *:not(code):not(pre):not(kbd):not(samp) {
 
 :where(button, input, select, textarea) {
     font: inherit;
+}
+
+:where(input, select, textarea):not([type='checkbox']):not([type='radio']):not([type='file']) {
+    border-color: var(--vs-border);
+    border-radius: var(--vs-radius-control);
+    color: var(--vs-ink);
+    background-color: var(--vs-surface);
+}
+
+:where(input, select, textarea):not([type='checkbox']):not([type='radio']):not([type='file']):focus {
+    border-color: var(--vs-accent);
+    box-shadow: 0 0 0 3px rgb(234 88 12 / 0.12);
+    outline: none;
+}
+
+:where(input, select, textarea):disabled,
+:where(input, select, textarea)[aria-disabled='true'] {
+    cursor: not-allowed;
+    background-color: #f1f5f9;
+    color: #64748b;
+    opacity: 0.8;
+}
+
+:where(input, select, textarea)[aria-invalid='true'] {
+    border-color: var(--vs-danger);
+}
+
+:where(button, a):focus-visible {
+    outline: 2px solid var(--vs-accent);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (max-width: 640px) {
+    :where(button, [role='button'], a.ui-button) {
+        min-height: 2.75rem;
+    }
+
+    :where(table) {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
 }
 
 :where(button, [role='button'], input[type='button'], input[type='submit'], input[type='reset']) {
@@ -157,6 +262,107 @@ body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > main {
     padding: 1.5rem 1rem 2.5rem !important;
 }
 
+body:has(.owner-sidebar) .owner-workspace-main {
+    width: 100%;
+    max-width: var(--vs-content-width);
+    margin-inline: auto;
+    padding-inline: 1rem;
+}
+
+body:has(.owner-sidebar) .owner-workspace-main > :where(section, article, form) {
+    border-color: var(--vs-border);
+}
+
+body:has(.owner-sidebar) .owner-workspace-main :where(h1, h2, h3) {
+    color: var(--vs-ink);
+}
+
+body:has(.owner-sidebar) .owner-workspace-main :where(.text-slate-500, .text-slate-600) {
+    color: var(--vs-muted);
+}
+
+@media (min-width: 64rem) {
+    body:has(.owner-sidebar) .owner-workspace-main {
+        padding-inline: 1.5rem;
+    }
+}
+
+/* Owner collection alignment layer. Older owner pages use page-local utility
+   classes; these selectors bring them onto the same visual contract while
+   preserving their existing actions and backend behavior. */
+body:has(.owner-sidebar) {
+    --owner-content-width: 90rem;
+    --owner-border: #e2e8f0;
+    --owner-muted: #64748b;
+    background: #f8fafc;
+}
+
+body:has(.owner-sidebar) .owner-sidebar a:focus-visible,
+body:has(.owner-sidebar) .owner-sidebar button:focus-visible,
+body:has(.owner-sidebar) .owner-sidebar select:focus-visible {
+    outline: 2px solid var(--vs-accent);
+    outline-offset: 2px;
+}
+
+body:has(.owner-sidebar) .owner-sidebar nav a {
+    min-height: 2.75rem;
+}
+
+body:has(.owner-sidebar) .owner-sidebar nav a svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: 0 0 auto;
+}
+
+body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > header {
+    padding-block: 1rem;
+}
+
+body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > header h1,
+body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > header h2 {
+    color: #0f172a;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > header p.text-xs,
+body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > header p.uppercase {
+    color: var(--vs-accent, #ea580c);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1rem;
+    text-transform: uppercase;
+}
+
+body:has(.owner-sidebar) main :where(.rounded-xl, .rounded-2xl, .rounded-3xl).border-slate-200 {
+    border-color: var(--owner-border);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
+}
+
+body:has(.owner-sidebar) main :where(button, a).bg-orange-600,
+body:has(.owner-sidebar) main :where(button, a).bg-orange-500 {
+    min-height: 2.75rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+}
+
+body:has(.owner-sidebar) main :where(button, a).bg-slate-950,
+body:has(.owner-sidebar) main :where(button, a).bg-slate-900 {
+    min-height: 2.75rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+}
+
+body:has(.owner-sidebar) main :where(input, select, textarea):not([type='checkbox']):not([type='radio']):not([type='file']) {
+    min-height: 2.75rem;
+    border-color: #b9c5d3;
+    border-radius: 0.75rem;
+    font-weight: 400;
+}
+
 @media (min-width: 64rem) {
     body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > main {
         padding: 2rem 2rem 3rem !important;
@@ -225,10 +431,10 @@ body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > main {
 /* Owner property setup: intentionally scoped so dashboard forms can adopt it gradually. */
 .property-form-section {
     overflow: hidden;
-    border: 1px solid #dbe3ec;
-    border-top: 3px solid #f97316;
-    border-radius: 1rem;
-    background: #fff;
+    border: 1px solid var(--vs-border);
+    border-top: 3px solid var(--vs-accent);
+    border-radius: var(--vs-radius-card);
+    background: var(--vs-surface);
     box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 12px 30px rgb(15 23 42 / 0.035);
 }
 
@@ -236,7 +442,7 @@ body:has(.owner-sidebar) > .flex.min-h-screen > .min-w-0.flex-1 > main {
     display: block;
     color: #334155;
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.25rem;
 }
 

@@ -14,23 +14,23 @@
 @endphp
 <body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="{sidebarOpen:false,removeOpen:false,reactivateOpen:false}">
 <div class="flex min-h-screen">@include('partials.sidebar-nav',['active'=>'team'])<div class="min-w-0 flex-1">
-<header class="border-b border-slate-200 bg-white px-4 py-4 lg:px-8">
-    <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+<header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-[1600px] flex-col justify-between gap-4 px-4 py-5 lg:flex-row lg:items-center lg:px-6">
         <div>
-            <a href="{{ route('owner.team.index') }}" class="text-xs font-bold text-slate-500 hover:text-orange-600">← Team & access</a>
-            <p class="mt-3 text-xs font-bold uppercase tracking-wider text-orange-600">Dedicated team member access</p>
-            <h1 class="mt-1 text-2xl font-extrabold">{{ $membership->user->name }}</h1>
+            <a href="{{ route('owner.team.index') }}" class="owner-page-eyebrow hover:text-orange-700">← Team & access</a>
+            <p class="mt-3 owner-page-eyebrow">Dedicated team member access</p>
+            <h1 class="owner-page-title mt-1">{{ $membership->user->name }}</h1>
         </div>
         <div class="flex gap-2">
             @if($canRemove && $active && $membership->user_id !== auth()->id())
-                <button type="button" @click="removeOpen=true" class="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-bold text-red-700 hover:bg-red-50">Deactivate access</button>
+                <button type="button" @click="removeOpen=true" class="ui-button ui-button-md ui-button-danger">Deactivate access</button>
             @elseif($canRemove && ! $active)
-                <button type="button" @click="reactivateOpen=true" class="rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-bold text-emerald-700 hover:bg-emerald-50">Reactivate access</button>
+                <button type="button" @click="reactivateOpen=true" class="ui-button ui-button-md ui-button-secondary">Reactivate access</button>
             @endif
         </div>
     </div>
 </header>
-<main class="mx-auto max-w-[1100px] px-4 py-6 lg:px-6">
+<main class="owner-workspace-main mx-auto max-w-[1600px] px-4 py-6 lg:px-6">
     @if(session('status'))<div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif
     @if($errors->any())<div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><p class="font-extrabold">The access change could not be saved.</p><ul class="mt-1 list-inside list-disc">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 

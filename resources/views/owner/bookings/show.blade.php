@@ -29,8 +29,8 @@
 @endphp
 <body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="{sidebarOpen:false,checkInOpen:false,checkOutOpen:false,noShowOpen:false,cancelOpen:false}">
 <div class="flex min-h-screen">@include('partials.sidebar-nav',['active'=>'bookings'])<div class="min-w-0 flex-1">
-<header class="border-b border-slate-200 bg-white px-4 py-4 lg:px-8"><a href="{{ route('owner.bookings') }}" class="text-xs font-bold uppercase tracking-wider text-orange-600">← Bookings</a><h1 class="mt-1 text-xl font-extrabold">Booking workspace</h1></header>
-<main class="mx-auto max-w-[1200px] px-4 py-6 lg:px-6">
+<header class="border-b border-slate-200 bg-white px-4 py-4 lg:px-8"><a href="{{ route('owner.bookings') }}" class="owner-page-eyebrow">← Bookings</a><h1 class="owner-page-title">Booking workspace</h1><p class="owner-page-description">Review the stay, payment, guest communication and operational timeline in one place.</p></header>
+<main class="owner-workspace-main mx-auto max-w-[1200px] px-4 py-6 lg:px-6">
     @if(session('status'))<div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif
     @if($errors->any())<div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><p class="font-bold">The booking could not be updated.</p><ul class="mt-1 list-inside list-disc">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 

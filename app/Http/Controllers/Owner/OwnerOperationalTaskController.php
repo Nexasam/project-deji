@@ -17,8 +17,12 @@ class OwnerOperationalTaskController extends Controller
         $data = $request->validated();
         $data['evidence'] = $request->file('evidence', []);
         $property = $context->business->properties()->findOrFail($data['property_id']);
-        $employee = empty($data['assigned_employee_id']) ? null : $context->business->employees()->findOrFail($data['assigned_employee_id']);
-        $service->create($property, $employee, $request->user(), $data);
+        $ids = collect($data['assigned_employee_ids'] ?? [])->filter()->values();
+        if ($ids->isEmpty() && ! empty($data['assigned_employee_id'])) $ids->push($data['assigned_employee_id']);
+        $employees = $ids->isEmpty() ? collect() : $context->business->employees()->where('employment_status', 'active')->whereIn('id', $ids)->get();
+        abort_if($employees->count() !== $ids->count(), 422, 'One or more selected staff members are not active in this business.');
+        $data['assigned_employee_ids'] = $employees->pluck('id')->all();
+        $service->create($property, $employees, $request->user(), $data);
 
         return redirect()->route('owner.operations')->with('status', 'Task created.');
     }

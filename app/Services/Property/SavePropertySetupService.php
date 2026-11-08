@@ -44,8 +44,11 @@ final class SavePropertySetupService
         });
     }
 
-    public function marketplace(Property $property, User $actor, array $data): void
+    public function marketplace(Property $property, User $actor, array $data, ?PublicListingTextSanitizer $sanitizer = null): void
     {
+        $sanitizer ??= app(PublicListingTextSanitizer::class);
+        $data['public_title'] = $sanitizer->clean($property, $data['public_title']);
+        $data['public_description'] = $sanitizer->clean($property, $data['public_description']);
         PropertyMarketplaceListing::query()->updateOrCreate(['property_id' => $property->id], array_merge($data, ['business_id' => $property->business_id, 'slug' => Str::slug($data['public_title']).'-'.Str::lower(Str::random(6)), 'publication_status' => 'draft', 'status' => 'active', 'created_by' => $actor->id, 'updated_by' => $actor->id]));
     }
 }

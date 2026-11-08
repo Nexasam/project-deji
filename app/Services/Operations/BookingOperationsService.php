@@ -44,6 +44,24 @@ final class BookingOperationsService
             'generation_metadata' => ['workflow_stage' => 'guest_welcome'],
         ], $actor);
         $this->checklist($welcome, ['Confirm guest contact details', 'Prepare access handover', 'Send arrival instructions'], $actor);
+
+        // For stays longer than two nights, create every-other-day in-stay
+        // housekeeping tasks between arrival and departure. Each reference is
+        // deterministic so confirmation retries cannot duplicate work.
+        $nights = $booking->arrival_date->diffInDays($booking->departure_date);
+        if ($nights > 2) {
+            for ($offset = 2; $offset < $nights; $offset += 2) {
+                $serviceDate = $booking->arrival_date->addDays($offset);
+                $dueAt = CarbonImmutable::parse($serviceDate->toDateString().' 10:00', $timezone);
+                $stayClean = $this->task($booking, 'IN-STAY-'.$serviceDate->format('Ymd'), [
+                    'title' => 'In-stay standard cleaning', 'task_type' => 'cleaning',
+                    'priority' => 'normal', 'due_at' => $dueAt,
+                    'notes' => 'Complete only with guest consent and agreed access window.',
+                    'generation_metadata' => ['workflow_stage' => 'in_stay_cleaning', 'service_date' => $serviceDate->toDateString()],
+                ], $actor);
+                $this->checklist($stayClean, ['Confirm guest access consent', 'Clean and sanitise occupied areas', 'Replace agreed linen and towels', 'Restock guest essentials', 'Record damage or missing items'], $actor);
+            }
+        }
     }
 
     public function onBookingCheckedOut(Booking $booking, User $actor): OperationalTask

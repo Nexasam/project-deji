@@ -22,12 +22,12 @@
     @include('partials.sidebar-nav', ['active' => 'bookings'])
 
     <div class="min-w-0 flex-1">
-        <header class="flex h-[60px] items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 md:px-6">
+        <header class="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-4 md:px-6">
             <div class="flex min-w-0 items-center gap-3">
                 <button type="button" @click="sidebarOpen = true" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden" aria-label="Open navigation">
                     <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 </button>
-                <p class="truncate text-sm font-semibold text-slate-700">{{ $business->name }}</p>
+                <p class="owner-page-eyebrow truncate">{{ $business->name }}</p>
             </div>
             @if ($canCreateBooking)
                 <x-ui.button :href="route('owner.bookings.manual.create')" size="sm">
@@ -37,11 +37,10 @@
             @endif
         </header>
 
-        <main class="mx-auto max-w-[1600px] px-4 py-5 lg:px-6">
-            <section>
-                <h1 class="text-xl font-extrabold tracking-tight">Bookings</h1>
-                <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500"><span>{{ $business->name }}</span><span aria-hidden="true">›</span><strong class="text-slate-800">All reservations</strong></div>
-            </section>
+        <main class="owner-workspace-main mx-auto max-w-[1600px] px-4 py-5 lg:px-6">
+            <x-owner.page-header eyebrow="Reservations" title="Bookings" description="Search, review and manage every reservation belonging to this business workspace.">
+                <x-slot:meta><span>{{ $business->name }}</span><span aria-hidden="true">·</span><span>All reservations</span></x-slot:meta>
+            </x-owner.page-header>
 
             <section class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6" aria-label="Booking summary">
                 @foreach ($summaryCards as [$label, $value, $detail, $tone])

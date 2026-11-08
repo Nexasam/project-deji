@@ -82,6 +82,14 @@ class AdminBusinessController extends Controller
         return redirect()->route('admin.businesses.show', $business)->with('status', 'Business access and marketplace eligibility restored.');
     }
 
+    public function channelImport(Request $request, Business $business): RedirectResponse
+    {
+        $data = $request->validate(['enabled' => ['required', 'boolean'], 'reason' => ['required', 'string', 'min:10', 'max:1000']]);
+        $business->update(['channel_import_enabled' => (bool) $data['enabled']]);
+
+        return redirect()->route('admin.businesses.show', $business)->with('status', $business->channel_import_enabled ? 'Listing import enabled for this business.' : 'Listing import disabled for this business.');
+    }
+
     private function reason(Request $request): string
     {
         return $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']])['reason'];

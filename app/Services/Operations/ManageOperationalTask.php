@@ -18,13 +18,17 @@ final class ManageOperationalTask
 {
     public function __construct(private readonly BookingOperationsService $bookingOperations, private readonly ProductNotificationService $notifications, private readonly AutoAssignOperationalTask $autoAssign) {}
 
-    public function create(Property $property, ?Employee $employee, User $owner, array $data): OperationalTask
+    public function create(Property $property, iterable $employees, User $owner, array $data): OperationalTask
     {
-        return DB::transaction(function () use ($property, $employee, $owner, $data) {
+        return DB::transaction(function () use ($property, $employees, $owner, $data) {
+            $employees = collect($employees)->values();
+            $employee = $employees->first();
             $reference = 'TASK-'.strtoupper(Str::random(10));
             $task = OperationalTask::create(['business_id' => $property->business_id, 'property_id' => $property->id, 'assigned_employee_id' => $employee?->id, 'reference' => $reference, 'title' => $data['title'], 'task_type' => $data['task_type'], 'priority' => $data['priority'], 'status' => $employee ? 'assigned' : 'pending', 'due_at' => $data['due_at'], 'notes' => $data['notes'] ?? null, 'generation_source' => 'manual', 'manual_creation_reason' => 'Owner-created operational task', 'created_by' => $owner->id, 'updated_by' => $owner->id]);
-            if ($employee) {
-                OperationalTaskAssignment::create(['business_id' => $property->business_id, 'operational_task_id' => $task->id, 'employee_id' => $employee->id, 'assignment_role' => 'primary', 'assignment_status' => 'assigned', 'assigned_by' => $owner->id, 'assigned_at' => now(), 'status' => 'active']);
+            if ($employees->isNotEmpty()) {
+                foreach ($employees as $index => $assigned) {
+                    OperationalTaskAssignment::create(['business_id' => $property->business_id, 'operational_task_id' => $task->id, 'employee_id' => $assigned->id, 'assignment_role' => $index === 0 ? 'primary' : 'support', 'assignment_status' => 'assigned', 'assigned_by' => $owner->id, 'assigned_at' => now(), 'status' => 'active', 'created_by' => $owner->id, 'updated_by' => $owner->id]);
+                }
             }
             if (! $employee) {
                 $task = $this->autoAssign->assign($task, $owner);
@@ -50,9 +54,14 @@ final class ManageOperationalTask
         return DB::transaction(function () use ($task, $owner, $action, $notes, $completedChecklistIds, $evidence) {
             $task = OperationalTask::with('checklistItems')->lockForUpdate()->findOrFail($task->id);
             $from = $task->status->value;
-            $allowed = ['start' => ['pending', 'assigned'], 'complete' => ['in_progress']];
+            $allowed = ['accept' => ['assigned'], 'start' => ['pending', 'assigned'], 'complete' => ['in_progress']];
             if (! in_array($from, $allowed[$action] ?? [], true)) {
                 throw ValidationException::withMessages(['action' => 'This task transition is not allowed from its current status.']);
+            }
+            if ($action === 'accept') {
+                $task->assignments()->where('assignment_status', 'assigned')->whereHas('employee.businessMembership', fn ($query) => $query->where('user_id', $owner->id))->update(['accepted_at' => now(), 'updated_by' => $owner->id]);
+                $this->event($task, 'operations.task.accepted', $from, $from, $owner);
+                return $task->fresh();
             }
             if ($action === 'complete') {
                 $task->checklistItems()->whereIn('id', $completedChecklistIds)->update(['is_completed' => true, 'completed_by' => $owner->id, 'completed_at' => now(), 'updated_by' => $owner->id]);

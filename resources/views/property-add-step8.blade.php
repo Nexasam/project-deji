@@ -127,6 +127,10 @@
                         <p class="mt-2 text-xs text-slate-500">Tax is calculated after discounts and shown separately during checkout.</p>
                     </div>
 
+                    <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <label class="flex items-start gap-3 text-gray-900"><input type="hidden" name="availability_enabled" value="0"><input type="checkbox" name="availability_enabled" value="1" @checked(old('availability_enabled', $property->operational_status?->value === 'available')) class="mt-1 size-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"><span><strong class="block text-base">Make this property available for bookings</strong><small class="mt-1 block text-xs leading-5 text-gray-600">When unchecked, the property is greyed out and cannot receive new bookings until you enable it again.</small></span></label>
+                    </div>
+
                     {{-- Multiple Bookable Rooms Checkbox --}}
                     <div class="flex items-start gap-3">
                         <label class="flex items-center gap-3 cursor-not-allowed opacity-60">

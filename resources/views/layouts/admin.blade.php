@@ -10,7 +10,7 @@
 <body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="{ adminNavOpen: false }">
     <div class="min-h-screen lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
         <div x-cloak x-show="adminNavOpen" x-transition.opacity class="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-sm lg:hidden" @click="adminNavOpen=false"></div>
-        <aside class="fixed inset-y-0 left-0 z-50 flex w-[17rem] -translate-x-full flex-col border-r border-slate-800 bg-slate-950 text-white transition-transform duration-200 lg:translate-x-0" :class="adminNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+        <aside class="admin-sidebar fixed inset-y-0 left-0 z-50 flex w-[17rem] -translate-x-full flex-col border-r border-slate-800 bg-slate-950 text-white transition-transform duration-200 lg:translate-x-0" :class="adminNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
             @include('partials.admin-sidebar')
         </aside>
 

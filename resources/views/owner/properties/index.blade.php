@@ -14,6 +14,7 @@
     $publishedCount = $properties->filter(fn ($property) => $property->publication_status->value === 'published')->count();
     $reviewCount = $properties->filter(fn ($property) => $property->verification_status->value === 'pending')->count();
     $draftCount = $properties->filter(fn ($property) => $property->publication_status->value === 'draft')->count();
+    $channelImportAvailable = (bool) app(\App\Services\Platform\PlatformSettings::class)->get('channels.import_enabled', false) && (bool) $business->channel_import_enabled;
 @endphp
 <body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="{ sidebarOpen: false }">
 <div class="flex min-h-screen">
@@ -41,7 +42,7 @@
             <x-owner.page-header eyebrow="Portfolio" title="Properties" description="Create, publish and manage the properties in your business workspace.">
                 <x-slot:meta><span>{{ $business->name }}</span><span aria-hidden="true">·</span><span>{{ $portfolioCount }} {{ Str::plural('property', $portfolioCount) }}</span></x-slot:meta>
                 <x-slot:actions>
-                    @if ($canCreateProperty)<x-ui.button :href="route('owner.properties.create')"><x-ui.icon name="building" class="size-4" />Add property</x-ui.button>@endif
+                    @if ($channelImportAvailable)<x-ui.button variant="secondary" :href="route('owner.properties.import')"><x-ui.icon name="calendar" class="size-4" />Import listing</x-ui.button>@endif @if ($canCreateProperty)<x-ui.button :href="route('owner.properties.create')"><x-ui.icon name="building" class="size-4" />Add property</x-ui.button>@endif
                 </x-slot:actions>
             </x-owner.page-header>
 

@@ -35,10 +35,14 @@ use App\Http\Controllers\Owner\OwnerBookingDateController;
 use App\Http\Controllers\Owner\OwnerBookingLifecycleController;
 use App\Http\Controllers\Owner\OwnerBookingsController;
 use App\Http\Controllers\Owner\OwnerCalendarController;
+use App\Http\Controllers\Owner\OwnerChannelImportController;
 use App\Http\Controllers\Owner\OwnerDashboardController;
 use App\Http\Controllers\Owner\OwnerEntryController;
 use App\Http\Controllers\Owner\OwnerExternalCalendarController;
 use App\Http\Controllers\Owner\OwnerFinanceController;
+use App\Http\Controllers\Owner\OwnerExpensesController;
+use App\Http\Controllers\Owner\OwnerDocumentsController;
+use App\Http\Controllers\Owner\OwnerReportsController;
 use App\Http\Controllers\Owner\OwnerFinanceEntryController;
 use App\Http\Controllers\Owner\OwnerGuestServiceRequestController;
 use App\Http\Controllers\Owner\OwnerGuestStayReviewController;
@@ -110,6 +114,7 @@ Route::middleware(['auth', 'platform.admin'])->prefix('admin')->name('admin.')->
     Route::post('/businesses/{business}/reject', [AdminBusinessController::class, 'reject'])->middleware('platform.permission:platform.business.verify')->name('businesses.reject');
     Route::post('/businesses/{business}/suspend', [AdminBusinessController::class, 'suspend'])->middleware('platform.permission:platform.business.manage')->name('businesses.suspend');
     Route::post('/businesses/{business}/reactivate', [AdminBusinessController::class, 'reactivate'])->middleware('platform.permission:platform.business.manage')->name('businesses.reactivate');
+    Route::post('/businesses/{business}/channel-import', [AdminBusinessController::class, 'channelImport'])->middleware('platform.permission:platform.business.manage')->name('businesses.channel-import');
     Route::get('/users', [AdminUserController::class, 'index'])->middleware('platform.permission:platform.user.view')->name('users.index');
     Route::get('/users/{user}', [AdminUserController::class, 'show'])->middleware('platform.permission:platform.user.view')->name('users.show');
     Route::post('/users/{user}/lock', [AdminUserController::class, 'lock'])->middleware('platform.permission:platform.user.lock')->name('users.lock');
@@ -170,6 +175,7 @@ Route::prefix('owner')->name('owner.')->group(function () {
         Route::post('/onboarding/identity', [BusinessOnboardingController::class, 'storeIdentity'])->middleware('business.owner')->name('onboarding.identity.update');
         Route::get('/dashboard', OwnerDashboardController::class)->middleware('permission:business.view')->name('dashboard');
         Route::get('/properties', [OwnerPropertyController::class, 'index'])->middleware('permission:property.view')->name('properties.index');
+        Route::get('/properties/import', OwnerChannelImportController::class)->middleware('permission:property.create')->name('properties.import');
         Route::get('/properties/create', fn () => redirect('/owner/properties/create/step1'))->middleware('permission:property.create')->name('properties.create');
         Route::get('/properties/create/step1', [PropertyWizardController::class, 'entry'])->middleware('permission:property.create')->name('properties.create.step1');
         Route::post('/properties/create/step1', [PropertyWizardController::class, 'start'])->middleware(['permission:property.create', 'business.mutation'])->name('properties.wizard.start');
@@ -185,6 +191,10 @@ Route::prefix('owner')->name('owner.')->group(function () {
         Route::get('/properties/{property}/create/success', [PropertyWizardController::class, 'success'])->middleware('permission:property.view')->name('properties.wizard.success');
         Route::post('/properties/{property}/marketplace-verification', [PropertySetupController::class, 'submitMarketplace'])->middleware(['permission:property.manage_listing', 'business.mutation'])->name('properties.marketplace-verification.submit');
         Route::get('/properties/{property}', [OwnerPropertyController::class, 'show'])->middleware('permission:property.view')->name('properties.show');
+        Route::get('/properties/{property}/setup/media', [OwnerPropertyController::class, 'media'])->middleware('permission:property.edit')->name('properties.setup.media');
+        Route::post('/properties/{property}/setup/media', [OwnerPropertyController::class, 'storeMedia'])->middleware(['permission:property.edit', 'business.mutation'])->name('properties.setup.media.store');
+        Route::patch('/properties/{property}/setup/media/order', [OwnerPropertyController::class, 'updateMediaOrder'])->middleware(['permission:property.edit', 'business.mutation'])->name('properties.setup.media.order');
+        Route::delete('/properties/{property}/setup/media/{media}', [OwnerPropertyController::class, 'destroyMedia'])->middleware(['permission:property.edit', 'business.mutation'])->name('properties.setup.media.destroy');
         Route::patch('/properties/{property}/arrival-guide', [OwnerPropertyController::class, 'updateArrivalGuide'])->middleware(['permission:property.edit', 'business.mutation'])->name('properties.arrival-guide.update');
         Route::post('/properties/{property}/calendars', [OwnerExternalCalendarController::class, 'store'])->middleware(['permission:calendar.manage_connections', 'business.mutation'])->name('properties.calendars.store');
         Route::post('/properties/{property}/calendars/{connection}/sync', [OwnerExternalCalendarController::class, 'sync'])->middleware(['permission:calendar.sync', 'business.mutation'])->name('properties.calendars.sync');
@@ -208,6 +218,11 @@ Route::prefix('owner')->name('owner.')->group(function () {
         Route::post('/calendar/blocks', [OwnerAvailabilityBlockController::class, 'store'])->middleware(['permission:calendar.manage_blocks', 'business.mutation'])->name('calendar.blocks.store');
         Route::delete('/calendar/blocks/{block}', [OwnerAvailabilityBlockController::class, 'destroy'])->middleware(['permission:calendar.manage_blocks', 'business.mutation'])->name('calendar.blocks.destroy');
         Route::get('/finance', OwnerFinanceController::class)->middleware('permission:finance.view_transactions')->name('finance');
+        Route::get('/finance/expenses', OwnerExpensesController::class)->middleware('permission:finance.view_transactions')->name('finance.expenses');
+        Route::get('/documents', OwnerDocumentsController::class)->middleware('permission:document.download')->name('documents');
+        Route::get('/reports', [OwnerReportsController::class, 'reports'])->middleware('permission:finance.view_transactions')->name('reports');
+        Route::get('/statements', [OwnerReportsController::class, 'statements'])->middleware('permission:finance.view_transactions')->name('statements');
+        Route::get('/tax-compliance', [OwnerReportsController::class, 'tax'])->middleware('permission:finance.view_transactions')->name('tax-compliance');
         Route::post('/finance/payments', [OwnerFinanceEntryController::class, 'payment'])->middleware(['permission:payment.record', 'business.mutation'])->name('finance.payments.store');
         Route::post('/finance/expenses', [OwnerFinanceEntryController::class, 'expense'])->middleware(['permission:expense.create', 'business.mutation'])->name('finance.expenses.store');
         Route::get('/operations', OwnerOperationsController::class)->middleware('permission:task.view_assigned')->name('operations');
@@ -238,6 +253,7 @@ Route::middleware(['auth', 'business.context'])->prefix('staff')->name('staff.')
     Route::get('/tasks', [StaffTaskController::class, 'index'])->middleware('permission:task.view_assigned')->name('tasks.index');
     Route::patch('/tasks/{task}', [StaffTaskController::class, 'transition'])->middleware('permission:task.complete')->name('tasks.transition');
     Route::post('/tasks/{task}/inspection', [StaffTaskController::class, 'inspection'])->middleware('permission:inspection.perform')->name('tasks.inspection');
+    Route::post('/tasks/{task}/maintenance-issue', [StaffTaskController::class, 'reportIssue'])->middleware('permission:maintenance.create')->name('tasks.maintenance-issue');
 });
 Route::get('/task-attachments/{task}/{attachment}', TaskAttachmentController::class)
     ->middleware(['auth', 'business.context', 'permission:document.download'])->name('task-attachments.show');

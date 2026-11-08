@@ -88,6 +88,11 @@ final class PlatformSettings
         'ai.enabled' => ['group' => 'ai', 'label' => 'Enable AI stay concierge', 'description' => 'Answer marketplace questions using published Verified Shortlet listing data.', 'type' => 'boolean', 'default' => false],
         'ai.openai_api_key' => ['group' => 'ai', 'label' => 'OpenAI API key', 'description' => 'Server-side API key. It is encrypted and never exposed to browsers.', 'type' => 'secret', 'default' => ''],
         'ai.openai_model' => ['group' => 'ai', 'label' => 'OpenAI model', 'description' => 'Model used for grounded marketplace concierge answers.', 'type' => 'string', 'default' => 'gpt-5-mini'],
+        'channels.import_enabled' => ['group' => 'channels', 'label' => 'Enable listing import', 'description' => 'Allow approved hosts with an explicit business grant to connect supported channel accounts and import listings as drafts.', 'type' => 'boolean', 'default' => false],
+        'channels.provider' => ['group' => 'channels', 'label' => 'Channel manager provider', 'description' => 'Provider adapter used for listing import and channel synchronisation.', 'type' => 'string', 'default' => 'rentals_united'],
+        'channels.api_base_url' => ['group' => 'channels', 'label' => 'Channel manager API URL', 'description' => 'Provider API base URL. Keep provider-specific calls behind the channel integration adapter.', 'type' => 'string', 'default' => ''],
+        'channels.master_token' => ['group' => 'channels', 'label' => 'Channel manager master token', 'description' => 'Encrypted server-side credential for the approved white-label channel manager account.', 'type' => 'secret', 'default' => ''],
+        'channels.webhook_secret' => ['group' => 'channels', 'label' => 'Channel manager webhook secret', 'description' => 'Encrypted signature secret used to validate provider callbacks.', 'type' => 'secret', 'default' => ''],
         'marketplace.require_verified_business' => ['group' => 'marketplace', 'label' => 'Require verified businesses', 'description' => 'Only publish inventory belonging to businesses verified by the platform.', 'type' => 'boolean', 'default' => false],
         'support.contact_email' => ['group' => 'support', 'label' => 'Platform support email', 'description' => 'Public operational support contact.', 'type' => 'string', 'default' => 'support@verifiedshortlet.test'],
     ];

@@ -22,6 +22,11 @@
     ];
     $manageItems = [
         ['key' => 'finance', 'label' => 'Finance', 'icon' => 'finance', 'route' => route('owner.finance'), 'show' => $sidebarCan('finance.view_transactions')],
+        ['key' => 'expenses', 'label' => 'Expenses', 'icon' => 'finance', 'route' => route('owner.finance.expenses'), 'show' => $sidebarCan('finance.view_transactions')],
+        ['key' => 'documents', 'label' => 'Documents', 'icon' => 'document', 'route' => route('owner.documents'), 'show' => $sidebarCan('document.download')],
+        ['key' => 'reports', 'label' => 'Reports', 'icon' => 'finance', 'route' => route('owner.reports'), 'show' => $sidebarCan('finance.view_transactions')],
+        ['key' => 'statements', 'label' => 'Owner statements', 'icon' => 'document', 'route' => route('owner.statements'), 'show' => $sidebarCan('finance.view_transactions')],
+        ['key' => 'tax-compliance', 'label' => 'Tax & compliance', 'icon' => 'document', 'route' => route('owner.tax-compliance'), 'show' => $sidebarCan('finance.view_transactions')],
         ['key' => 'operations', 'label' => 'Operations', 'icon' => 'operations', 'route' => route($sidebarTaskOnly ? 'staff.tasks.index' : 'owner.operations'), 'show' => $sidebarCan('task.view_assigned')],
         ['key' => 'team', 'label' => 'Team & access', 'icon' => 'team', 'route' => route('owner.team.index'), 'show' => $sidebarCan('employee.invite')],
     ];

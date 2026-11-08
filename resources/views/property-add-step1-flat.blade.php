@@ -75,7 +75,7 @@
                                 />
                             </div>
                             <div class="p-6">
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">Another flat in a property</h3>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">A room in a flat</h3>
                                 <p class="text-gray-600 mb-4">e.g adding "3C" to a Bluewater building you already list</p>
                                 <div class="border-2 border-dashed border-[#FF5A00] rounded-lg p-4 bg-orange-50">
                                     <p class="text-[#FF5A00] text-sm font-bold text-center">SELECTED</p>

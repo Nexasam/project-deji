@@ -89,7 +89,7 @@ class PropertySetupController extends Controller
         $blockers = $readiness->setupBlockers($draft);
         if ($blockers !== []) return back()->withErrors(['readiness' => implode(' ', $blockers)]);
 
-        $draft->update(['publication_status' => 'unpublished', 'readiness_status' => 'ready', 'operational_status' => 'available', 'operational_status_updated_at' => now(), 'updated_by' => $request->user()->id]);
+        $draft->update(['publication_status' => 'unpublished', 'readiness_status' => 'ready', 'updated_by' => $request->user()->id]);
         $workflow->complete($draft, 'review', $request->user());
         PropertyLifecycleEvent::query()->create(['business_id' => $draft->business_id, 'property_id' => $draft->id, 'event_type' => 'setup_completed', 'previous_state' => 'draft', 'new_state' => 'unpublished', 'occurred_at' => now(), 'status' => 'active', 'created_by' => $request->user()->id, 'updated_by' => $request->user()->id]);
         return redirect()->route('owner.dashboard')->with('status', "{$draft->name} is ready for internal business operations.");

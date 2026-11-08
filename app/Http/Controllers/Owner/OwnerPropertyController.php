@@ -19,6 +19,7 @@ use App\Support\ActiveBusinessContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class OwnerPropertyController extends Controller
 {
@@ -251,6 +252,18 @@ class OwnerPropertyController extends Controller
         $draft->media()->whereKey($media)->firstOrFail()->delete();
 
         return back()->with('status', 'Media item removed from the draft.');
+    }
+
+    public function updateMediaOrder(Request $request, ActiveBusinessContext $context, string $property): RedirectResponse
+    {
+        $draft = $this->draftProperty($context, $property);
+        $data = $request->validate(['media_ids' => ['required', 'array', 'max:10'], 'media_ids.*' => ['uuid']]);
+        $allowed = $draft->media()->where('media_type', 'image')->whereIn('id', $data['media_ids'])->pluck('id')->all();
+        if (count($allowed) !== count($data['media_ids'])) abort(422, 'One or more media items are invalid.');
+        DB::transaction(function () use ($draft, $data): void {
+            foreach ($data['media_ids'] as $index => $id) $draft->media()->whereKey($id)->update(['sort_order' => $index + 1, 'is_primary' => $index === 0]);
+        });
+        return back()->with('status', 'Image order and cover image saved.');
     }
 
     private function draftProperty(ActiveBusinessContext $context, string $property): Property

@@ -6,7 +6,7 @@
     <title>Media – {{ $property->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="mediaOrder()">
     <div class="flex min-h-screen">
         @include('partials.sidebar-nav', ['active' => 'properties'])
         <div class="min-w-0 flex-1">
@@ -27,9 +27,9 @@
                 @if ($mediaItems->isNotEmpty())
                     <section class="property-form-section mb-6">
                         <div class="border-b border-slate-100 px-6 py-5 sm:px-8"><h3 class="font-extrabold">Saved media</h3><p class="mt-1 text-sm text-slate-500">{{ $mediaItems->count() }} {{ Str::plural('item', $mediaItems->count()) }} currently attached.</p></div>
-                        <div class="grid gap-4 p-6 sm:grid-cols-2 sm:p-8 lg:grid-cols-3">
+                        <div class="grid gap-4 p-6 sm:grid-cols-2 sm:p-8 lg:grid-cols-3" x-ref="mediaGrid">
                             @foreach ($mediaItems as $item)
-                                <article class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                                <article draggable="{{ $item->media_type->value === 'image' ? 'true' : 'false' }}" @dragstart="dragging='{{ $item->id }}'" @dragover.prevent @drop="move('{{ $item->id }}')" data-media-id="{{ $item->id }}" data-media-type="{{ $item->media_type->value }}" class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
                                     <div class="aspect-video bg-slate-200">
                                         @if ($item->media_type->value === 'image')
                                             <img src="{{ Storage::disk($item->storage_disk)->url($item->storage_path) }}" alt="{{ $item->alt_text ?: $property->name }}" class="h-full w-full object-cover">
@@ -39,7 +39,7 @@
                                             <video src="{{ Storage::disk($item->storage_disk)->url($item->storage_path) }}" controls preload="metadata" class="h-full w-full object-cover"></video>
                                         @endif
                                     </div>
-                                    <div class="flex items-center justify-between gap-3 p-3"><div class="min-w-0"><p class="truncate text-xs font-bold text-slate-700">{{ $item->title }}</p>@if ($item->is_primary)<span class="text-[10px] font-extrabold uppercase text-orange-600">Primary image</span>@endif</div><form method="POST" action="{{ route('owner.properties.setup.media.destroy', [$property, $item]) }}">@csrf @method('DELETE')<button class="text-xs font-bold text-red-600 hover:text-red-700">Remove</button></form></div>
+                                    <div class="flex items-center justify-between gap-3 p-3"><div class="min-w-0"><p class="truncate text-xs font-bold text-slate-700">{{ $item->title }}</p>@if ($item->is_primary)<span class="text-[10px] font-extrabold uppercase text-orange-600">Cover image</span>@endif</div>@if ($item->media_type->value === 'image')<button type="button" @click="setCover('{{ $item->id }}')" class="text-xs font-bold text-orange-700 hover:text-orange-800">Set cover</button>@endif<form method="POST" action="{{ route('owner.properties.setup.media.destroy', [$property, $item]) }}">@csrf @method('DELETE')<button class="text-xs font-bold text-red-600 hover:text-red-700">Remove</button></form></div>
                                 </article>
                             @endforeach
                         </div>
@@ -49,11 +49,11 @@
                 <form method="POST" action="{{ route('owner.properties.setup.media.store', $property) }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     <section class="property-form-section p-6 sm:p-8">
-                        <label class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center transition hover:border-orange-400 hover:bg-orange-50/40">
+                        <label for="property-media" class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center transition hover:border-orange-400 hover:bg-orange-50/40">
                             <span class="flex size-14 items-center justify-center rounded-2xl bg-white text-orange-600 shadow-sm"><svg class="size-7" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V5m0 0L8 9m4-4 4 4M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                             <span class="mt-4 text-base font-extrabold text-slate-900">Choose property images</span>
                             <span class="mt-1 text-xs leading-5 text-slate-500">JPEG, PNG or WebP · up to 10 files · 20 MB each</span>
-                            <input type="file" name="media[]" accept="image/jpeg,image/png,image/webp" multiple class="mt-5 block max-w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-600 file:px-4 file:py-2 file:font-bold file:text-white">
+                            <input id="property-media" type="file" name="media[]" accept="image/jpeg,image/png,image/webp" multiple class="sr-only">
                         </label>
                     </section>
 
@@ -71,4 +71,7 @@
         </div>
     </div>
 </body>
+<script>
+function mediaOrder(){return {dragging:null,ids(){return [...this.$refs.mediaGrid.querySelectorAll('[data-media-type="image"]')].map(el=>el.dataset.mediaId)},move(id){if(!this.dragging||this.dragging===id)return;const grid=this.$refs.mediaGrid,from=grid.querySelector(`[data-media-id="${this.dragging}"]`),to=grid.querySelector(`[data-media-id="${id}"]`);grid.insertBefore(from,to);this.save()},setCover(id){const grid=this.$refs.mediaGrid,el=grid.querySelector(`[data-media-id="${id}"]`);grid.prepend(el);this.save()},save(){fetch('{{ route('owner.properties.setup.media.order',$property) }}',{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json'},body:JSON.stringify({media_ids:this.ids()})}).then(()=>window.location.reload())}}}
+</script>
 </html>

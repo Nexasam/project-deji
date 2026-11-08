@@ -12,6 +12,7 @@ class PropertyCalendarFeedController extends Controller
     {
         abort_unless($export->active_key === 'active' && $export->status === 'active' && ! $export->revoked_at && hash_equals($export->token_hash, hash('sha256', $token)), 404);
         $export->forceFill(['last_accessed_at' => now()])->save();
+        $export->property->externalCalendarConnections()->where('status', 'active')->update(['last_exported_at' => now()]);
         return response($builder->build($export->property), 200, [
             'Content-Type' => 'text/calendar; charset=UTF-8',
             'Content-Disposition' => 'inline; filename="verified-shortlet-'.$export->property_id.'.ics"',

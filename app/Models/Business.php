@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'verification_status',
     'verification_payload',
     'status',
+    'channel_import_enabled',
 ])]
 class Business extends Model
 {
@@ -58,6 +59,7 @@ class Business extends Model
             'onboarding_status' => BusinessOnboardingStatus::class,
             'onboarding_started_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
+            'channel_import_enabled' => 'boolean',
         ];
     }
 

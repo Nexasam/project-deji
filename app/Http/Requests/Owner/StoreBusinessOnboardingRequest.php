@@ -16,10 +16,10 @@ class StoreBusinessOnboardingRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'registration_number' => ['nullable', 'string', 'max:100'],
-            'country_code' => ['required', 'string', 'size:2'],
+            'country_code' => ['required', 'in:NG'],
             'business_type' => ['required', 'string', 'max:80'],
-            'timezone' => ['required', 'timezone'],
-            'currency' => ['required', 'string', 'size:3'],
+            'timezone' => ['required', 'in:Africa/Lagos'],
+            'currency' => ['required', 'in:NGN'],
             'primary_contact_name' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone_number' => ['nullable', 'string', 'max:32'],

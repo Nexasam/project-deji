@@ -65,7 +65,7 @@
                                      alt="Another flat" class="w-full h-full object-cover" />
                             </div>
                             <div class="p-4">
-                                <h3 class="text-base font-bold text-gray-900 mb-1">Another flat in a property</h3>
+                                <h3 class="text-base font-bold text-gray-900 mb-1">A room in a flat</h3>
                                 <p class="text-gray-500 text-sm mb-3">e.g. adding "3C" to a Bluewater building you already list.</p>
                                 <button type="button" disabled class="w-full bg-gray-300 text-gray-600 text-xs font-bold py-2.5 px-4 rounded-lg cursor-not-allowed tracking-wider">
                                     COMING SOON

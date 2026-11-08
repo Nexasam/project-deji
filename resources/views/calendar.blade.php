@@ -26,15 +26,15 @@
     @include('partials.sidebar-nav', ['active' => 'calendar'])
 
     <div class="min-w-0 flex-1">
-        <header class="border-b border-slate-200 bg-white">
-            <div class="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-4 lg:px-6">
+        <header class="owner-workspace-header border-b border-slate-200 bg-white">
+            <div class="owner-workspace-header-inner mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-4 lg:px-6">
                 <div class="flex min-w-0 items-center gap-3">
                     <button type="button" @click="sidebarOpen = true" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden" aria-label="Open navigation">
                         <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                     </button>
                     <div class="min-w-0">
-                        <p class="text-xs font-bold uppercase tracking-wider text-orange-600">{{ $business->name }}</p>
-                        <h1 class="mt-1 truncate text-xl font-extrabold tracking-tight">Calendar</h1>
+                        <p class="owner-page-eyebrow">{{ $business->name }}</p>
+                        <h1 class="owner-page-title mt-1 truncate">Calendar</h1>
                     </div>
                 </div>
 
@@ -43,12 +43,12 @@
                         <span class="size-1.5 rounded-full {{ $calendarHealth['attention'] ? 'bg-red-500' : ($calendarHealth['connections'] ? 'bg-emerald-500' : 'bg-slate-400') }}"></span>
                         {{ $calendarHealth['connections'] ? ($calendarHealth['attention'] ? 'Sync needs attention' : 'Calendars healthy') : 'No external calendars' }}
                     </span>
-                    <a href="{{ route('owner.dashboard') }}" class="text-xs font-bold text-slate-500 hover:text-slate-900">Dashboard</a>
+                    <a href="{{ route('owner.dashboard') }}" class="ui-button ui-button-sm ui-button-secondary">Dashboard</a>
                 </div>
             </div>
         </header>
 
-        <main class="mx-auto max-w-[1600px] px-4 py-6 lg:px-6 lg:py-8">
+        <main class="owner-workspace-main mx-auto max-w-[1600px] px-4 py-6 lg:px-6 lg:py-8">
             @if (session('status'))
                 <div class="mb-5 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                     <svg class="mt-0.5 size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -63,19 +63,20 @@
                 </div>
             @endif
 
-            <section class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                <div>
-                    <p class="text-sm font-semibold text-orange-600">{{ $monthStart->format('F Y') }} · {{ $selectedPropertyName }}</p>
-                    <h2 class="mt-1 text-xl font-extrabold tracking-tight">Calendar overview</h2>
-                    <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Bookings, owner blocks, operational work and synchronized reservations in one clear monthly view.</p>
-                </div>
+            <x-owner.page-header
+                eyebrow="{{ $monthStart->format('F Y') }} · {{ $selectedPropertyName }}"
+                title="Calendar overview"
+                description="Bookings, owner blocks, operational work and synchronized reservations in one clear monthly view."
+            >
+                <x-slot:actions>
                 @if ($canManageBlocks)
-                    <button type="button" @click="blockModal = true" class="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-orange-700">
+                    <button type="button" @click="blockModal = true" class="ui-button ui-button-md ui-button-primary">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         Block dates
                     </button>
                 @endif
-            </section>
+                </x-slot:actions>
+            </x-owner.page-header>
 
             <section class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
                 @foreach ([

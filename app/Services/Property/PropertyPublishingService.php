@@ -38,6 +38,17 @@ final class PropertyPublishingService
                 ]);
             }
 
+            $sanitizer = app(PublicListingTextSanitizer::class);
+            $listing->update([
+                'public_title' => $sanitizer->clean($property, $listing->public_title),
+                'short_summary' => $sanitizer->clean($property, $listing->short_summary),
+                'public_description' => $sanitizer->clean($property, $listing->public_description),
+            ]);
+            $listing->refresh();
+            if (blank($listing->public_title)) {
+                throw ValidationException::withMessages(['property' => 'The public title must include words other than the private street address.']);
+            }
+
             if (! in_array($property->property_type, ['serviced_apartment', 'flat', 'duplex', 'apartment'], true) || $property->booking_mode !== 'entire') {
                 throw ValidationException::withMessages([
                     'property' => 'This MVP can only publish entire serviced apartments.',
@@ -59,8 +70,6 @@ final class PropertyPublishingService
                 'published_at' => $now,
                 'published_by' => $admin->id,
                 'readiness_status' => 'ready',
-                'operational_status' => 'available',
-                'operational_status_updated_at' => $now,
                 'updated_by' => $admin->id,
             ]);
             $listing->update([

@@ -13,6 +13,7 @@ use App\Services\Property\StorePropertyMediaService;
 use App\Services\Property\SyncPropertyAmenitiesService;
 use App\Services\Property\SyncPropertyAssetsService;
 use App\Services\Property\SyncPropertyChannelsService;
+use App\Services\Property\PublicListingTextSanitizer;
 use App\Services\Calendar\ManageExternalCalendarConnection;
 use App\Support\ActiveBusinessContext;
 use Illuminate\Http\RedirectResponse;
@@ -252,11 +253,13 @@ class PropertyWizardController extends Controller
     private function namePrice(Request $r, Property $p): void
     {
         $r->merge(['tax_enabled' => $r->boolean('tax_enabled')]);
-        $d = $r->validate(['name' => 'required|string|max:255', 'marketplace_title' => 'nullable|string|max:255', 'short_summary' => 'nullable|string|max:500', 'description' => 'nullable|string|max:5000', 'default_nightly_price' => 'required|numeric|min:1', 'tax_enabled' => 'required|boolean', 'tax_rate' => 'nullable|required_if:tax_enabled,1|numeric|min:0|max:100', 'discount_percentage' => 'nullable|numeric|min:1|max:100', 'minimum_stay_nights' => 'nullable|required_with:discount_percentage|integer|min:2|max:365']);
-        $marketplaceTitle = filled($d['marketplace_title'] ?? null) ? $d['marketplace_title'] : $d['name'];
-        $p->update(collect($d)->only(['name', 'description', 'default_nightly_price', 'tax_enabled', 'tax_rate'])->all() + ['tax_rate' => $d['tax_enabled'] ? ($d['tax_rate'] ?? 0) : 0, 'information_completed_at' => now(), 'updated_by' => $r->user()->id]);
+        $d = $r->validate(['name' => 'required|string|max:255', 'marketplace_title' => 'nullable|string|max:255', 'short_summary' => 'nullable|string|max:500', 'description' => 'nullable|string|max:5000', 'default_nightly_price' => 'required|numeric|min:1', 'tax_enabled' => 'required|boolean', 'tax_rate' => 'nullable|required_if:tax_enabled,1|numeric|min:0|max:100', 'discount_percentage' => 'nullable|numeric|min:1|max:100', 'minimum_stay_nights' => 'nullable|required_with:discount_percentage|integer|min:2|max:365', 'availability_enabled' => 'required|boolean']);
+        $sanitizer = app(PublicListingTextSanitizer::class);
+        $marketplaceTitle = $sanitizer->clean($p, filled($d['marketplace_title'] ?? null) ? $d['marketplace_title'] : $d['name']);
+        $publicDescription = $sanitizer->clean($p, $d['description'] ?? null);
+        $p->update(collect($d)->only(['name', 'description', 'default_nightly_price', 'tax_enabled', 'tax_rate'])->all() + ['tax_rate' => $d['tax_enabled'] ? ($d['tax_rate'] ?? 0) : 0, 'operational_status' => $d['availability_enabled'] ? 'available' : 'unavailable', 'operational_status_updated_at' => now(), 'information_completed_at' => now(), 'updated_by' => $r->user()->id]);
         $listing = $p->marketplaceListing()->firstOrNew();
-        $listing->fill(['business_id' => $p->business_id, 'public_title' => $marketplaceTitle, 'short_summary' => $d['short_summary'] ?? null, 'public_description' => $d['description'] ?? null, 'publication_status' => 'draft', 'is_publication_eligible' => false, 'status' => 'active', 'updated_by' => $r->user()->id]);
+        $listing->fill(['business_id' => $p->business_id, 'public_title' => $marketplaceTitle, 'short_summary' => $sanitizer->clean($p, $d['short_summary'] ?? null), 'public_description' => $publicDescription, 'publication_status' => 'draft', 'is_publication_eligible' => false, 'status' => 'active', 'updated_by' => $r->user()->id]);
         $listing->slug ??= Str::slug($marketplaceTitle).'-'.Str::lower(Str::random(6));
         $listing->created_by ??= $r->user()->id;
         $listing->save();

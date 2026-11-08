@@ -18,8 +18,8 @@
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         </button>
                         <div class="min-w-0 flex-1">
-                            <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-orange-600 sm:text-xs">Owner workspace</p>
-                            <h1 class="mt-0.5 whitespace-normal break-words text-xl font-extrabold leading-tight tracking-tight sm:text-2xl">{{ $business->name }}</h1>
+                            <p class="owner-page-eyebrow">Owner workspace</p>
+                            <h1 class="owner-page-title mt-0.5 whitespace-normal break-words">{{ $business->name }}</h1>
                         </div>
                     </div>
                     <div class="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
@@ -38,7 +38,7 @@
                 </div>
             </header>
 
-            <main class="mx-auto max-w-[1600px] px-4 py-6 lg:px-6 lg:py-10">
+            <main class="owner-workspace-main mx-auto max-w-[1600px] px-4 py-6 lg:px-6 lg:py-10">
                 @if (session('status'))
                     <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ session('status') }}</div>
                 @endif
