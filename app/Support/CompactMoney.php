@@ -31,6 +31,10 @@ final class CompactMoney
     {
         $formatted = $value >= 100 ? number_format($value, 0) : number_format($value, 1);
 
-        return rtrim(rtrim($formatted, '0'), '.');
+        // Only trim zeroes after a decimal point. Significant zeroes in whole
+        // values must remain: 210 must display as 210K, not 21K.
+        return str_contains($formatted, '.')
+            ? rtrim(rtrim($formatted, '0'), '.')
+            : $formatted;
     }
 }
