@@ -353,13 +353,13 @@
     gap: 8px;
 }
 .guest-btn {
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    min-height: 24px;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
     flex: 0 0 24px;
     aspect-ratio: 1 / 1;
-    border-radius: 50%;
+    border-radius: 9999px !important;
     border: 1.5px solid #d1d5db;
     background: none;
     display: flex;
@@ -994,14 +994,14 @@
     position: absolute; 
     top: 10px; 
     right: 10px; 
-    width: 30px; 
-    height: 30px;
-    min-width: 30px;
-    min-height: 30px;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
     flex: 0 0 30px;
     aspect-ratio: 1 / 1;
     background: rgba(255,255,255,0.92); 
-    border-radius: 50%; 
+    border-radius: 9999px !important;
     border: none; 
     cursor: pointer;
     display: flex; 
@@ -1018,6 +1018,7 @@
     aspect-ratio: 1 / 1;
     padding: 0;
     box-sizing: border-box;
+    border-radius: 9999px !important;
 }
 .heart-btn:hover { 
     transform: scale(1.15); 
