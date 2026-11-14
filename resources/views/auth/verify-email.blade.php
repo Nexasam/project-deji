@@ -34,6 +34,19 @@
                     Open the link to verify your account and continue setting up your workspace. It may take a minute to arrive.
                 </p>
 
+                <div class="mx-auto mt-5 max-w-sm rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left text-xs leading-5 text-sky-900">
+                    <strong class="font-bold">Already clicked the verification link?</strong>
+                    Return to this page and refresh your verification status. We will take you to your dashboard when verification is complete.
+                </div>
+
+                <button type="button" onclick="window.location.reload()" class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-orange-300 hover:text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2" aria-label="Refresh verification status">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M20 7v5h-5M4 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.1 9A7 7 0 0 1 18.5 7.5L20 12M4 12l1.5 4.5A7 7 0 0 0 17.9 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Refresh verification status
+                </button>
+
                 @if (session('status') === 'verification-link-sent')
                     <div role="status" class="mt-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left text-sm leading-5 text-emerald-800">
                         <svg class="mt-0.5 size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
