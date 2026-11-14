@@ -375,6 +375,28 @@
 }
 .guest-btn:hover:not(:disabled) { border-color: #f97316; color: #f97316; }
 .guest-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Shared circular controls: keep the container square and its glyph centered. */
+.guest-stepper-btn,
+.heart-btn,
+.availability-icon-btn {
+    display: inline-grid !important;
+    place-items: center !important;
+    align-content: center !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    vertical-align: middle;
+}
+.guest-stepper-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    flex: 0 0 32px !important;
+    aspect-ratio: 1 / 1;
+    padding: 0 !important;
+    border-radius: 9999px !important;
+}
 .guest-count {
     font-size: 14px;
     font-weight: 600;

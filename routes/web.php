@@ -79,6 +79,7 @@ Route::middleware(['auth', 'guest.workspace'])->prefix('guest')->name('guest.')-
     Route::get('/', GuestDashboardController::class)->name('dashboard');
     Route::get('/calendar', GuestCalendarController::class)->name('calendar');
     Route::get('/settings', [GuestSettingsController::class, 'edit'])->name('settings.edit');
+    Route::post('/settings/identity', [GuestSettingsController::class, 'verifyIdentity'])->name('settings.identity.verify');
     Route::patch('/settings', [GuestSettingsController::class, 'update'])->name('settings.update');
     Route::get('/favourites', [GuestFavouriteController::class, 'index'])->name('favourites.index');
     Route::post('/favourites/{property}', [GuestFavouriteController::class, 'store'])->name('favourites.store');

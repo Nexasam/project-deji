@@ -9,12 +9,30 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use App\Services\Identity\DojahIdentityVerifier;
 use Throwable;
 use Illuminate\Validation\ValidationException;
 
 class GuestSettingsController extends Controller
 {
+    public function verifyIdentity(Request $request, DojahIdentityVerifier $identity): JsonResponse
+    {
+        $nin = $request->validate(['nin' => ['required', 'string', 'regex:/^\d{11}$/']])['nin'];
+        try {
+            $result = $identity->verifyNin($nin);
+        } catch (Throwable $exception) {
+            report($exception);
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+        $request->user()->forceFill([
+            'identity_verification_status' => IdentityVerificationStatus::Verified,
+            'identity_verification' => $result + ['nin_last4' => substr($nin, -4), 'verified_at' => now()->toIso8601String()],
+        ])->save();
+
+        return response()->json(['verified' => true, 'message' => 'Your account is verified. You can continue to payment.']);
+    }
+
     public function edit(Request $request): View
     {
         return view('guest.settings', ['user' => $request->user()]);

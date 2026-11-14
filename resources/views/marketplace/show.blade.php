@@ -148,9 +148,9 @@
                                 <div class="flex items-center justify-between gap-3">
                                     <div><p class="text-sm font-extrabold text-slate-900">Adults</p><p class="text-xs text-slate-400">Age 13+</p></div>
                                     <div class="flex shrink-0 items-center gap-2">
-                                        <button type="button" aria-label="Remove adult" @click="adults=Math.max(1,adults-1);children=Math.min(children,capacity-adults)" class="flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-base font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-35" :disabled="adults<=1">−</button>
+                                        <button type="button" aria-label="Remove adult" @click="adults=Math.max(1,adults-1);children=Math.min(children,capacity-adults)" class="guest-stepper-btn border border-slate-300 bg-white text-base font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-35" :disabled="adults<=1">−</button>
                                         <input required aria-label="Adult count" type="number" name="adult_count" x-model.number="adults" @input="adults=Math.max(1,Math.min(capacity,Number(adults||1)));children=Math.min(children,capacity-adults)" min="1" :max="capacity" class="!min-h-0 w-8 border-0 bg-transparent !p-0 text-center text-base font-extrabold text-slate-950 focus:ring-0">
-                                        <button type="button" aria-label="Add adult" @click="adults=Math.min(capacity,adults+1);children=Math.min(children,capacity-adults)" class="flex size-8 items-center justify-center rounded-full bg-slate-950 text-base font-bold text-white disabled:cursor-not-allowed disabled:opacity-35" :disabled="guestCount>=capacity">+</button>
+                                        <button type="button" aria-label="Add adult" @click="adults=Math.min(capacity,adults+1);children=Math.min(children,capacity-adults)" class="guest-stepper-btn bg-slate-950 text-base font-bold text-white disabled:cursor-not-allowed disabled:opacity-35" :disabled="guestCount>=capacity">+</button>
                                     </div>
                                 </div>
                             </div>
@@ -158,9 +158,9 @@
                                 <div class="flex items-center justify-between gap-3">
                                     <div><p class="text-sm font-extrabold text-slate-900">Children</p><p class="text-xs text-slate-400">Age 0–12</p></div>
                                     <div class="flex shrink-0 items-center gap-2">
-                                        <button type="button" aria-label="Remove child" @click="children=Math.max(0,children-1)" class="flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-base font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-35" :disabled="children<=0">−</button>
+                                        <button type="button" aria-label="Remove child" @click="children=Math.max(0,children-1)" class="guest-stepper-btn border border-slate-300 bg-white text-base font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-35" :disabled="children<=0">−</button>
                                         <input aria-label="Child count" type="number" name="child_count" x-model.number="children" @input="children=Math.max(0,Math.min(Math.max(0,capacity-adults),Number(children||0)))" min="0" :max="Math.max(0,capacity-adults)" class="!min-h-0 w-8 border-0 bg-transparent !p-0 text-center text-base font-extrabold text-slate-950 focus:ring-0">
-                                        <button type="button" aria-label="Add child" @click="children=Math.min(Math.max(0,capacity-adults),children+1)" class="flex size-8 items-center justify-center rounded-full bg-slate-950 text-base font-bold text-white disabled:cursor-not-allowed disabled:opacity-35" :disabled="guestCount>=capacity">+</button>
+                                        <button type="button" aria-label="Add child" @click="children=Math.min(Math.max(0,capacity-adults),children+1)" class="guest-stepper-btn bg-slate-950 text-base font-bold text-white disabled:cursor-not-allowed disabled:opacity-35" :disabled="guestCount>=capacity">+</button>
                                     </div>
                                 </div>
                             </div>
