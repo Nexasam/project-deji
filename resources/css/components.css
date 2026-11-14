@@ -355,6 +355,10 @@
 .guest-btn {
     width: 24px;
     height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    flex: 0 0 24px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     border: 1.5px solid #d1d5db;
     background: none;
@@ -367,6 +371,7 @@
     transition: border-color .15s, color .15s;
     line-height: 1;
     padding: 0;
+    box-sizing: border-box;
 }
 .guest-btn:hover:not(:disabled) { border-color: #f97316; color: #f97316; }
 .guest-btn:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -991,6 +996,10 @@
     right: 10px; 
     width: 30px; 
     height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    flex: 0 0 30px;
+    aspect-ratio: 1 / 1;
     background: rgba(255,255,255,0.92); 
     border-radius: 50%; 
     border: none; 
@@ -1000,11 +1009,24 @@
     justify-content: center;
     transition: transform .2s, background .15s; 
 }
+.availability-icon-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px;
+    min-height: 36px;
+    flex: 0 0 36px;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    box-sizing: border-box;
+}
 .heart-btn:hover { 
     transform: scale(1.15); 
     background: #fff; 
 }
 .heart-btn svg { 
+    display: block;
+    width: 14px;
+    height: 14px;
     transition: fill .2s, stroke .2s; 
 }
 .heart-btn.liked svg { 

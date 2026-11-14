@@ -147,7 +147,7 @@
                             :rating="$property->published_reviews_count ? number_format((float) $property->published_reviews_avg_rating, 1) : 'New'"
                         />
                     </a>
-                    <button type="button" @click="open=true" class="absolute right-2 top-12 z-10 flex size-9 items-center justify-center rounded-full bg-white text-orange-600 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:bg-orange-50" aria-label="View availability calendar for {{ $property->marketplaceListing->public_title }}" title="View availability">
+                            <button type="button" @click="open=true" class="availability-icon-btn absolute right-2 top-12 z-10 flex size-9 items-center justify-center rounded-full bg-white text-orange-600 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:bg-orange-50" aria-label="View availability calendar for {{ $property->marketplaceListing->public_title }}" title="View availability">
                         <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" stroke-width="2"/><path d="M16 3v4M8 3v4M3 10h18" stroke-width="2" stroke-linecap="round"/></svg>
                     </button>
                     <div x-show="open" x-cloak @keydown.escape.window="open=false" class="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" :aria-label="'Availability for '+title">
