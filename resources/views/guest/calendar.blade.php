@@ -7,6 +7,9 @@
     for($day=$calendarStart;$day->lte($calendarEnd);$day=$day->addDay()){$calendarDays->push($day);}
 @endphp
 <main class="min-h-screen bg-[#f3f3f2] py-9 sm:py-12">
+    <style>
+        @media (max-width: 639px) { main > div > .mt-7 > aside, main > div > .mt-7 > section { position: relative; z-index: 20; isolation: isolate; overflow: hidden; } main > div > .mt-7 > aside h3 { overflow-wrap: anywhere; } main > div > .mt-7 > section { min-width: 0; } }
+    </style>
     <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
         <header class="flex items-end justify-between gap-4"><div><h1 class="text-3xl font-black">Calendar</h1><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Calendar</p></div><a href="{{ route('home') }}" class="rounded-lg bg-orange-600 px-6 py-3.5 text-sm font-bold text-white">⌕ &nbsp; Find a stay</a></header>
         <div class="mt-7 grid gap-5 lg:grid-cols-[340px_1fr]">
