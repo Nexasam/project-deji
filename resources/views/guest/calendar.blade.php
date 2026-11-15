@@ -23,6 +23,19 @@
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-7">
                 <header class="flex flex-wrap items-center justify-between gap-4"><div><h2 class="text-2xl font-black">{{ $month->format('F Y') }}</h2><div class="mt-4 flex flex-wrap gap-5 text-sm text-slate-500"><span><i class="mr-2 inline-block size-3 rounded-sm {{ $view === 'today' ? 'border border-orange-300 bg-orange-100' : ($view === 'completed' ? 'border border-emerald-300 bg-emerald-100' : ($view === 'cancelled' ? 'border border-red-300 bg-red-100' : 'border border-sky-300 bg-sky-100')) }}"></i>{{ ucfirst($view) }} bookings</span><span><i class="mr-2 inline-block size-3 rounded-sm border-2 border-orange-600"></i>Today</span></div></div><div class="flex gap-2"><a href="{{ route('guest.calendar',['month'=>$month->subMonth()->format('Y-m'),'view'=>$view]) }}" class="grid size-10 place-items-center rounded-lg border border-slate-200 text-xl">‹</a><a href="{{ route('guest.calendar',['month'=>$month->addMonth()->format('Y-m'),'view'=>$view]) }}" class="grid size-10 place-items-center rounded-lg border border-slate-200 text-xl">›</a></div></header>
                 <div class="mt-5 space-y-2 sm:hidden">
+                    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                        <div class="grid grid-cols-7 border-b border-slate-100 bg-slate-50 text-center">@foreach(['S','M','T','W','T','F','S'] as $weekday)<span class="py-2 text-[10px] font-black text-slate-400">{{ $weekday }}</span>@endforeach</div>
+                        <div class="grid grid-cols-7 gap-px bg-slate-100">
+                            @foreach($calendarDays as $day)
+                                @php
+                                    $dayBooking = $bookings->first(fn($booking) => $booking->arrival_date->lte($day) && $booking->departure_date->gt($day));
+                                    $currentMonth = $day->month === $month->month;
+                                    $dayTone = $view === 'today' ? 'bg-orange-100 text-orange-900' : ($view === 'completed' ? 'bg-emerald-100 text-emerald-900' : ($view === 'cancelled' ? 'bg-red-100 text-red-900' : 'bg-sky-100 text-sky-900'));
+                                @endphp
+                                @if($dayBooking)<a href="{{ route('guest.bookings.show', $dayBooking) }}" class="relative grid aspect-square min-w-0 place-items-center text-xs font-black {{ $dayTone }} {{ $day->isToday() ? 'ring-2 ring-inset ring-orange-600' : '' }}"><span>{{ $day->day }}</span><i class="absolute bottom-1 size-1 rounded-full bg-current"></i></a>@else<div class="grid aspect-square min-w-0 place-items-center bg-white text-xs {{ $currentMonth ? 'text-slate-700' : 'text-slate-300' }} {{ $day->isToday() ? 'font-black ring-2 ring-inset ring-orange-600' : '' }}">{{ $day->day }}</div>@endif
+                            @endforeach
+                        </div>
+                    </div>
                     @forelse($bookings as $booking)
                         <a href="{{ route('guest.bookings.show', $booking) }}" class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                             <time class="grid size-12 shrink-0 place-items-center rounded-xl {{ $view === 'today' ? 'bg-orange-100 text-orange-800' : ($view === 'completed' ? 'bg-emerald-100 text-emerald-800' : ($view === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-sky-100 text-sky-800')) }}"><span class="text-center text-[10px] font-black uppercase leading-tight">{{ $booking->arrival_date->format('M') }}<strong class="block text-lg leading-none">{{ $booking->arrival_date->format('d') }}</strong></span></time>
