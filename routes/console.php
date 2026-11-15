@@ -108,6 +108,29 @@ Artisan::command('bookings:notify-upcoming-arrivals', function (ProductNotificat
 
 Schedule::command('bookings:notify-upcoming-arrivals')->hourly()->withoutOverlapping();
 
+Artisan::command('bookings:notify-part-payment-due', function (ProductNotificationService $notifications) {
+    $count = 0;
+    Booking::query()->with(['guest', 'business', 'property.marketplaceListing'])
+        ->where('status', 'confirmed')->where('payment_status', 'partially_paid')
+        ->whereDate('arrival_date', '>=', today())
+        ->each(function (Booking $booking) use ($notifications, &$count): void {
+            $checkIn = substr($booking->property->marketplaceListing?->check_in_time ?: '14:00', 0, 5);
+            $arrivalAt = \Carbon\CarbonImmutable::parse($booking->arrival_date->toDateString().' '.$checkIn);
+            $reminderKey = 'part_payment_due_reminder';
+            if (now()->lt($arrivalAt->subHours(6)) || now()->gte($arrivalAt) || Notification::query()->where('user_id', $booking->guest_user_id)->where('type', $reminderKey)->where('data->booking_id', $booking->id)->exists()) {
+                return;
+            }
+            $message = "Your remaining balance for {$booking->property->name} is due before check-in at {$checkIn}. Please complete payment to unlock arrival instructions.";
+            $data = ['url' => route('guest.bookings.show', $booking), 'booking_id' => $booking->id];
+            $notifications->user($booking->guest, $booking->business, $reminderKey, 'Complete your stay payment', $message, $data);
+            $notifications->platformAdmins($booking->business, $reminderKey, 'Part payment reminder sent', "A payment reminder was sent to {$booking->guest->name} for {$booking->property->name}.", ['url' => route('admin.dashboard'), 'booking_id' => $booking->id]);
+            $count++;
+        });
+    $this->info("Created {$count} part-payment reminder(s).");
+})->purpose('Remind guests and platform administrators about unpaid booking balances shortly before check-in');
+
+Schedule::command('bookings:notify-part-payment-due')->hourly()->withoutOverlapping();
+
 Artisan::command('documents:migrate-private {--dry-run}', function () {
     $versions = DocumentVersion::query()
         ->where('storage_disk', 'public')

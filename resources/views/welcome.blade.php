@@ -152,7 +152,7 @@
                     ['title' => auth()->check() ? 'Stays near You in Lagos' : 'Popular verified stays in Lagos', 'subtitle' => auth()->check() ? null : 'Guest-ready homes with live availability.', 'items' => $propertyCollection->take(10)],
                     ['title' => auth()->check() ? 'Recommended for You' : 'Great stays for your next trip', 'subtitle' => auth()->check() ? null : 'Comfortable apartments across Lekki, Ikoyi and Victoria Island.', 'items' => $propertyCollection->skip(3)->take(10)],
                     ['title' => 'Popular verified stays', 'subtitle' => null, 'items' => $propertyCollection->take(10)],
-                    ['title' => 'Best value longer stays', 'subtitle' => 'Homes where selected dates can unlock host discounts.', 'items' => $propertyCollection->filter(fn($property) => $property->promotions->isNotEmpty())->take(10)],
+                    ['title' => 'Suggested stays', 'subtitle' => 'Flexible dates and host discounts for better value.', 'items' => $propertyCollection->filter(fn($property) => $property->promotions->isNotEmpty())->take(10)],
                     ['title' => 'Family and group stays', 'subtitle' => 'More space for guests travelling together.', 'items' => $propertyCollection->filter(fn($property) => $property->capacity >= 4)->take(10)],
                 ])->filter(fn($row) => $row['items']->isNotEmpty())->values();
             @endphp

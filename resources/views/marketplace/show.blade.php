@@ -49,6 +49,11 @@
         $hostInitials = Str::of($hostDisplayName)->substr(0, 2)->upper();
         $hostingSince = $property->business?->onboarding_completed_at ?: $property->business?->created_at;
         $hostingYears = $hostingSince ? max(1, (int) floor($hostingSince->diffInYears(now()))) : null;
+        $reviewCount = $property->reviews->count();
+        $reviewAverage = $reviewCount ? round((float) $property->reviews->avg('rating'), 1) : null;
+        // Use only the public area for directions; never expose the exact property address.
+        $mapQuery = collect([data_get($property->address, 'city'), data_get($property->address, 'state'), 'Nigeria'])->filter()->join(', ');
+        $directionsUrl = 'https://www.google.com/maps/search/?api=1&query='.urlencode($mapQuery);
     @endphp
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div><div class="flex flex-wrap items-center gap-3"><h1 class="text-3xl font-black text-slate-950">{{ $property->marketplaceListing->public_title }}</h1>@if($property->is_test)<span class="rounded-full bg-violet-950 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Test property</span>@endif</div><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Explore stays &gt; {{ $property->marketplaceListing->public_title }}</p><p class="mt-2 text-sm font-semibold text-slate-700">⌖ {{ collect([data_get($property->address, 'city'), data_get($property->address, 'state')])->filter()->join(', ') }}</p></div>
@@ -92,6 +97,7 @@
             @if($errors->any())<div class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{{ $errors->first() }}</div>@endif
 	            @if($property->superhost_badge_enabled)<span class="text-xs font-bold text-orange-700">★ Super host</span>@endif
             <p class="mt-3 text-sm text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }}</p>
+            <a href="{{ $directionsUrl }}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8"/></svg>Open map and directions</a>
             <dl class="mt-5 hidden grid-cols-3 gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:max-w-lg">
                 <div class="rounded-xl bg-slate-50 px-2.5 py-3">
                     <div class="flex items-center justify-center gap-2">
@@ -116,19 +122,24 @@
                 </div>
             </dl>
             <div class="mt-5 flex items-end justify-between gap-3"><p class="text-3xl font-black">₦{{ number_format((float) $property->default_nightly_price) }} <span class="text-sm font-normal text-gray-500">/ night</span></p>@if($property->reviews->isNotEmpty())<a href="{{ route('marketplace.reviews',$property->marketplaceListing->slug) }}" class="text-sm font-black text-orange-600">★ {{ number_format((float)$property->reviews->avg('rating'),1) }} ({{ $property->reviews->count() }})</a>@endif</div>
-            <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="Host information">
+            <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="Meet your host">
+                <h2 class="mb-4 text-base font-black text-slate-950">Meet your host</h2>
                 <div class="flex items-center gap-4">
                     <div class="relative flex size-14 shrink-0 items-center justify-center rounded-full bg-orange-50 text-lg font-black text-orange-700 ring-1 ring-orange-100">{{ $hostInitials }}</div>
                     <div class="min-w-0">
                         <p class="text-base font-extrabold text-slate-950">Hosted by {{ $hostDisplayName }}</p>
                         <p class="mt-1 text-sm text-slate-500">Verified Shortlet host{{ $hostingYears ? ' · '.$hostingYears.' '.Str::plural('year', $hostingYears).' hosting' : '' }}</p>
                     </div>
+                    <div class="ml-auto grid shrink-0 grid-cols-2 gap-4 border-l border-slate-200 pl-4 text-center sm:gap-6">
+                        <div><p class="text-xl font-black text-slate-950">{{ $reviewCount }}</p><p class="text-[11px] font-bold text-slate-500">{{ Str::plural('review', $reviewCount) }}</p></div>
+                        <div><p class="text-xl font-black text-slate-950">{{ $reviewAverage ? number_format($reviewAverage, 1) : '—' }} @if($reviewAverage)<span class="text-orange-500">★</span>@endif</p><p class="text-[11px] font-bold text-slate-500">Average rating</p></div>
+                    </div>
                 </div>
             </section>
             <div class="mt-5 rounded-xl bg-slate-50 p-4"><p class="text-xs font-bold uppercase text-slate-400">Cancellation</p><p class="mt-2 text-sm font-semibold">Full refund more than 48 hours before check-in.</p></div>
             @if($property->houseRules->isNotEmpty())<div class="mt-4 rounded-xl border border-slate-200 p-4"><h2 class="text-sm font-extrabold">House rules</h2><ul class="mt-2 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">@foreach($property->houseRules as $rule)<li>• {{ $rule->name }}</li>@endforeach</ul></div>@endif
             @auth
-                <form x-ref="bookingForm" @submit.prevent="reviewBooking" method="GET" action="{{ route('marketplace.checkout.show', $property->marketplaceListing->slug) }}" class="mt-5 border-t border-slate-200 pt-5">
+                <form aria-label="Host booking form" x-ref="bookingForm" @submit.prevent="reviewBooking" method="GET" action="{{ route('marketplace.checkout.show', $property->marketplaceListing->slug) }}" class="mt-5 border-t border-slate-200 pt-5">
                     <input type="hidden" name="arrival_date" :value="checkIn"><input type="hidden" name="departure_date" :value="checkOut">
                     <div class="grid grid-cols-2 gap-3">
                         <button type="button" @click="openDatePicker('checkin')" class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-left transition hover:border-orange-300 hover:bg-orange-50"><p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Check in</p><p class="mt-1 text-sm font-extrabold text-slate-950" x-text="checkIn ? formatDate(checkIn) : 'Select date'"></p></button>
@@ -195,6 +206,9 @@
                 </div>
             @endauth
         </section>
+    </div>
+    <div class="pointer-events-none fixed inset-x-4 bottom-4 z-30 lg:hidden">
+        <button type="button" @click="document.querySelector('[aria-label=\"Host booking form\"]')?.scrollIntoView({behavior:'smooth',block:'center'})" class="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-black text-white shadow-xl shadow-slate-950/25"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Check availability</button>
     </div>
 
     <section class="mt-8 border-t border-slate-200 pt-8" aria-labelledby="guest-reviews-title">
