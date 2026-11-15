@@ -130,10 +130,10 @@
                         <p class="text-base font-extrabold text-slate-950">Hosted by {{ $hostDisplayName }}</p>
                         <p class="mt-1 text-sm text-slate-500">Verified Shortlet host{{ $hostingYears ? ' · '.$hostingYears.' '.Str::plural('year', $hostingYears).' hosting' : '' }}</p>
                     </div>
-                    <div class="ml-auto grid shrink-0 grid-cols-2 gap-4 border-l border-slate-200 pl-4 text-center sm:gap-6">
-                        <div><p class="text-xl font-black text-slate-950">{{ $reviewCount }}</p><p class="text-[11px] font-bold text-slate-500">{{ Str::plural('review', $reviewCount) }}</p></div>
-                        <div><p class="text-xl font-black text-slate-950">{{ $reviewAverage ? number_format($reviewAverage, 1) : '—' }} @if($reviewAverage)<span class="text-orange-500">★</span>@endif</p><p class="text-[11px] font-bold text-slate-500">Average rating</p></div>
-                    </div>
+                </div>
+                <div class="mt-5 grid grid-cols-2 gap-4 border-t border-slate-200 pt-4 text-center sm:max-w-sm sm:gap-8">
+                    <div><p class="text-xl font-black text-slate-950">{{ $reviewCount }}</p><p class="text-[11px] font-bold lowercase text-slate-500">{{ Str::plural('review', $reviewCount) }}</p></div>
+                    <div><p class="text-xl font-black text-slate-950">{{ $reviewAverage ? number_format($reviewAverage, 1) : '—' }} @if($reviewAverage)<span class="text-orange-500">★</span>@endif</p><p class="text-[11px] font-bold text-slate-500">Average rating</p></div>
                 </div>
             </section>
             <div class="mt-5 rounded-xl bg-slate-50 p-4"><p class="text-xs font-bold uppercase text-slate-400">Cancellation</p><p class="mt-2 text-sm font-semibold">Full refund more than 48 hours before check-in.</p></div>
