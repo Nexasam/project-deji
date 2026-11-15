@@ -21,6 +21,7 @@ class OwnerMessageController extends Controller
             ->when($propertyIds !== null, fn ($query) => $query->whereIn('property_id', $propertyIds))
             ->whereHas('interactions', fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false))
             ->with(['property.marketplaceListing', 'guest', 'interactions' => fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false)->latest('occurred_at')])
+            ->withCount(['interactions as unread_message_count' => fn ($query) => $query->where('interaction_type', 'message')->where('direction', 'inbound')->whereNull('read_at')->where('is_internal', false)])
             ->withMax(['interactions as latest_message_at' => fn ($query) => $query->where('interaction_type', 'message')->where('is_internal', false)], 'occurred_at')
             ->orderByDesc('latest_message_at')
             ->paginate(12);
@@ -31,6 +32,7 @@ class OwnerMessageController extends Controller
     public function show(ActiveBusinessContext $context, BusinessPermissionService $permissions, string $booking): View
     {
         $record = $this->findBooking($context, $permissions, $booking);
+        $record->interactions()->where('interaction_type', 'message')->where('direction', 'inbound')->whereNull('read_at')->update(['read_at' => now()]);
 
         return view('owner.messages.show', ['business' => $context->business, 'booking' => $record]);
     }

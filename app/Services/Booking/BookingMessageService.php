@@ -2,11 +2,14 @@
 
 namespace App\Services\Booking;
 
+use App\Events\BookingMessageCreated;
 use App\Models\Booking;
 use App\Models\BookingInteraction;
 use App\Models\User;
 use App\Services\Notifications\ProductNotificationService;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 final readonly class BookingMessageService
 {
@@ -47,7 +50,7 @@ final readonly class BookingMessageService
     {
         $content = trim($content);
 
-        return BookingInteraction::query()->create([
+        $message = BookingInteraction::query()->create([
             'business_id' => $booking->business_id,
             'booking_id' => $booking->id,
             'user_id' => $sender->id,
@@ -67,5 +70,13 @@ final readonly class BookingMessageService
             'created_by' => $sender->id,
             'updated_by' => $sender->id,
         ]);
+
+        try {
+            BookingMessageCreated::dispatch($message->load('user'));
+        } catch (Throwable $exception) {
+            Log::warning('Real-time booking message broadcast failed.', ['booking_id' => $booking->id, 'message_id' => $message->id, 'exception' => $exception]);
+        }
+
+        return $message;
     }
 }

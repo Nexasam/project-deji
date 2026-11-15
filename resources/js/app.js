@@ -20,6 +20,13 @@ window.asyncMessageThread = function () {
         error: '',
         init() {
             this.$nextTick(() => this.scrollToLatest());
+            const bookingId = this.$el.dataset.bookingId;
+            const currentUserId = this.$el.dataset.currentUserId;
+            if (bookingId && window.Echo) {
+                window.Echo.private(`booking.${bookingId}`).listen('.booking.message.created', (message) => {
+                    if (String(message.sender_id) !== String(currentUserId)) this.appendMessage(message, false);
+                });
+            }
         },
         async send(event) {
             if (this.sending) return;
@@ -61,26 +68,29 @@ window.asyncMessageThread = function () {
                 this.sending = false;
             }
         },
-        appendMessage(message) {
+        appendMessage(message, mine = true) {
+            if (this.$refs.messages?.querySelector(`[data-message-id="${message.id}"]`)) return;
             this.$refs.emptyState?.remove();
 
             const article = document.createElement('article');
-            article.className = 'flex justify-end';
+            article.className = mine ? 'flex justify-end' : 'flex justify-start';
             article.dataset.messageId = message.id;
 
             const bubble = document.createElement('div');
-            bubble.className = 'max-w-[85%] rounded-2xl rounded-tr-sm bg-orange-600 px-5 py-3 text-sm text-white shadow-sm';
+            bubble.className = mine
+                ? 'max-w-[85%] rounded-2xl rounded-tr-sm bg-orange-600 px-5 py-3 text-sm text-white shadow-sm'
+                : 'max-w-[85%] rounded-2xl rounded-tl-sm bg-slate-100 px-5 py-3 text-sm text-slate-700 shadow-sm';
 
             const sender = document.createElement('p');
-            sender.className = 'font-bold text-orange-100';
-            sender.textContent = message.sender || 'You';
+            sender.className = mine ? 'font-bold text-orange-100' : 'font-bold text-slate-500';
+            sender.textContent = mine ? 'You' : (message.sender || 'New message');
 
             const content = document.createElement('p');
             content.className = 'mt-1 whitespace-pre-wrap leading-6';
             content.textContent = message.content;
 
             const time = document.createElement('p');
-            time.className = 'mt-2 text-right text-[10px] text-orange-100';
+            time.className = mine ? 'mt-2 text-right text-[10px] text-orange-100' : 'mt-2 text-right text-[10px] text-slate-400';
             time.textContent = message.time;
 
             bubble.append(sender, content, time);

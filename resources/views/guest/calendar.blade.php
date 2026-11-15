@@ -22,7 +22,18 @@
 
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-7">
                 <header class="flex flex-wrap items-center justify-between gap-4"><div><h2 class="text-2xl font-black">{{ $month->format('F Y') }}</h2><div class="mt-4 flex flex-wrap gap-5 text-sm text-slate-500"><span><i class="mr-2 inline-block size-3 rounded-sm {{ $view === 'today' ? 'border border-orange-300 bg-orange-100' : ($view === 'completed' ? 'border border-emerald-300 bg-emerald-100' : ($view === 'cancelled' ? 'border border-red-300 bg-red-100' : 'border border-sky-300 bg-sky-100')) }}"></i>{{ ucfirst($view) }} bookings</span><span><i class="mr-2 inline-block size-3 rounded-sm border-2 border-orange-600"></i>Today</span></div></div><div class="flex gap-2"><a href="{{ route('guest.calendar',['month'=>$month->subMonth()->format('Y-m'),'view'=>$view]) }}" class="grid size-10 place-items-center rounded-lg border border-slate-200 text-xl">‹</a><a href="{{ route('guest.calendar',['month'=>$month->addMonth()->format('Y-m'),'view'=>$view]) }}" class="grid size-10 place-items-center rounded-lg border border-slate-200 text-xl">›</a></div></header>
-                <div class="mt-5 overflow-x-auto">
+                <div class="mt-5 space-y-2 sm:hidden">
+                    @forelse($bookings as $booking)
+                        <a href="{{ route('guest.bookings.show', $booking) }}" class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <time class="grid size-12 shrink-0 place-items-center rounded-xl {{ $view === 'today' ? 'bg-orange-100 text-orange-800' : ($view === 'completed' ? 'bg-emerald-100 text-emerald-800' : ($view === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-sky-100 text-sky-800')) }}"><span class="text-center text-[10px] font-black uppercase leading-tight">{{ $booking->arrival_date->format('M') }}<strong class="block text-lg leading-none">{{ $booking->arrival_date->format('d') }}</strong></span></time>
+                            <div class="min-w-0 flex-1"><h3 class="truncate text-sm font-black text-slate-950">{{ $booking->property->marketplaceListing?->public_title ?: $booking->property->name }}</h3><p class="mt-1 text-xs text-slate-500">{{ $booking->arrival_date->format('d M') }} – {{ $booking->departure_date->format('d M Y') }}</p></div>
+                            <span class="text-lg text-slate-400">›</span>
+                        </a>
+                    @empty
+                        <div class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">No {{ $view }} bookings in {{ $month->format('F Y') }}.</div>
+                    @endforelse
+                </div>
+                <div class="mt-5 hidden overflow-x-auto sm:block">
                     <div class="min-w-0 sm:min-w-[760px]">
                         <div class="grid grid-cols-7 text-center text-sm font-bold text-slate-500">@foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $weekday)<div class="py-3">{{ $weekday }}</div>@endforeach</div>
                         <div class="space-y-1.5">

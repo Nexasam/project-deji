@@ -12,6 +12,9 @@
     $sidebarInitials = $sidebarUser
         ? str($sidebarUser->name)->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('')
         : 'VS';
+    $sidebarUnreadMessages = $sidebarBusiness
+        ? \App\Models\BookingInteraction::query()->where('business_id', $sidebarBusiness->id)->where('interaction_type', 'message')->where('direction', 'inbound')->whereNull('read_at')->where('is_internal', false)->count()
+        : 0;
     $overviewItems = [
         ['key' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'dashboard', 'route' => route('owner.dashboard'), 'show' => $sidebarCan('business.view')],
         ['key' => 'notifications', 'label' => 'Notifications', 'icon' => 'bell', 'route' => route('notifications.index'), 'show' => true],
@@ -69,6 +72,7 @@
                             <x-ui.icon :name="$item['icon']" />
                             <span>{{ $item['label'] }}</span>
                             @if($item['key'] === 'notifications' && ($sidebarUnread = $sidebarUser?->notifications()->whereNull('read_at')->count() ?? 0))<span class="ml-auto rounded-full bg-orange-600 px-2 py-0.5 text-[10px] font-semibold text-white">{{ $sidebarUnread }}</span>@endif
+                            @if($item['key'] === 'messages' && $sidebarUnreadMessages)<span class="ml-auto rounded-full bg-orange-600 px-2 py-0.5 text-[10px] font-semibold text-white">{{ $sidebarUnreadMessages }}</span>@endif
                         </a>
                     @endif
                 @endforeach

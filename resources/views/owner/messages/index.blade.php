@@ -13,7 +13,7 @@
                             <h2 class="mt-1 text-lg font-black text-slate-950">{{ $booking->guest->name }} · {{ $booking->property->marketplaceListing?->public_title ?: $booking->property->name }}</h2>
                             <p class="mt-2 line-clamp-2 text-sm text-slate-500">{{ $latest?->content ?: 'Open this thread to continue the conversation.' }}</p>
                         </div>
-                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ $latest?->occurred_at?->diffForHumans() ?: 'No messages' }}</span>
+                        <div class="flex items-center gap-2">@if($booking->unread_message_count)<span class="grid min-w-6 place-items-center rounded-full bg-orange-600 px-2 py-1 text-xs font-black text-white">{{ $booking->unread_message_count }}</span>@endif<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ $latest?->occurred_at?->diffForHumans() ?: 'No messages' }}</span></div>
                     </div>
                 </a>
             @empty

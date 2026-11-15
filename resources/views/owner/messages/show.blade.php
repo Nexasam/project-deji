@@ -5,7 +5,7 @@
     <main class="mx-auto max-w-4xl px-4 py-6 lg:px-8">
         @if(session('status'))<div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif
         @if($errors->any())<div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->first() }}</div>@endif
-        <section x-data="asyncMessageThread()" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <section x-data="asyncMessageThread()" data-booking-id="{{ $booking->id }}" data-current-user-id="{{ auth()->id() }}" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div x-ref="messages" class="max-h-[620px] space-y-4 overflow-y-auto bg-slate-50 p-5 sm:p-6" aria-live="polite">
                 @forelse($booking->interactions->where('interaction_type', 'message') as $message)
                     @php($mine = $message->user_id === auth()->id())
