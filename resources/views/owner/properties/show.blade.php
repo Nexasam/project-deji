@@ -123,7 +123,7 @@
 	                </div>
 
 	                @php $arrivalGuide = $property->check_in_instructions ?? []; @endphp
-	                <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
+	                <section id="arrival-guide" class="mt-5 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
 	                    <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
 	                        <div>
 	                            <p class="text-xs font-bold uppercase tracking-wider text-orange-600">Guest arrival guide</p>

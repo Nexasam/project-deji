@@ -61,7 +61,7 @@
         <div><div class="flex flex-wrap items-center gap-3"><h1 class="text-3xl font-black text-slate-950">{{ $property->marketplaceListing->public_title }}</h1>@if($property->is_test)<span class="rounded-full bg-violet-950 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Test property</span>@endif</div><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Explore stays &gt; {{ $property->marketplaceListing->public_title }}</p><p class="mt-2 text-sm font-semibold text-slate-700">⌖ {{ collect([data_get($property->address, 'city'), data_get($property->address, 'state')])->filter()->join(', ') }}</p></div>
         <div class="flex gap-2"><button type="button" @click="shareStay" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-slate-400 hover:bg-slate-50"><span x-text="shared ? '✓ Copied' : '↗ Share'"></span></button>@auth<button type="button" @click="toggleSaved" :disabled="saving" :aria-pressed="saved" class="rounded-xl border px-5 py-3 text-sm font-black transition disabled:opacity-60" :class="saved ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 hover:bg-slate-50'"><span x-text="saving ? 'Saving…' : (saved ? '♥ Saved' : '♡ Save')"></span></button>@endauth</div>
     </div>
-    <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)] lg:items-start" x-data="stayBookingCalendar(@js($blockedIntervals), @js($gallery), {{ (float)$property->default_nightly_price }}, {{ $property->capacity }}, @js($promotions), @js(route('marketplace.checkout.quote', $property->marketplaceListing->slug)))">
+    <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)] lg:items-start" x-data="stayBookingCalendar(@js($blockedIntervals), @js($gallery), {{ (float)$property->default_nightly_price }}, {{ $property->capacity }}, @js($promotions), @js(route('marketplace.checkout.quote', $property->marketplaceListing->slug)))" @open-stay-date-picker.window="openDatePicker('checkin')">
         <div class="min-w-0">
             <div>
                 <div class="relative aspect-[16/10] overflow-hidden rounded-2xl bg-slate-900 shadow-sm sm:aspect-[16/9] md:min-h-[500px]">
@@ -201,6 +201,7 @@
                     <button :disabled="quoteLoading||!checkIn||!checkOut||guestCount<1||guestCount>capacity" class="mt-4 w-full rounded-2xl bg-orange-500 py-3.5 font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none" x-text="quoteLoading?'Checking price & availability…':'Continue to checkout'"></button>
                 </form>
             @else
+                @include('marketplace.partials.guest-date-picker-modal')
                 <div class="mt-8 rounded-2xl bg-gray-50 p-5 text-center">
                     <p class="text-sm text-gray-600">Create an account to book securely and manage this stay whenever you return.</p>
                     <a href="{{ route('register', ['redirect' => request()->getRequestUri()]) }}" class="mt-4 block rounded-xl bg-orange-500 py-3 font-bold text-white hover:bg-orange-600">Create account to book</a>
@@ -210,7 +211,7 @@
         </section>
     </div>
     <div class="pointer-events-none fixed inset-x-4 bottom-4 z-30 lg:hidden">
-        <button type="button" @click="document.querySelector('[aria-label=\"Host booking form\"]')?.scrollIntoView({behavior:'smooth',block:'center'})" class="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-black text-white shadow-xl shadow-slate-950/25"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Check availability</button>
+        <button type="button" @click="window.dispatchEvent(new CustomEvent('open-stay-date-picker'))" class="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-black text-white shadow-xl shadow-slate-950/25"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Check availability</button>
     </div>
 
     <section class="mt-8 border-t border-slate-200 pt-8" aria-labelledby="guest-reviews-title">

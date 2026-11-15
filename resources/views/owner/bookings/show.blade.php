@@ -26,6 +26,8 @@
     $canCheckOut = $bookingPermissions->allows(auth()->user(), $activeBusinessContext, 'booking.check_out', $booking->property);
     $canCommunicate = $bookingPermissions->allows(auth()->user(), $activeBusinessContext, 'booking.communicate', $booking->property);
     $canRespondToReviews = $bookingPermissions->allows(auth()->user(), $activeBusinessContext, 'property.respond_reviews', $booking->property);
+    $canEditArrivalGuide = $bookingPermissions->allows(auth()->user(), $activeBusinessContext, 'property.edit', $booking->property);
+    $arrivalGuide = $booking->check_in_instructions_snapshot ?: ($booking->property->check_in_instructions ?? []);
 @endphp
 <body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="{sidebarOpen:false,checkInOpen:false,checkOutOpen:false,noShowOpen:false,cancelOpen:false}">
 <div class="flex min-h-screen">@include('partials.sidebar-nav',['active'=>'bookings'])<div class="min-w-0 flex-1">
@@ -53,6 +55,22 @@
 	        @if($booking->special_requests)<div class="mt-6 rounded-xl bg-slate-50 p-4"><h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Special requests</h3><p class="mt-2 text-sm text-slate-700">{{ $booking->special_requests }}</p></div>@endif
 	        @if($isInstallment)<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>Installment payment:</strong> the guest has reserved with a deposit. Full payment is required before check-in; the check-in action will be blocked until payment status is paid.</div>@endif
 	    </section>
+
+    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+            <div><p class="text-xs font-bold uppercase tracking-wider text-orange-600">Before check-in</p><h2 class="mt-1 text-lg font-extrabold">Arrival guide</h2><p class="mt-2 text-sm text-slate-500">Confirm the guest has clear access, arrival and emergency instructions before check-in.</p></div>
+            @if($canEditArrivalGuide)<a href="{{ route('owner.properties.show', $booking->property) }}#arrival-guide" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-extrabold text-slate-800 hover:border-orange-300 hover:text-orange-700">Edit property guide</a>@endif
+        </div>
+        @if(collect($arrivalGuide)->filter()->isNotEmpty())
+            <dl class="mt-5 grid gap-3 sm:grid-cols-2">
+                @foreach(['key_pickup'=>'Key pickup / access point','access_notes'=>'Arrival notes','house_rules'=>'House rules','emergency_contact'=>'Emergency contact'] as $field=>$label)
+                    @if(filled(data_get($arrivalGuide, $field)))<div class="rounded-xl bg-slate-50 p-4"><dt class="text-xs font-bold uppercase tracking-wide text-slate-400">{{ $label }}</dt><dd class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">{{ data_get($arrivalGuide, $field) }}</dd></div>@endif
+                @endforeach
+            </dl>
+        @else
+            <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4"><p class="text-sm font-bold text-amber-900">Arrival guide is incomplete</p><p class="mt-1 text-xs leading-5 text-amber-800">Add access, key collection and emergency details before the guest arrives.</p>@if($canEditArrivalGuide)<a href="{{ route('owner.properties.show', $booking->property) }}#arrival-guide" class="mt-3 inline-flex text-xs font-extrabold text-amber-900 underline">Complete arrival guide</a>@endif</div>
+        @endif
+    </section>
 
     @if($canModify && in_array($status,['reserved','awaiting_payment','confirmed'],true))
         <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7"><h2 class="text-base font-extrabold">Change stay dates</h2><p class="mt-1 text-sm text-slate-500">The new dates are checked against bookings and all availability blocks before saving.</p><form method="POST" action="{{ route('owner.bookings.dates.update',$booking) }}" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_auto] lg:items-end">@csrf @method('PATCH')<label class="text-xs font-bold text-slate-600">Arrival<input type="date" name="arrival_date" required value="{{ old('arrival_date',$booking->arrival_date->toDateString()) }}" class="mt-1 block w-full rounded-lg border-slate-200 text-sm"></label><label class="text-xs font-bold text-slate-600">Departure<input type="date" name="departure_date" required value="{{ old('departure_date',$booking->departure_date->toDateString()) }}" class="mt-1 block w-full rounded-lg border-slate-200 text-sm"></label><label class="text-xs font-bold text-slate-600">Reason<input type="text" name="reason" required maxlength="1000" value="{{ old('reason') }}" placeholder="Why are the dates changing?" class="mt-1 block w-full rounded-lg border-slate-200 text-sm"></label><button class="rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-bold text-white">Update dates</button></form></section>
