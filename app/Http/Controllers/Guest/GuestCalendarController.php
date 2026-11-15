@@ -43,6 +43,14 @@ class GuestCalendarController extends Controller
                 default => $booking->departure_date->gte(today()) && ! in_array($booking->status->value, ['cancelled', 'refunded', 'no_show'], true),
             };
         })->take(6)->values();
+        $bookings = $bookings->filter(function (Booking $booking) use ($view): bool {
+            return match ($view) {
+                'today' => $booking->arrival_date->isToday() || ($booking->arrival_date->isPast() && $booking->departure_date->isFuture()),
+                'completed' => in_array($booking->status->value, ['checked_out', 'completed'], true),
+                'cancelled' => in_array($booking->status->value, ['cancelled', 'refunded', 'no_show'], true),
+                default => $booking->departure_date->gte(today()) && ! in_array($booking->status->value, ['cancelled', 'refunded', 'no_show'], true),
+            };
+        })->values();
 
         return view('guest.calendar', [
             'month' => $month,
