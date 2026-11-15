@@ -102,7 +102,7 @@
                         </div>
                     @endif
                     @if($outstanding > 0 && in_array($status, ['reserved', 'awaiting_payment', 'confirmed'], true))
-                        <form method="POST" action="{{ route('guest.bookings.pay-balance', $booking) }}" class="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4">
+                        <form id="balance-payment" method="POST" action="{{ route('guest.bookings.pay-balance', $booking) }}" class="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4">
                             @csrf
                             <p class="text-sm font-extrabold text-orange-950">Pay remaining balance</p>
                             <p class="mt-1 text-xs leading-5 text-orange-900">Complete ₦{{ number_format($outstanding) }} now to unlock check-in instructions and avoid check-in blockage.</p>

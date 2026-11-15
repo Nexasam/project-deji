@@ -83,24 +83,32 @@ Schedule::command('operations:notify-overdue')->everyFiveMinutes()->withoutOverl
 Artisan::command('bookings:notify-upcoming-arrivals', function (ProductNotificationService $notifications) {
     $count = 0;
     Booking::query()->with(['guest', 'business.memberships.roles.role', 'property.marketplaceListing'])
-        ->where('status', 'confirmed')->whereDate('arrival_date', today()->addDay())
+        ->where('status', 'confirmed')->whereDate('arrival_date', '>=', today())
         ->each(function (Booking $booking) use ($notifications, &$count): void {
             $checkIn = substr($booking->property->marketplaceListing?->check_in_time ?: '14:00', 0, 5);
-            $data = ['url' => route('guest.bookings.show', $booking), 'booking_id' => $booking->id];
-            if (! Notification::query()->where('user_id', $booking->guest_user_id)->where('type', 'arrival_reminder')->where('data->booking_id', $booking->id)->exists()) {
-                $notifications->user($booking->guest, $booking->business, 'arrival_reminder', 'Your stay starts tomorrow', "Check-in for {$booking->property->name} begins at {$checkIn}. Review your booking details before travelling.", $data);
+            $arrivalAt = \Carbon\CarbonImmutable::parse($booking->arrival_date->toDateString().' '.$checkIn);
+            $guestStages = [['key' => '24h', 'at' => $arrivalAt->subDay(), 'title' => 'Your stay starts tomorrow'], ['key' => 'morning', 'at' => $arrivalAt->setTime(8, 0), 'title' => 'Your check-in is today']];
+            foreach ($guestStages as $stage) {
+                if ($booking->payment_status->value !== 'paid' || now()->lt($stage['at']) || now()->gte($stage['at']->addHour())) continue;
+                $type = 'arrival_reminder_guest_'.$stage['key'];
+                if (Notification::query()->where('user_id', $booking->guest_user_id)->where('type', $type)->where('data->booking_id', $booking->id)->exists()) continue;
+                $data = ['url' => route('guest.bookings.show', $booking), 'booking_id' => $booking->id];
+                $notifications->user($booking->guest, $booking->business, $type, $stage['title'], $stage['key'] === 'morning' ? "Good morning. Check-in for {$booking->property->name} is today from {$checkIn}. Your arrival instructions are ready in your booking." : "Your stay at {$booking->property->name} begins tomorrow at {$checkIn}. Review your booking details and arrival instructions.", $data);
                 $count++;
             }
+            $hostStages = [['key' => '7d', 'at' => $arrivalAt->subDays(7)], ['key' => '48h', 'at' => $arrivalAt->subHours(48)], ['key' => '24h', 'at' => $arrivalAt->subDay()]];
             $ownerIds = $booking->business->memberships()->where('status', 'active')
                 ->whereHas('roles', fn ($query) => $query->where('status', 'active')
                     ->whereHas('role', fn ($role) => $role->where('system_key', 'business_owner')))
                 ->pluck('user_id');
-            User::query()->whereIn('id', $ownerIds)->each(function ($owner) use ($booking, $notifications, &$count): void {
-                if (Notification::query()->where('user_id', $owner->id)->where('type', 'arrival_reminder')->where('data->booking_id', $booking->id)->exists()) {
-                    return;
+            User::query()->whereIn('id', $ownerIds)->each(function ($owner) use ($booking, $notifications, &$count, $hostStages): void {
+                foreach ($hostStages as $stage) {
+                    if (now()->lt($stage['at']) || now()->gte($stage['at']->addHour())) continue;
+                    $type = 'arrival_reminder_host_'.$stage['key'];
+                    if (Notification::query()->where('user_id', $owner->id)->where('type', $type)->where('data->booking_id', $booking->id)->exists()) continue;
+                    $notifications->user($owner, $booking->business, $type, 'Upcoming guest arrival', "{$booking->guest->name} is checking in to {$booking->property->name} in {$stage['key']}. Review preparation, cleaning and access handover.", ['url' => route('owner.bookings.show', $booking), 'booking_id' => $booking->id]);
+                    $count++;
                 }
-                $notifications->user($owner, $booking->business, 'arrival_reminder', 'Guest arrival tomorrow', "{$booking->guest->name} is due at {$booking->property->name} tomorrow. Confirm preparation and access handover.", ['url' => route('owner.bookings.show', $booking), 'booking_id' => $booking->id]);
-                $count++;
             });
         });
     $this->info("Created {$count} upcoming-arrival reminder(s).");
@@ -116,15 +124,17 @@ Artisan::command('bookings:notify-part-payment-due', function (ProductNotificati
         ->each(function (Booking $booking) use ($notifications, &$count): void {
             $checkIn = substr($booking->property->marketplaceListing?->check_in_time ?: '14:00', 0, 5);
             $arrivalAt = \Carbon\CarbonImmutable::parse($booking->arrival_date->toDateString().' '.$checkIn);
-            $reminderKey = 'part_payment_due_reminder';
-            if (now()->lt($arrivalAt->subHours(6)) || now()->gte($arrivalAt) || Notification::query()->where('user_id', $booking->guest_user_id)->where('type', $reminderKey)->where('data->booking_id', $booking->id)->exists()) {
-                return;
+            foreach ([48, 24, 12, 6, 1] as $hours) {
+                $stageAt = $arrivalAt->subHours($hours);
+                if (now()->lt($stageAt) || now()->gte($stageAt->addHour())) continue;
+                $reminderKey = 'part_payment_due_'.$hours.'h';
+                if (Notification::query()->where('user_id', $booking->guest_user_id)->where('type', $reminderKey)->where('data->booking_id', $booking->id)->exists()) continue;
+                $message = "Your remaining balance for {$booking->property->name} is due before check-in at {$checkIn}. Complete payment here to unlock your arrival instructions.";
+                $data = ['url' => route('guest.bookings.show', $booking).'#balance-payment', 'booking_id' => $booking->id, 'action' => 'complete_balance_payment'];
+                $notifications->user($booking->guest, $booking->business, $reminderKey, "Complete your stay payment ({$hours}h reminder)", $message, $data);
+                $notifications->platformAdmins($booking->business, $reminderKey, 'Part payment reminder sent', "A {$hours}-hour payment reminder was sent to {$booking->guest->name} for {$booking->property->name}.", ['url' => route('admin.dashboard'), 'booking_id' => $booking->id]);
+                $count++;
             }
-            $message = "Your remaining balance for {$booking->property->name} is due before check-in at {$checkIn}. Please complete payment to unlock arrival instructions.";
-            $data = ['url' => route('guest.bookings.show', $booking), 'booking_id' => $booking->id];
-            $notifications->user($booking->guest, $booking->business, $reminderKey, 'Complete your stay payment', $message, $data);
-            $notifications->platformAdmins($booking->business, $reminderKey, 'Part payment reminder sent', "A payment reminder was sent to {$booking->guest->name} for {$booking->property->name}.", ['url' => route('admin.dashboard'), 'booking_id' => $booking->id]);
-            $count++;
         });
     $this->info("Created {$count} part-payment reminder(s).");
 })->purpose('Remind guests and platform administrators about unpaid booking balances shortly before check-in');

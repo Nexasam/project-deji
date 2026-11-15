@@ -14,6 +14,7 @@ class GuestCalendarController extends Controller
     {
         $validated = $request->validate([
             'month' => ['nullable', 'date_format:Y-m'],
+            'view' => ['nullable', 'in:today,upcoming,completed,cancelled'],
         ]);
 
         $month = isset($validated['month'])
@@ -28,18 +29,26 @@ class GuestCalendarController extends Controller
             ->orderBy('arrival_date')
             ->get();
 
-        $trips = Booking::query()
+        $allTrips = Booking::query()
             ->where('guest_user_id', $request->user()->id)
-            ->whereDate('departure_date', '>=', today()->toDateString())
             ->with(['property.media', 'property.marketplaceListing'])
             ->orderBy('arrival_date')
-            ->limit(4)
             ->get();
+        $view = $validated['view'] ?? 'upcoming';
+        $trips = $allTrips->filter(function (Booking $booking) use ($view): bool {
+            return match ($view) {
+                'today' => $booking->arrival_date->isToday() || ($booking->arrival_date->isPast() && $booking->departure_date->isFuture()),
+                'completed' => in_array($booking->status->value, ['checked_out', 'completed'], true),
+                'cancelled' => in_array($booking->status->value, ['cancelled', 'refunded', 'no_show'], true),
+                default => $booking->departure_date->gte(today()) && ! in_array($booking->status->value, ['cancelled', 'refunded', 'no_show'], true),
+            };
+        })->take(6)->values();
 
         return view('guest.calendar', [
             'month' => $month,
             'bookings' => $bookings,
             'trips' => $trips,
+            'view' => $view,
         ]);
     }
 }

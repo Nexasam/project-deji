@@ -5,6 +5,7 @@
 <main class="min-h-screen bg-[#f3f3f2] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
 <div class="mx-auto max-w-[1380px]" x-data="{
     shared: false,
+    mapOpen: false,
     saved: @js(auth()->check() ? auth()->user()->favourites()->where('property_id', $property->id)->exists() : false),
     saving: false,
     async shareStay() {
@@ -54,6 +55,7 @@
         // Use only the public area for directions; never expose the exact property address.
         $mapQuery = collect([data_get($property->address, 'city'), data_get($property->address, 'state'), 'Nigeria'])->filter()->join(', ');
         $directionsUrl = 'https://www.google.com/maps/search/?api=1&query='.urlencode($mapQuery);
+        $mapEmbedUrl = 'https://www.google.com/maps?q='.urlencode($mapQuery).'&output=embed';
     @endphp
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div><div class="flex flex-wrap items-center gap-3"><h1 class="text-3xl font-black text-slate-950">{{ $property->marketplaceListing->public_title }}</h1>@if($property->is_test)<span class="rounded-full bg-violet-950 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Test property</span>@endif</div><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Explore stays &gt; {{ $property->marketplaceListing->public_title }}</p><p class="mt-2 text-sm font-semibold text-slate-700">⌖ {{ collect([data_get($property->address, 'city'), data_get($property->address, 'state')])->filter()->join(', ') }}</p></div>
@@ -97,7 +99,7 @@
             @if($errors->any())<div class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{{ $errors->first() }}</div>@endif
 	            @if($property->superhost_badge_enabled)<span class="text-xs font-bold text-orange-700">★ Super host</span>@endif
             <p class="mt-3 text-sm text-slate-500">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }}</p>
-            <a href="{{ $directionsUrl }}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8"/></svg>Open map and directions</a>
+            <button type="button" @click="mapOpen=true" class="mt-3 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8"/></svg>View map and directions</button>
             <dl class="mt-5 hidden grid-cols-3 gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:max-w-lg">
                 <div class="rounded-xl bg-slate-50 px-2.5 py-3">
                     <div class="flex items-center justify-center gap-2">
@@ -255,6 +257,13 @@
             <a href="{{ route('marketplace.reviews', $property->marketplaceListing->slug) }}" class="mt-5 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white">Read all reviews</a>
         @endif
     </section>
+    <div x-cloak x-show="mapOpen" x-transition.opacity class="fixed inset-0 z-[60] grid place-items-center bg-slate-950/60 p-4" @keydown.escape.window="mapOpen=false">
+        <section role="dialog" aria-modal="true" aria-labelledby="map-modal-title" class="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl" @click.outside="mapOpen=false">
+            <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4"><div><h2 id="map-modal-title" class="text-lg font-black text-slate-950">{{ data_get($property->address, 'city') }}, {{ data_get($property->address, 'state') }}</h2><p class="mt-1 text-xs text-slate-500">Approximate public area location</p></div><button type="button" @click="mapOpen=false" class="grid size-9 place-items-center rounded-full bg-slate-100 text-xl text-slate-700" aria-label="Close map">×</button></div>
+            <iframe title="Property area map" src="{{ $mapEmbedUrl }}" class="h-72 w-full border-0 sm:h-96" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><p class="text-xs text-slate-500">Exact address is shared after a confirmed booking.</p><a href="{{ $directionsUrl }}" target="_blank" rel="noopener" class="rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-black text-white">Open directions</a></div>
+        </section>
+    </div>
 </div>
 </main>
 @endsection

@@ -7,7 +7,7 @@
         <p style="margin:0 0 8px;color:#ea580c;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Verified Shortlet</p>
         <h1 style="margin:0;font-size:24px">{{ $notificationTitle }}</h1>
         <p style="margin:18px 0 0;line-height:1.65;color:#475569">{{ $notificationMessage }}</p>
-        @if($actionUrl)<p style="margin:24px 0 0"><a href="{{ $actionUrl }}" style="display:inline-block;border-radius:10px;background:#0f172a;color:#fff;padding:12px 18px;text-decoration:none;font-weight:700">View details</a></p>@endif
+        @if($actionUrl)<p style="margin:24px 0 0"><a href="{{ $actionUrl }}" style="display:inline-block;border-radius:10px;background:#0f172a;color:#fff;padding:12px 18px;text-decoration:none;font-weight:700">{{ str_contains(strtolower($notificationTitle), 'payment') ? 'Complete payment' : 'View details' }}</a></p>@endif
     </div>
 </div>
 </body>
