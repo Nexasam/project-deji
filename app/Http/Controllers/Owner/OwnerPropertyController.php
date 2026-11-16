@@ -8,6 +8,7 @@ use App\Http\Requests\Owner\StorePropertyRequest;
 use App\Http\Requests\Owner\UpdatePropertyAmenitiesRequest;
 use App\Models\Amenity;
 use App\Models\Property;
+use App\Models\PropertyPromotion;
 use App\Services\Access\BusinessPermissionService;
 use App\Services\Property\CreatePropertyService;
 use App\Services\Property\PropertyLocationSummary;
@@ -135,6 +136,50 @@ class OwnerPropertyController extends Controller
         return redirect()
             ->route('owner.properties.show', $record)
             ->with('status', 'Guest arrival guide and host contact details were updated.');
+    }
+
+    public function updateDiscount(Request $request, ActiveBusinessContext $context, string $property): RedirectResponse
+    {
+        $record = $context->business->properties()->whereKey($property)->firstOrFail();
+        $data = $request->validate([
+            'discount_percentage' => ['nullable', 'numeric', 'min:1', 'max:100'],
+            'minimum_stay_nights' => ['nullable', 'required_with:discount_percentage', 'integer', 'min:2', 'max:365'],
+        ]);
+
+        DB::transaction(function () use ($request, $record, $data): void {
+            $promotion = PropertyPromotion::withTrashed()->firstOrNew([
+                'property_id' => $record->id,
+                'name' => 'Longer stay discount',
+            ]);
+
+            if (filled($data['discount_percentage'] ?? null)) {
+                $promotion->fill([
+                    'business_id' => $record->business_id,
+                    'promotion_type' => 'length_of_stay',
+                    'discount_type' => 'percentage',
+                    'discount_value' => $data['discount_percentage'],
+                    'minimum_stay_nights' => $data['minimum_stay_nights'],
+                    'currency' => 'NGN',
+                    'publication_status' => $record->publication_status->value === 'published' ? 'published' : 'draft',
+                    'status' => 'active',
+                    'created_by' => $promotion->created_by ?: $request->user()->id,
+                    'updated_by' => $request->user()->id,
+                ]);
+                $promotion->save();
+                if ($promotion->trashed()) {
+                    $promotion->restore();
+                }
+            } elseif ($promotion->exists && ! $promotion->trashed()) {
+                $promotion->delete();
+            }
+        });
+
+        return redirect()->route('owner.properties.show', $record)->with(
+            'status',
+            filled($data['discount_percentage'] ?? null)
+                ? 'Longer-stay discount updated.'
+                : 'Longer-stay discount removed.'
+        );
     }
 
     public function store(

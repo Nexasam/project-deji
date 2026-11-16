@@ -59,7 +59,7 @@
     @endphp
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div><div class="flex flex-wrap items-center gap-3"><h1 class="text-3xl font-black text-slate-950">{{ $property->marketplaceListing->public_title }}</h1>@if($property->is_test)<span class="rounded-full bg-violet-950 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Test property</span>@endif</div><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Explore stays &gt; {{ $property->marketplaceListing->public_title }}</p><p class="mt-2 text-sm font-semibold text-slate-700">⌖ {{ collect([data_get($property->address, 'city'), data_get($property->address, 'state')])->filter()->join(', ') }}</p></div>
-        <div class="flex gap-2"><button type="button" @click="shareStay" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-slate-400 hover:bg-slate-50"><span x-text="shared ? '✓ Copied' : '↗ Share'"></span></button>@auth<button type="button" @click="toggleSaved" :disabled="saving" :aria-pressed="saved" class="rounded-xl border px-5 py-3 text-sm font-black transition disabled:opacity-60" :class="saved ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 hover:bg-slate-50'"><span x-text="saving ? 'Saving…' : (saved ? '♥ Saved' : '♡ Save')"></span></button>@endauth</div>
+        <div class="flex gap-2"><button type="button" @click="shareStay" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-slate-400 hover:bg-slate-50"><span x-text="shared ? '✓ Copied' : '↗ Share'"></span></button>@if(auth()->check() && auth()->user()->canAccessGuestWorkspace())<button type="button" @click="toggleSaved" :disabled="saving" :aria-pressed="saved" class="rounded-xl border px-5 py-3 text-sm font-black transition disabled:opacity-60" :class="saved ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 hover:bg-slate-50'"><span x-text="saving ? 'Saving…' : (saved ? '♥ Saved' : '♡ Save')"></span></button>@endif</div>
     </div>
     <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)] lg:items-start" x-data="stayBookingCalendar(@js($blockedIntervals), @js($gallery), {{ (float)$property->default_nightly_price }}, {{ $property->capacity }}, @js($promotions), @js(route('marketplace.checkout.quote', $property->marketplaceListing->slug)), @js(auth()->check()))" @open-stay-date-picker.window="openDatePicker('checkin')">
         <div class="min-w-0">
@@ -140,7 +140,7 @@
             </section>
             <div class="mt-5 rounded-xl bg-slate-50 p-4"><p class="text-xs font-bold uppercase text-slate-400">Cancellation</p><p class="mt-2 text-sm font-semibold">Full refund more than 48 hours before check-in.</p></div>
             @if($property->houseRules->isNotEmpty())<div class="mt-4 rounded-xl border border-slate-200 p-4"><h2 class="text-sm font-extrabold">House rules</h2><ul class="mt-2 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">@foreach($property->houseRules as $rule)<li>• {{ $rule->name }}</li>@endforeach</ul></div>@endif
-            @auth
+            @if(auth()->check() && auth()->user()->canAccessGuestWorkspace())
                 <form aria-label="Host booking form" x-ref="bookingForm" @submit.prevent="reviewBooking" method="GET" action="{{ route('marketplace.checkout.show', $property->marketplaceListing->slug) }}" class="mt-5 border-t border-slate-200 pt-5">
                     <input type="hidden" name="arrival_date" :value="checkIn"><input type="hidden" name="departure_date" :value="checkOut">
                     <div class="grid grid-cols-2 gap-3">
@@ -204,6 +204,8 @@
                     <p x-show="quoteError" x-text="quoteError" class="mt-3 rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-700"></p>
                     <button :disabled="quoteLoading||!checkIn||!checkOut||guestCount<1||guestCount>capacity" class="mt-4 w-full rounded-2xl bg-orange-500 py-3.5 font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none" x-text="quoteLoading?'Checking price & availability…':'Continue to checkout'"></button>
                 </form>
+            @elseif(auth()->check())
+                <div class="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center"><p class="text-sm font-bold text-slate-900">Public listing preview</p><p class="mt-2 text-sm text-slate-600">This is the guest-facing property page. Business and platform accounts cannot create guest bookings.</p><a href="{{ route('owner.entry') }}" class="mt-4 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Return to workspace</a></div>
             @else
                 @include('marketplace.partials.guest-date-picker-modal')
                 <div class="mt-8 rounded-2xl bg-gray-50 p-5 text-center">
@@ -211,22 +213,24 @@
                     <a href="{{ route('register', ['redirect' => request()->getRequestUri()]) }}" class="mt-4 block rounded-xl bg-orange-500 py-3 font-bold text-white hover:bg-orange-600">Create account to book</a>
                     <a href="{{ route('login', ['redirect' => request()->getRequestUri()]) }}" class="mt-3 inline-block text-sm font-semibold text-gray-700 hover:text-orange-600">Already have an account? Log in</a>
                 </div>
-            @endauth
+            @endif
         </section>
     </div>
+    @if(!auth()->check() || auth()->user()->canAccessGuestWorkspace())
     <div class="pointer-events-none fixed inset-x-4 bottom-4 z-30 lg:hidden">
         <div class="pointer-events-auto rounded-2xl border border-slate-200 bg-white p-2.5 shadow-2xl shadow-slate-950/20">
             <template x-if="checkIn && checkOut"><div class="mb-2 flex min-w-0 items-center justify-between gap-3 px-1"><div class="min-w-0"><p class="truncate text-[10px] font-bold text-slate-500" x-text="nights+' night'+(nights===1?'':'s')+' · '+formatDate(checkIn)+' – '+formatDate(checkOut)"></p><p class="text-base font-black text-slate-950" x-text="quoteLoading ? 'Checking price…' : formatMoney(total)"></p></div><span class="shrink-0 text-[10px] font-bold" :class="quoteError ? 'text-red-600' : 'text-emerald-700'" x-text="quoteError ? 'Unavailable' : (quoteLoading ? 'Checking…' : 'Available')"></span></div></template>
             <div class="grid gap-2" :class="checkIn && checkOut ? 'grid-cols-2' : 'grid-cols-1'">
                 <button type="button" @click="window.dispatchEvent(new CustomEvent('open-stay-date-picker'))" class="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-3.5 text-sm font-black text-slate-950"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Check availability</button>
-                @auth
+                @if(auth()->check() && auth()->user()->canAccessGuestWorkspace())
                     <button x-show="checkIn && checkOut" type="button" @click="reviewBooking" :disabled="quoteLoading || !!quoteError" class="rounded-xl bg-orange-500 px-4 py-3.5 text-sm font-black text-white disabled:opacity-50">Reserve</button>
                 @else
                     <a x-show="checkIn && checkOut" href="{{ route('register', ['redirect' => request()->getRequestUri()]) }}" class="rounded-xl bg-orange-500 px-4 py-3.5 text-center text-sm font-black text-white">Reserve</a>
-                @endauth
+                @endif
             </div>
         </div>
     </div>
+    @endif
 
     <section class="mt-8 border-t border-slate-200 pt-8" aria-labelledby="guest-reviews-title">
         <div class="flex flex-wrap items-end justify-between gap-4">

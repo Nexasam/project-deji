@@ -17,7 +17,11 @@ final class EnsureGuestSurfaceAccess
     {
         $user = $request->user();
 
-        if ($user && ! $user->canAccessGuestWorkspace()) {
+        // Business and platform users may inspect a published listing from the
+        // owner workspace, but they still cannot enter guest-only workflows.
+        $readOnlyListingPreview = $request->routeIs('marketplace.show', 'marketplace.reviews');
+
+        if ($user && ! $user->canAccessGuestWorkspace() && ! $readOnlyListingPreview) {
             return redirect()->route($this->destination->routeName($user));
         }
 
