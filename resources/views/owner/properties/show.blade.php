@@ -9,6 +9,7 @@
 @php
     $propertyPermissions = app(\App\Services\Access\BusinessPermissionService::class);
     $canEditProperty = $propertyPermissions->allows(auth()->user(), $activeBusinessContext, 'property.edit', $property);
+    $arrivalGuide = $property->check_in_instructions ?? [];
 @endphp
 <body class="min-h-screen bg-slate-50 font-sans text-slate-950 antialiased" x-data="{ sidebarOpen: false }">
     <div class="flex min-h-screen">
@@ -123,7 +124,6 @@
 	                    </div>
 	                </div>
 
-	                @php $arrivalGuide = $property->check_in_instructions ?? []; @endphp
 	                <section id="arrival-guide" class="mt-5 scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:p-7">
 	                    <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
 	                        <div>
