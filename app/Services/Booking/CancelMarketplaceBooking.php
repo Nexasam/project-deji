@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingCancellation;
 use App\Models\Payment;
 use App\Models\RefundRequest;
+use App\Models\PropertyAvailabilityBlock;
 use App\Models\User;
 use App\Jobs\InitiateProviderRefund;
 use App\Services\Notifications\ProductNotificationService;
@@ -18,9 +19,9 @@ final class CancelMarketplaceBooking
 {
     public function __construct(private readonly ProductNotificationService $notifications, private readonly BookingLifecycleService $lifecycle, private readonly PlatformSettings $settings) {}
 
-    public function handle(User $actor, Booking $booking, ?string $reason = null, string $requesterType = 'guest'): BookingCancellation
+    public function handle(User $actor, Booking $booking, ?string $reason = null, string $requesterType = 'guest', bool $keepDatesBlocked = false): BookingCancellation
     {
-        return DB::transaction(function () use ($actor, $booking, $reason, $requesterType) {
+        return DB::transaction(function () use ($actor, $booking, $reason, $requesterType, $keepDatesBlocked) {
             $query = Booking::with(['guest', 'property.marketplaceListing', 'business'])->lockForUpdate();
             if ($requesterType === 'guest') {
                 $query->where('guest_user_id', $actor->id);
@@ -65,6 +66,26 @@ final class CancelMarketplaceBooking
             $cancellationFee = $refundable ? round($capturedTotal - $refundAmount, 2) : $capturedTotal;
             $cancellation = BookingCancellation::create(['business_id' => $booking->business_id, 'booking_id' => $booking->id, 'requested_by' => $actor->id, 'requester_type' => $requesterType, 'reason' => $reason, 'policy_snapshot' => ['free_cancellation_hours' => $freeCancellationHours, 'refundable' => $refundable, 'initiated_by' => $requesterType, 'part_payment' => $isPartPayment, 'penalty_percentage' => $penaltyRate], 'refund_amount' => $refundAmount, 'cancellation_fee' => $cancellationFee, 'currency' => $booking->currency, 'refund_payment_id' => $refunds->first()?->id, 'approved_by' => $actor->id, 'requested_at' => now(), 'approved_at' => now(), 'completed_at' => now(), 'status' => 'completed']);
             $booking->availabilityDays()->where('active_key', 'active')->update(['active_key' => null, 'released_at' => now(), 'release_reason' => $requesterType.'_cancellation', 'status' => 'released']);
+            if ($requesterType !== 'guest' && $keepDatesBlocked) {
+                PropertyAvailabilityBlock::query()->firstOrCreate(
+                    ['booking_id' => $booking->id, 'source_type' => 'cancelled_booking_hold'],
+                    [
+                        'business_id' => $booking->business_id,
+                        'property_id' => $booking->property_id,
+                        'blocks_booking' => true,
+                        'starts_on' => $booking->arrival_date,
+                        'ends_on' => $booking->departure_date,
+                        'validation_status' => 'validated',
+                        'validated_by' => $actor->id,
+                        'validated_at' => now(),
+                        'block_state' => 'active',
+                        'reason' => 'Dates retained after cancellation: '.($reason ?: $booking->reference),
+                        'status' => 'active',
+                        'created_by' => $actor->id,
+                        'updated_by' => $actor->id,
+                    ]
+                );
+            }
             $booking->operationalTasks()->whereNotIn('status', ['completed', 'cancelled'])->update([
                 'status' => 'cancelled', 'updated_by' => $actor->id, 'updated_at' => now(),
             ]);

@@ -21,7 +21,7 @@
                 @endforelse
             </div>
             <form method="POST" action="{{ route('owner.bookings.messages.store', $booking) }}" @submit.prevent="send" class="border-t border-slate-100 p-5 sm:p-6">@csrf
-                <label class="block text-sm font-bold text-slate-700">Reply to guest<textarea name="content" required minlength="2" maxlength="2000" rows="4" class="mt-2 w-full rounded-2xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" placeholder="Type your reply…">{{ old('content') }}</textarea></label>
+                <label class="block text-sm font-bold text-slate-700">Reply to guest<textarea name="content" required minlength="2" maxlength="2000" rows="4" @keydown.enter="sendOnEnter" class="mt-2 w-full rounded-2xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" placeholder="Type your reply…">{{ old('content') }}</textarea></label><p class="mt-1 text-[11px] text-slate-400">Enter to send · Shift + Enter for a new line</p>
                 <p x-cloak x-show="error" x-text="error" class="mt-2 text-sm font-semibold text-red-600"></p><div class="mt-4 flex justify-end"><button :disabled="sending" class="min-w-32 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white hover:bg-orange-700 disabled:cursor-wait disabled:opacity-60"><span x-text="sending ? 'Sending…' : 'Send reply'"></span></button></div>
             </form>
         </section>

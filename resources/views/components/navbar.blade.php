@@ -14,9 +14,9 @@
 @endphp
 
 <header id="site-header" class="sticky top-0 z-50 border-b border-slate-200 bg-white" x-data="{ mobileMenuOpen: false, accountOpen: false }">
-    <div class="mx-auto flex h-[68px] max-w-[1440px] items-center px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto flex h-[72px] max-w-[1440px] items-center px-4 sm:h-[68px] sm:px-6 lg:px-8">
         <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2.5">
-            <img src="{{ app(\App\Services\Platform\PlatformSettings::class)->get('appearance.logo_asset', '/logo.png') }}" alt="{{ app(\App\Services\Platform\PlatformSettings::class)->get('appearance.brand_name', 'Verified Shortlet') }}" class="h-11 w-auto sm:h-12">
+            <img src="{{ app(\App\Services\Platform\PlatformSettings::class)->get('appearance.logo_asset', '/logo.png') }}" alt="{{ app(\App\Services\Platform\PlatformSettings::class)->get('appearance.brand_name', 'Verified Shortlet') }}" class="h-14 w-auto max-w-[180px] object-contain sm:h-12 sm:max-w-none">
         </a>
 
         @if($hasGuestWorkspace)

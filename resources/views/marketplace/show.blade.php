@@ -61,7 +61,7 @@
         <div><div class="flex flex-wrap items-center gap-3"><h1 class="text-3xl font-black text-slate-950">{{ $property->marketplaceListing->public_title }}</h1>@if($property->is_test)<span class="rounded-full bg-violet-950 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Test property</span>@endif</div><p class="mt-2 text-sm text-slate-500">Verified Shortlet &gt; Explore stays &gt; {{ $property->marketplaceListing->public_title }}</p><p class="mt-2 text-sm font-semibold text-slate-700">⌖ {{ collect([data_get($property->address, 'city'), data_get($property->address, 'state')])->filter()->join(', ') }}</p></div>
         <div class="flex gap-2"><button type="button" @click="shareStay" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-slate-400 hover:bg-slate-50"><span x-text="shared ? '✓ Copied' : '↗ Share'"></span></button>@auth<button type="button" @click="toggleSaved" :disabled="saving" :aria-pressed="saved" class="rounded-xl border px-5 py-3 text-sm font-black transition disabled:opacity-60" :class="saved ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 hover:bg-slate-50'"><span x-text="saving ? 'Saving…' : (saved ? '♥ Saved' : '♡ Save')"></span></button>@endauth</div>
     </div>
-    <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)] lg:items-start" x-data="stayBookingCalendar(@js($blockedIntervals), @js($gallery), {{ (float)$property->default_nightly_price }}, {{ $property->capacity }}, @js($promotions), @js(route('marketplace.checkout.quote', $property->marketplaceListing->slug)))" @open-stay-date-picker.window="openDatePicker('checkin')">
+    <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)] lg:items-start" x-data="stayBookingCalendar(@js($blockedIntervals), @js($gallery), {{ (float)$property->default_nightly_price }}, {{ $property->capacity }}, @js($promotions), @js(route('marketplace.checkout.quote', $property->marketplaceListing->slug)), @js(auth()->check()))" @open-stay-date-picker.window="openDatePicker('checkin')">
         <div class="min-w-0">
             <div>
                 <div class="relative aspect-[16/10] overflow-hidden rounded-2xl bg-slate-900 shadow-sm sm:aspect-[16/9] md:min-h-[500px]">
@@ -180,6 +180,10 @@
                         </div>
                     </section>
                     <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div x-show="checkIn && checkOut" class="mb-3 flex items-center gap-2 text-xs font-bold" :class="quoteError ? 'text-red-700' : (quoteLoading ? 'text-slate-500' : 'text-emerald-700')">
+                            <span class="size-2 rounded-full" :class="quoteError ? 'bg-red-500' : (quoteLoading ? 'animate-pulse bg-slate-400' : 'bg-emerald-500')"></span>
+                            <span x-text="quoteError ? 'Selected dates need attention' : (quoteLoading ? 'Checking live availability and price…' : (serverQuote ? 'Available for your selected dates' : 'Estimated for your selected dates'))"></span>
+                        </div>
                         <div class="flex items-start justify-between gap-4">
                             <div>
                                 <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Estimated total</p>
@@ -211,7 +215,17 @@
         </section>
     </div>
     <div class="pointer-events-none fixed inset-x-4 bottom-4 z-30 lg:hidden">
-        <button type="button" @click="window.dispatchEvent(new CustomEvent('open-stay-date-picker'))" class="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-black text-white shadow-xl shadow-slate-950/25"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Check availability</button>
+        <div class="pointer-events-auto rounded-2xl border border-slate-200 bg-white p-2.5 shadow-2xl shadow-slate-950/20">
+            <template x-if="checkIn && checkOut"><div class="mb-2 flex min-w-0 items-center justify-between gap-3 px-1"><div class="min-w-0"><p class="truncate text-[10px] font-bold text-slate-500" x-text="nights+' night'+(nights===1?'':'s')+' · '+formatDate(checkIn)+' – '+formatDate(checkOut)"></p><p class="text-base font-black text-slate-950" x-text="quoteLoading ? 'Checking price…' : formatMoney(total)"></p></div><span class="shrink-0 text-[10px] font-bold" :class="quoteError ? 'text-red-600' : 'text-emerald-700'" x-text="quoteError ? 'Unavailable' : (quoteLoading ? 'Checking…' : 'Available')"></span></div></template>
+            <div class="grid gap-2" :class="checkIn && checkOut ? 'grid-cols-2' : 'grid-cols-1'">
+                <button type="button" @click="window.dispatchEvent(new CustomEvent('open-stay-date-picker'))" class="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-3.5 text-sm font-black text-slate-950"><svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Check availability</button>
+                @auth
+                    <button x-show="checkIn && checkOut" type="button" @click="reviewBooking" :disabled="quoteLoading || !!quoteError" class="rounded-xl bg-orange-500 px-4 py-3.5 text-sm font-black text-white disabled:opacity-50">Reserve</button>
+                @else
+                    <a x-show="checkIn && checkOut" href="{{ route('register', ['redirect' => request()->getRequestUri()]) }}" class="rounded-xl bg-orange-500 px-4 py-3.5 text-center text-sm font-black text-white">Reserve</a>
+                @endauth
+            </div>
+        </div>
     </div>
 
     <section class="mt-8 border-t border-slate-200 pt-8" aria-labelledby="guest-reviews-title">
@@ -271,8 +285,8 @@
 
 @push('scripts')
 <script>
-function stayBookingCalendar(intervals, gallery, nightlyRate, capacity, promotions, quoteUrl) {
-    return {gallery,nightlyRate:Number(nightlyRate),capacity:Number(capacity),promotions,quoteUrl,serverQuote:null,quoteLoading:false,quoteError:'',activeIndex:0,offset:0,months:[],checkIn:'',checkOut:'',adults:1,children:0,selectionError:'',jumpMonth:'',minimumMonth:'',maximumMonth:'',dateModal:false,dateModalMode:'checkin',
+function stayBookingCalendar(intervals, gallery, nightlyRate, capacity, promotions, quoteUrl, canQuote) {
+    return {gallery,nightlyRate:Number(nightlyRate),capacity:Number(capacity),promotions,quoteUrl,canQuote:Boolean(canQuote),serverQuote:null,quoteLoading:false,quoteError:'',quoteTimer:null,quoteSequence:0,activeIndex:0,offset:0,months:[],checkIn:'',checkOut:'',adults:1,children:0,selectionError:'',jumpMonth:'',minimumMonth:'',maximumMonth:'',dateModal:false,dateModalMode:'checkin',
         get activeMedia(){return this.gallery[this.activeIndex]},
         get guestCount(){return Number(this.adults||0)+Number(this.children||0)},
         get nights(){if(this.serverQuote)return Number(this.serverQuote.nights);if(!this.checkIn||!this.checkOut)return 0;return Math.round((new Date(this.checkOut+'T00:00:00')-new Date(this.checkIn+'T00:00:00'))/86400000)},
@@ -282,8 +296,10 @@ function stayBookingCalendar(intervals, gallery, nightlyRate, capacity, promotio
         get total(){return this.serverQuote?Number(this.serverQuote.total):this.subtotal-this.discount},
         get nextDiscountHint(){if(!this.checkIn||!this.checkOut||this.discount>0)return '';const next=this.promotions.map(p=>({nights:Number(p.minimum_nights||1),percentage:Number(p.percentage||0)})).filter(p=>p.nights>this.nights).sort((a,b)=>a.nights-b.nights)[0];return next?'Stay '+(next.nights-this.nights)+' more night'+(next.nights-this.nights===1?'':'s')+' to unlock '+next.percentage+'% longer-stay pricing.':''},
         formatMoney(value){return new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(value)},
-        async reviewBooking(){this.quoteLoading=true;this.quoteError='';this.serverQuote=null;try{const response=await fetch(this.quoteUrl,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({arrival_date:this.checkIn,departure_date:this.checkOut,adult_count:this.adults,child_count:this.children})});const data=await response.json();if(!response.ok){const errors=data.errors||{};throw new Error(Object.values(errors).flat()[0]||data.message||'We could not verify this stay.')}this.serverQuote=data;this.$nextTick(()=>this.$refs.bookingForm.submit())}catch(error){this.quoteError=error.message}finally{this.quoteLoading=false}},
-        init(){const now=new Date();this.minimumMonth=this.monthValue(now);this.maximumMonth=this.monthValue(new Date(now.getFullYear(),now.getMonth()+17,1));this.jumpMonth=this.minimumMonth;this.buildMonths()},
+        async fetchQuote(){if(!this.canQuote||!this.checkIn||!this.checkOut||this.guestCount<1||this.guestCount>this.capacity)return false;const sequence=++this.quoteSequence;this.quoteLoading=true;this.quoteError='';try{const response=await fetch(this.quoteUrl,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({arrival_date:this.checkIn,departure_date:this.checkOut,adult_count:this.adults,child_count:this.children})});const data=await response.json().catch(()=>({}));if(!response.ok){const errors=data.errors||{};throw new Error(Object.values(errors).flat()[0]||data.message||'We could not verify these dates.')}if(sequence===this.quoteSequence)this.serverQuote=data;return true}catch(error){if(sequence===this.quoteSequence){this.serverQuote=null;this.quoteError=error.message}return false}finally{if(sequence===this.quoteSequence)this.quoteLoading=false}},
+        scheduleQuote(){this.serverQuote=null;this.quoteError='';clearTimeout(this.quoteTimer);if(this.checkIn&&this.checkOut)this.quoteTimer=setTimeout(()=>this.fetchQuote(),180)},
+        async reviewBooking(){const valid=await this.fetchQuote();if(valid)this.$nextTick(()=>this.$refs.bookingForm.submit())},
+        init(){const now=new Date();this.minimumMonth=this.monthValue(now);this.maximumMonth=this.monthValue(new Date(now.getFullYear(),now.getMonth()+17,1));this.jumpMonth=this.minimumMonth;this.buildMonths();this.$watch('checkIn',()=>this.scheduleQuote());this.$watch('checkOut',()=>this.scheduleQuote());this.$watch('adults',()=>this.scheduleQuote());this.$watch('children',()=>this.scheduleQuote())},
         monthValue(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')},
         iso(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')},
         isBlocked(date){return intervals.some(range=>date>=range.start&&date<range.end)},

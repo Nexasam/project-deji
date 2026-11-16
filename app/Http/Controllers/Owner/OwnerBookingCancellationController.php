@@ -14,12 +14,16 @@ class OwnerBookingCancellationController extends Controller
     {
         $data = $request->validate([
             'reason' => ['required', 'string', 'max:1000'],
+            'keep_dates_blocked' => ['nullable', 'boolean'],
         ]);
         $record = $context->business->bookings()->findOrFail($booking);
 
-        $cancel->handle($request->user(), $record, $data['reason'], 'owner');
+        $keepDatesBlocked = $request->boolean('keep_dates_blocked');
+        $cancel->handle($request->user(), $record, $data['reason'], 'owner', $keepDatesBlocked);
 
         return redirect()->route('owner.bookings.show', $record)
-            ->with('status', 'Booking cancelled, dates released, and the guest notified.');
+            ->with('status', $keepDatesBlocked
+                ? 'Booking cancelled, the original dates remain unavailable, and the guest was notified.'
+                : 'Booking cancelled, dates released, and the guest was notified.');
     }
 }

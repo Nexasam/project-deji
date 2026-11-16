@@ -68,6 +68,12 @@ window.asyncMessageThread = function () {
                 this.sending = false;
             }
         },
+        sendOnEnter(event) {
+            if (event.isComposing || event.shiftKey) return;
+
+            event.preventDefault();
+            event.currentTarget.form?.requestSubmit();
+        },
         appendMessage(message, mine = true) {
             if (this.$refs.messages?.querySelector(`[data-message-id="${message.id}"]`)) return;
             this.$refs.emptyState?.remove();
