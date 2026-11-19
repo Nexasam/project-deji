@@ -26,7 +26,7 @@ class GuestBookingController extends Controller
         $today = today()->toDateString();
         $counts = [
             'total' => (clone $base)->count(),
-            'upcoming' => (clone $base)->whereIn('status', $activeStatuses)->whereDate('departure_date', '>', $today)->count(),
+            'upcoming' => (clone $base)->whereIn('status', $activeStatuses)->whereDate('arrival_date', '>', $today)->count(),
             'completed' => (clone $base)->whereNotIn('status', $cancelledStatuses)->where(function ($query) use ($today): void {
                 $query->whereDate('departure_date', '<=', $today)->orWhereIn('status', ['checked_out', 'completed']);
             })->count(),
@@ -39,7 +39,7 @@ class GuestBookingController extends Controller
                 ->where('reference', 'like', "%{$term}%")
                 ->orWhereHas('property', fn ($property) => $property->where('name', 'like', "%{$term}%")
                     ->orWhereHas('marketplaceListing', fn ($listing) => $listing->where('public_title', 'like', "%{$term}%")))))
-            ->when(($filters['status'] ?? null) === 'upcoming', fn ($query) => $query->whereIn('status', $activeStatuses)->whereDate('departure_date', '>', $today))
+            ->when(($filters['status'] ?? null) === 'upcoming', fn ($query) => $query->whereIn('status', $activeStatuses)->whereDate('arrival_date', '>', $today))
             ->when(($filters['status'] ?? null) === 'completed', fn ($query) => $query->whereNotIn('status', $cancelledStatuses)->where(function ($query) use ($today): void {
                 $query->whereDate('departure_date', '<=', $today)->orWhereIn('status', ['checked_out', 'completed']);
             }))
