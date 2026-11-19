@@ -111,6 +111,58 @@ window.asyncMessageThread = function () {
     };
 };
 
+window.bookingBrowser = function (initialFilters = {}) {
+    return {
+        q: initialFilters.q || '',
+        from: initialFilters.from || '',
+        to: initialFilters.to || '',
+        status: initialFilters.status || '',
+        sort: initialFilters.sort || 'newest',
+        loading: false,
+        error: '',
+        async refresh(url = null) {
+            if (this.loading) return;
+
+            this.loading = true;
+            this.error = '';
+            const params = new URLSearchParams({ ajax: '1', sort: this.sort });
+            if (this.q) params.set('q', this.q);
+            if (this.from) params.set('from', this.from);
+            if (this.to) params.set('to', this.to);
+            if (this.status) params.set('status', this.status);
+
+            const requestUrl = url || `${window.location.pathname}?${params.toString()}`;
+
+            try {
+                const response = await fetch(requestUrl, {
+                    headers: { Accept: 'application/json' },
+                    credentials: 'same-origin',
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(payload.message || 'Could not update your bookings.');
+
+                const documentFragment = new DOMParser().parseFromString(payload.html, 'text/html');
+                const results = documentFragment.querySelector('[data-booking-results]');
+                if (!results) throw new Error('Could not update your bookings.');
+
+                this.$refs.results.innerHTML = results.innerHTML;
+                window.history.replaceState({}, '', `${window.location.pathname}?${params.toString().replace('ajax=1&', '')}`);
+            } catch (error) {
+                this.error = error.message || 'Could not update your bookings. Please try again.';
+            } finally {
+                this.loading = false;
+            }
+        },
+        handleResultsClick(event) {
+            const link = event.target.closest('a[href]');
+            if (!link || !link.href.includes('page=')) return;
+
+            event.preventDefault();
+            this.refresh(link.href);
+        },
+    };
+};
+
 // Register all stores BEFORE Alpine.start()
 Alpine.store('modals', {
     showLoginModal: false,

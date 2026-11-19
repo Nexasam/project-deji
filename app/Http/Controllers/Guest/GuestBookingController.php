@@ -5,15 +5,18 @@ namespace App\Http\Controllers\Guest;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class GuestBookingController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $filters = $request->validate([
             'status' => ['nullable', 'in:upcoming,completed,cancelled,pending'],
             'q' => ['nullable', 'string', 'max:100'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
             'sort' => ['nullable', 'in:newest,oldest,arrival'],
         ]);
 
@@ -42,11 +45,21 @@ class GuestBookingController extends Controller
             }))
             ->when(($filters['status'] ?? null) === 'cancelled', fn ($query) => $query->whereIn('status', $cancelledStatuses))
             ->when(($filters['status'] ?? null) === 'pending', fn ($query) => $query->where('status', 'awaiting_payment'))
+            ->when($filters['from'] ?? null, fn ($query, $from) => $query->whereDate('departure_date', '>=', $from))
+            ->when($filters['to'] ?? null, fn ($query, $to) => $query->whereDate('arrival_date', '<=', $to))
             ->when(($filters['sort'] ?? 'newest') === 'oldest', fn ($query) => $query->oldest(), fn ($query) => $query->latest())
             ->when(($filters['sort'] ?? null) === 'arrival', fn ($query) => $query->reorder('arrival_date'))
             ->paginate(12)->withQueryString();
 
-        return view('guest.bookings.index', compact('bookings', 'counts', 'filters'));
+        $data = compact('bookings', 'counts', 'filters');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('guest.bookings.index', $data)->render(),
+            ]);
+        }
+
+        return view('guest.bookings.index', $data);
     }
 
     public function show(Request $request, string $booking): View

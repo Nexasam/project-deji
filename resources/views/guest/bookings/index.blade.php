@@ -21,21 +21,22 @@
             @endforeach
         </section>
 
-        <form method="GET" class="mt-5 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 xl:flex-row xl:items-center xl:justify-between">
-            <div class="flex gap-2 overflow-x-auto pb-1 xl:pb-0">
-                @foreach([[null,'All',$counts['total']],['upcoming','Upcoming',$counts['upcoming']],['completed','Completed',$counts['completed']],['cancelled','Cancelled',$counts['cancelled']]] as [$value,$label,$count])
-                    <a href="{{ route('guest.bookings.index', array_filter(['status' => $value])) }}" class="whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold {{ $tab === $value ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-700' }}">{{ $label }} ({{ $count }})</a>
-                @endforeach
+        <section class="mt-8" x-data="bookingBrowser({ q: @js($filters['q'] ?? ''), from: @js($filters['from'] ?? ''), to: @js($filters['to'] ?? ''), status: @js($tab), sort: @js($filters['sort'] ?? 'newest') })">
+            <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <h2 class="text-xl font-black">Stays <span class="ml-2 rounded-full bg-orange-600 px-2.5 py-1 text-xs text-white">{{ $upcoming->count() }}</span></h2>
+                <form @submit.prevent="refresh()" class="grid gap-2 sm:grid-cols-2 xl:flex xl:items-center">
+                    <label class="sr-only" for="booking-search">Search stays</label><input id="booking-search" x-model="q" @input.debounce.350ms="refresh()" placeholder="Search property" class="min-w-0 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500 xl:w-44">
+                    <div class="grid grid-cols-2 gap-2"><label class="sr-only" for="booking-from">From date</label><input id="booking-from" type="date" x-model="from" @change="refresh()" class="min-w-0 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"><label class="sr-only" for="booking-to">To date</label><input id="booking-to" type="date" x-model="to" @change="refresh()" class="min-w-0 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"></div>
+                    <select x-model="status" @change="refresh()" aria-label="Filter bookings by status" class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"><option value="">All stays</option><option value="upcoming">Upcoming</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
+                    <select x-model="sort" @change="refresh()" aria-label="Sort bookings" class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="arrival">Arrival date</option></select>
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white disabled:opacity-60" :disabled="loading"><span x-show="!loading">Search</span><span x-show="loading" x-cloak>Loading…</span></button>
+                </form>
             </div>
-            <div class="grid gap-2 sm:grid-cols-[minmax(220px,1fr)_160px_auto]">
-                <input type="hidden" name="status" value="{{ $tab }}"><input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Search property or ref" class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500">
-                <select name="sort" class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"><option value="newest">Sort: Newest</option><option value="oldest" @selected(($filters['sort'] ?? '')==='oldest')>Sort: Oldest</option><option value="arrival" @selected(($filters['sort'] ?? '')==='arrival')>Arrival date</option></select>
-                <button class="rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Apply</button>
-            </div>
-        </form>
+            <p x-show="error" x-text="error" x-cloak class="mt-3 text-sm font-semibold text-rose-700"></p>
 
+            <div x-ref="results" data-booking-results @click="handleResultsClick($event)">
         @if($upcoming->isNotEmpty())
-            <div class="mt-8 flex items-center justify-between"><h2 class="text-xl font-black">Stays <span class="ml-2 rounded-full bg-orange-600 px-2.5 py-1 text-xs text-white">{{ $upcoming->count() }}</span></h2><a href="{{ route('guest.calendar') }}" class="text-sm font-extrabold text-orange-600">▣ View calendar</a></div>
+            <div class="mt-4"></div>
             <div class="mt-4 grid gap-4 lg:grid-cols-3">
                 @foreach($upcoming as $booking)
                     @php
@@ -54,12 +55,14 @@
         @endif
 
         @if($past->isNotEmpty())
-            <h2 class="mt-10 text-xl font-black">History <span class="ml-2 rounded-full bg-orange-600 px-2.5 py-1 text-xs text-white">{{ $past->count() }}</span></h2>
+            <h2 class="mt-10 text-xl font-black">History</h2>
             <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white"><table class="min-w-[920px] w-full text-left text-sm"><thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-6 py-4">Stay</th><th>Booking ref</th><th>Dates</th><th>Status</th><th>Amount</th><th></th></tr></thead><tbody class="divide-y divide-slate-100">@foreach($past as $booking)@php($isCancelled = in_array($booking->status->value, ['cancelled', 'refunded', 'no_show'], true))<tr><td class="px-6 py-4 font-bold">{{ $booking->property->marketplaceListing?->public_title ?: $booking->property->name }}<small class="mt-1 block font-normal text-slate-500">{{ data_get($booking->property->address,'city') }}, {{ data_get($booking->property->address,'state') }}</small></td><td>{{ $booking->reference }}</td><td><strong>{{ $booking->arrival_date->format('d M') }} – {{ $booking->departure_date->format('d M') }}</strong></td><td><span class="rounded-full px-4 py-1.5 text-xs font-bold {{ $isCancelled ? 'bg-rose-600 text-white' : 'bg-emerald-700 text-white' }}">{{ $isCancelled ? 'Cancelled' : 'Completed' }}</span></td><td><strong>₦{{ number_format((float)$booking->total_amount) }}</strong></td><td><div class="flex items-center justify-end gap-2"><a href="{{ route('guest.bookings.messages.show',$booking) }}" class="rounded-lg border border-slate-300 px-3 py-2.5 font-bold">Message</a><a href="{{ route('guest.bookings.show',$booking) }}" class="rounded-lg bg-slate-950 px-4 py-2.5 font-bold text-white">View details</a></div></td></tr>@endforeach</tbody></table></div>
         @endif
 
         @if($bookings->isEmpty())<div class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white p-14 text-center"><h2 class="text-xl font-black">No bookings found</h2><p class="mt-2 text-sm text-slate-500">Your stays will appear here.</p></div>@endif
         <div class="mt-6">{{ $bookings->links() }}</div>
+            </div>
+        </section>
     </div>
 </main>
 @endsection
