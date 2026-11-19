@@ -22,20 +22,17 @@
         </section>
 
         <section class="mt-8" x-data="bookingBrowser({ q: @js($filters['q'] ?? ''), from: @js($filters['from'] ?? ''), to: @js($filters['to'] ?? ''), status: @js($tab), sort: @js($filters['sort'] ?? 'newest') })">
-            <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                <h2 class="text-xl font-black">Stays</h2>
-                <form @submit.prevent="refresh()" class="grid gap-2 sm:grid-cols-2 xl:flex xl:items-center">
+            <form @submit.prevent="refresh()" class="grid gap-2 sm:grid-cols-2 xl:flex xl:items-center">
                     <label class="sr-only" for="booking-search">Search stays</label><input id="booking-search" x-model="q" @input.debounce.350ms="refresh()" placeholder="Search property" class="min-w-0 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500 xl:w-44">
                     <div class="relative sm:col-span-2 xl:col-span-1" @click.outside="rangeOpen=false"><button type="button" @click="rangeOpen=!rangeOpen" class="flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 xl:w-56"><span class="truncate" x-text="rangeLabel()"></span><svg class="size-4 shrink-0 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></button><div x-show="rangeOpen" x-cloak x-transition class="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-white p-4 shadow-xl"><p class="text-sm font-extrabold text-slate-900">Filter by stay dates</p><div class="mt-3 grid grid-cols-2 gap-3"><label class="text-xs font-bold text-slate-600">From<input type="date" x-model="from" class="mt-1 w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"></label><label class="text-xs font-bold text-slate-600">To<input type="date" x-model="to" :min="from || null" class="mt-1 w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"></label></div><div class="mt-4 flex items-center justify-between gap-3"><button type="button" @click="clearDateRange()" class="text-sm font-bold text-slate-600 hover:text-slate-950">Clear</button><button type="button" @click="rangeOpen=false; refresh()" class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white">Apply dates</button></div></div></div>
                     <select x-model="status" @change="refresh()" aria-label="Filter bookings by status" class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"><option value="">All stays</option><option value="upcoming">Upcoming</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
                     <select x-model="sort" @change="refresh()" aria-label="Sort bookings" class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="arrival">Arrival date</option></select>
-                </form>
-            </div>
+            </form>
             <p x-show="error" x-text="error" x-cloak class="mt-3 text-sm font-semibold text-rose-700"></p>
 
             <div x-ref="results" data-booking-results @click="handleResultsClick($event)">
+        <h2 class="mt-8 text-xl font-black">Active Stays</h2>
         @if($upcoming->isNotEmpty())
-            <div class="mt-4"></div>
             <div class="mt-4 grid gap-4 lg:grid-cols-3">
                 @foreach($upcoming as $booking)
                     @php

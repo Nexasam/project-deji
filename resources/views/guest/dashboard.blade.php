@@ -38,7 +38,7 @@
 
         <section class="mt-4 grid gap-4 sm:grid-cols-3">
             <a href="{{ route('guest.bookings.index') }}" class="flex min-h-28 items-center justify-between rounded-2xl border border-slate-200 bg-white px-7 py-5 shadow-sm">
-                <div><p class="text-sm text-slate-500">Upcoming stays</p><p class="mt-2 text-3xl font-black text-slate-950">{{ $dashboardStats['upcoming'] }}</p><p class="mt-2 text-xs text-slate-500">{{ $nextBooking ? 'Next: '.$nextBooking->arrival_date->format('d M') : 'No upcoming stay' }}</p></div>
+                <div><p class="text-sm text-slate-500">Active stays</p><p class="mt-2 text-3xl font-black text-slate-950">{{ $dashboardStats['active'] }}</p><p class="mt-2 text-xs text-slate-500">{{ $nextBooking ? ($nextBooking->arrival_date->isAfter(today()) ? 'Next: '.$nextBooking->arrival_date->format('d M') : 'Currently staying') : 'No active stay' }}</p></div>
                 <span class="grid size-12 place-items-center rounded-xl bg-orange-100 text-orange-600"><svg class="size-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>
             </a>
             <a href="{{ route('guest.bookings.index', ['status' => 'completed']) }}" class="flex min-h-28 items-center justify-between rounded-2xl border border-slate-200 bg-white px-7 py-5 shadow-sm">
@@ -53,9 +53,9 @@
 
         <section class="mt-4 grid gap-5 lg:grid-cols-[1.44fr_1fr]">
             <div class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
-                <div class="flex items-center justify-between border-b border-slate-200 pb-4"><h2 class="text-xl font-black text-slate-950">Upcoming stays</h2><a href="{{ route('guest.bookings.index') }}" class="text-sm font-bold text-orange-600">View all bookings <span class="ml-2">→</span></a></div>
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4"><h2 class="text-xl font-black text-slate-950">Active stays</h2><a href="{{ route('guest.bookings.index') }}" class="text-sm font-bold text-orange-600">View all bookings <span class="ml-2">→</span></a></div>
                 <div class="divide-y divide-slate-200">
-                    @forelse($bookings->filter(fn ($booking) => $booking->departure_date->gte(today()))->take(3) as $booking)
+                    @forelse($bookings->take(3) as $booking)
                         @php
                             $media = $booking->property->media->firstWhere('is_primary', true) ?? $booking->property->media->first();
                             $image = $media?->external_url ?: ($media?->storage_path ? '/storage/'.ltrim($media->storage_path, '/') : '/image.png');
@@ -67,7 +67,7 @@
                             <div class="text-right"><span class="rounded-full px-3 py-1.5 text-[10px] font-bold {{ $statusTone($booking->status->value) }}">{{ $booking->status->value === 'confirmed' ? 'Booked' : str($booking->status->value)->replace('_', ' ')->title() }}</span><p class="mt-3 font-black text-slate-950">₦{{ number_format((float)$booking->total_amount) }}</p></div>
                         </a>
                     @empty
-                        <div class="py-12 text-center"><p class="font-bold text-slate-900">No upcoming stays</p><a href="{{ route('home') }}" class="mt-2 inline-flex text-sm font-bold text-orange-600">Explore verified stays →</a></div>
+                        <div class="py-12 text-center"><p class="font-bold text-slate-900">No active stays</p><a href="{{ route('home') }}" class="mt-2 inline-flex text-sm font-bold text-orange-600">Explore verified stays →</a></div>
                     @endforelse
                 </div>
             </div>

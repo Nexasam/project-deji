@@ -29,6 +29,11 @@ class GuestDashboardController extends Controller
             BookingStatus::Confirmed,
             BookingStatus::CheckedIn,
         ];
+        $cancelledStatuses = [
+            BookingStatus::Cancelled,
+            BookingStatus::Refunded,
+            BookingStatus::NoShow,
+        ];
 
         $tabs = collect([
             'all' => ['label' => 'All'],
@@ -65,7 +70,9 @@ class GuestDashboardController extends Controller
                 ->where('status', BookingStatus::CheckedIn)
                 ->whereBetween('departure_date', [$today->toDateString(), $today->copy()->addDays(7)->toDateString()]),
             'current' => $bookingsQuery->where('status', BookingStatus::CheckedIn),
-            default => null,
+            default => $bookingsQuery
+                ->whereIn('status', $activeStatuses)
+                ->whereDate('departure_date', '>', $today->toDateString()),
         };
 
         $bookings = $bookingsQuery
@@ -86,6 +93,14 @@ class GuestDashboardController extends Controller
             ->with(['property.marketplaceListing'])
             ->whereIn('status', [BookingStatus::AwaitingPayment, BookingStatus::Reserved, BookingStatus::Confirmed, BookingStatus::CheckedIn])
             ->orderByRaw('arrival_date >= ? desc', [$today->toDateString()])
+            ->orderBy('arrival_date')
+            ->first();
+
+        $nextBooking = (clone $baseQuery)
+            ->with(['property.marketplaceListing'])
+            ->whereIn('status', $activeStatuses)
+            ->whereDate('departure_date', '>', $today->toDateString())
+            ->orderByRaw('arrival_date <= ? desc', [$today->toDateString()])
             ->orderBy('arrival_date')
             ->first();
 
@@ -128,12 +143,16 @@ class GuestDashboardController extends Controller
             ->first();
 
         $dashboardStats = [
-            'upcoming' => (clone $baseQuery)
+            'active' => (clone $baseQuery)
                 ->whereIn('status', $activeStatuses)
-                ->whereDate('departure_date', '>=', $today->toDateString())
+                ->whereDate('departure_date', '>', $today->toDateString())
                 ->count(),
             'completed' => (clone $baseQuery)
-                ->whereIn('status', [BookingStatus::CheckedOut, BookingStatus::Completed])
+                ->whereNotIn('status', $cancelledStatuses)
+                ->where(function ($query) use ($today): void {
+                    $query->whereDate('departure_date', '<=', $today->toDateString())
+                        ->orWhereIn('status', [BookingStatus::CheckedOut, BookingStatus::Completed]);
+                })
                 ->count(),
             'saved' => $user->favourites()->count(),
         ];
@@ -167,6 +186,7 @@ class GuestDashboardController extends Controller
 
         return view('guest.dashboard', [
             'bookings' => $bookings,
+            'nextBooking' => $nextBooking,
             'messageThreads' => $messageThreads,
             'activeTab' => $activeTab,
             'counts' => $counts,
