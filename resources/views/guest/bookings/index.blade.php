@@ -3,8 +3,9 @@
 @section('content')
 <x-navbar />
 @php
-    $upcoming = $bookings->getCollection()->filter(fn ($booking) => in_array($booking->status->value, ['reserved','awaiting_payment','confirmed','checked_in'], true));
-    $past = $bookings->getCollection()->reject(fn ($booking) => in_array($booking->status->value, ['reserved','awaiting_payment','confirmed','checked_in'], true));
+    $activeStatuses = ['reserved', 'awaiting_payment', 'confirmed', 'checked_in'];
+    $upcoming = $bookings->getCollection()->filter(fn ($booking) => in_array($booking->status->value, $activeStatuses, true) && $booking->departure_date->isAfter(today()));
+    $past = $bookings->getCollection()->reject(fn ($booking) => in_array($booking->status->value, $activeStatuses, true) && $booking->departure_date->isAfter(today()));
     $tab = $filters['status'] ?? null;
 @endphp
 <main class="min-h-screen bg-[#f3f3f2] py-6 sm:py-12">
@@ -39,10 +40,13 @@
                 @foreach($upcoming as $booking)
                     @php
                         $media=$booking->property->media->firstWhere('is_primary',true)??$booking->property->media->first(); $image=$media?->external_url?:($media?->storage_path?'/storage/'.ltrim($media->storage_path,'/'):'/image.png');
-                        $status=$booking->status->value; $confirmed=in_array($status,['confirmed','checked_in'],true); $nights=$booking->arrival_date->diffInDays($booking->departure_date);
+                        $status=$booking->status->value; $isBooked=in_array($status,['confirmed','checked_in'],true); $nights=$booking->arrival_date->diffInDays($booking->departure_date);
+                        $isWithinStay = $booking->arrival_date->lte(today()) && $booking->departure_date->gt(today());
+                        $isCompleted = $booking->departure_date->lte(today()) || in_array($status, ['checked_out', 'completed'], true);
+                        $statusLabel = $status === 'confirmed' ? 'Booked' : str($status)->replace('_',' ')->title();
                     @endphp
                     <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-                        <div class="relative h-28 overflow-hidden rounded-xl sm:h-40"><img src="{{ $image }}" onerror="this.src='/image.png'" class="h-full w-full object-cover" alt=""><span class="absolute left-2 top-2 rounded-full px-3 py-1 text-[10px] font-extrabold sm:left-3 sm:top-3 sm:px-4 sm:py-1.5 sm:text-xs {{ $confirmed?'bg-emerald-700 text-white':'bg-amber-400 text-slate-950' }}">{{ str($status)->replace('_',' ')->title() }}</span>@if($status === 'checked_in')<span class="absolute right-2 top-2 rounded-full bg-slate-950 px-3 py-1 text-[10px] font-bold text-white sm:right-3 sm:top-3 sm:px-4 sm:py-1.5 sm:text-xs">Checked in</span>@elseif($booking->arrival_date->isToday())<span class="absolute right-2 top-2 rounded-full bg-slate-950 px-3 py-1 text-[10px] font-bold text-white sm:right-3 sm:top-3 sm:px-4 sm:py-1.5 sm:text-xs">Check-in today</span>@elseif($booking->arrival_date->isFuture())<span class="absolute right-2 top-2 rounded-full bg-slate-950 px-3 py-1 text-[10px] font-bold text-white sm:right-3 sm:top-3 sm:px-4 sm:py-1.5 sm:text-xs">In {{ now()->startOfDay()->diffInDays($booking->arrival_date) }} days</span>@endif</div>
+                        <div class="relative h-28 overflow-hidden rounded-xl sm:h-40"><img src="{{ $image }}" onerror="this.src='/image.png'" class="h-full w-full object-cover" alt=""><span class="absolute left-2 top-2 rounded-full px-3 py-1 text-[10px] font-extrabold sm:left-3 sm:top-3 sm:px-4 sm:py-1.5 sm:text-xs {{ $isBooked?'bg-emerald-700 text-white':'bg-amber-400 text-slate-950' }}">{{ $statusLabel }}</span><span class="absolute right-2 top-2 rounded-full bg-slate-950 px-3 py-1 text-[10px] font-bold text-white sm:right-3 sm:top-3 sm:px-4 sm:py-1.5 sm:text-xs">{{ $isWithinStay ? 'Checked in' : ($isCompleted ? 'Completed' : ($booking->arrival_date->isToday() ? 'Check-in today' : 'In '.now()->startOfDay()->diffInDays($booking->arrival_date).' days')) }}</span></div>
                         <div class="p-2 sm:p-2.5"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="truncate text-sm font-black sm:text-base">{{ $booking->property->marketplaceListing?->public_title ?: $booking->property->name }}</h3><p class="mt-1 truncate text-[11px] text-slate-500 sm:text-xs">⌖ {{ data_get($booking->property->address,'city') }}, {{ data_get($booking->property->address,'state') }} · {{ $booking->reference }}</p></div><div class="shrink-0 text-right"><strong class="text-sm sm:text-base">₦{{ number_format((float)$booking->total_amount) }}</strong><p class="text-[10px] text-slate-500 sm:text-xs">{{ $booking->payment_status->value==='paid'?'Paid in full':str($booking->payment_status->value)->replace('_',' ')->title() }}</p></div></div><p class="mt-2 text-xs font-semibold text-slate-600 sm:mt-3 sm:text-sm">▣ {{ $booking->arrival_date->format('d M') }} – {{ $booking->departure_date->format('d M') }} · {{ $nights }} {{ Str::plural('night',$nights) }}</p><div class="mt-3 grid grid-cols-2 gap-2 sm:mt-4"><a href="{{ route('guest.bookings.show',$booking) }}" class="rounded-lg bg-slate-950 px-2 py-2.5 text-center text-xs font-bold text-white sm:px-3 sm:py-3 sm:text-sm">View details</a><a href="{{ route('guest.bookings.messages.show',$booking) }}" class="rounded-lg border border-slate-300 px-2 py-2.5 text-center text-xs font-bold sm:px-3 sm:py-3 sm:text-sm">Message host</a></div></div>
                     </article>
                 @endforeach

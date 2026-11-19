@@ -18,11 +18,16 @@ class GuestBookingController extends Controller
         ]);
 
         $base = Booking::query()->where('guest_user_id', $request->user()->id);
+        $activeStatuses = ['reserved', 'awaiting_payment', 'confirmed', 'checked_in'];
+        $cancelledStatuses = ['cancelled', 'refunded', 'no_show'];
+        $today = today()->toDateString();
         $counts = [
             'total' => (clone $base)->count(),
-            'upcoming' => (clone $base)->whereIn('status', ['reserved', 'awaiting_payment', 'confirmed', 'checked_in'])->count(),
-            'completed' => (clone $base)->whereIn('status', ['checked_out', 'completed'])->count(),
-            'cancelled' => (clone $base)->whereIn('status', ['cancelled', 'refunded', 'no_show'])->count(),
+            'upcoming' => (clone $base)->whereIn('status', $activeStatuses)->whereDate('departure_date', '>', $today)->count(),
+            'completed' => (clone $base)->whereNotIn('status', $cancelledStatuses)->where(function ($query) use ($today): void {
+                $query->whereDate('departure_date', '<=', $today)->orWhereIn('status', ['checked_out', 'completed']);
+            })->count(),
+            'cancelled' => (clone $base)->whereIn('status', $cancelledStatuses)->count(),
             'pending' => (clone $base)->where('status', 'awaiting_payment')->count(),
         ];
 
@@ -31,9 +36,11 @@ class GuestBookingController extends Controller
                 ->where('reference', 'like', "%{$term}%")
                 ->orWhereHas('property', fn ($property) => $property->where('name', 'like', "%{$term}%")
                     ->orWhereHas('marketplaceListing', fn ($listing) => $listing->where('public_title', 'like', "%{$term}%")))))
-            ->when(($filters['status'] ?? null) === 'upcoming', fn ($query) => $query->whereIn('status', ['reserved', 'awaiting_payment', 'confirmed', 'checked_in']))
-            ->when(($filters['status'] ?? null) === 'completed', fn ($query) => $query->whereIn('status', ['checked_out', 'completed']))
-            ->when(($filters['status'] ?? null) === 'cancelled', fn ($query) => $query->whereIn('status', ['cancelled', 'refunded', 'no_show']))
+            ->when(($filters['status'] ?? null) === 'upcoming', fn ($query) => $query->whereIn('status', $activeStatuses)->whereDate('departure_date', '>', $today))
+            ->when(($filters['status'] ?? null) === 'completed', fn ($query) => $query->whereNotIn('status', $cancelledStatuses)->where(function ($query) use ($today): void {
+                $query->whereDate('departure_date', '<=', $today)->orWhereIn('status', ['checked_out', 'completed']);
+            }))
+            ->when(($filters['status'] ?? null) === 'cancelled', fn ($query) => $query->whereIn('status', $cancelledStatuses))
             ->when(($filters['status'] ?? null) === 'pending', fn ($query) => $query->where('status', 'awaiting_payment'))
             ->when(($filters['sort'] ?? 'newest') === 'oldest', fn ($query) => $query->oldest(), fn ($query) => $query->latest())
             ->when(($filters['sort'] ?? null) === 'arrival', fn ($query) => $query->reorder('arrival_date'))
