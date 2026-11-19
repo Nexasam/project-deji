@@ -126,11 +126,13 @@ class GuestDashboardController extends Controller
             ]);
         }
 
-        if ($resumeBooking && $resumeBooking->payment_status !== BookingPaymentStatus::Paid) {
+        $hasPendingBookingPayment = $resumeBooking && $resumeBooking->payment_status !== BookingPaymentStatus::Paid;
+
+        if ($hasPendingBookingPayment) {
             $nextSteps->push([
-                'title' => 'Review your booking payment',
-                'description' => $resumeBooking->reference.' may still need payment confirmation.',
-                'action' => 'Open booking',
+                'title' => 'Pending payment',
+                'description' => 'Payment is still outstanding for '.($resumeBooking->property->marketplaceListing?->public_title ?: $resumeBooking->property->name).' ('.$resumeBooking->reference.'). Complete it before check-in.',
+                'action' => 'Complete payment',
                 'url' => route('guest.bookings.show', $resumeBooking),
                 'tone' => 'light',
             ]);
@@ -193,6 +195,7 @@ class GuestDashboardController extends Controller
             'resumeBooking' => $resumeBooking,
             'reviewBooking' => $reviewBooking,
             'nextSteps' => $nextSteps->take(4),
+            'hasPendingBookingPayment' => $hasPendingBookingPayment,
             'tabs' => $tabs,
             'dashboardStats' => $dashboardStats,
             'recommendations' => $recommendations,
