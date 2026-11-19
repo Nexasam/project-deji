@@ -30,10 +30,6 @@
             </nav>
 
             <div class="nav-desktop ml-auto items-center gap-4">
-                <div class="flex items-center rounded-full border border-slate-950 p-1">
-                    <a href="{{ route('home') }}" aria-label="Explore stays" class="grid size-9 place-items-center rounded-full {{ $isExploreActive ? 'bg-orange-600 text-white' : 'text-slate-950' }}"><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11.5 12 4l9 7.5v8a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5v-8Z"/></svg></a>
-                    <a href="{{ route('guest.dashboard') }}" aria-label="Guest dashboard" class="grid size-9 place-items-center rounded-full {{ !$isExploreActive ? 'bg-orange-600 text-white' : 'text-slate-950' }}"><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm-9 9a9 9 0 0 1 18 0H3Z"/></svg></a>
-                </div>
                 <a href="{{ route('notifications.index') }}" aria-label="Notifications" class="relative grid size-11 place-items-center rounded-lg border border-slate-200 text-orange-600 hover:bg-orange-50"><svg class="size-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Zm-8 11a2 2 0 0 0 4 0h-4Z"/></svg><span class="absolute right-2 top-2 size-1.5 rounded-full bg-orange-600"></span></a>
                 <div class="relative">
                     <button type="button" @click="accountOpen=!accountOpen" @click.outside="accountOpen=false" class="grid size-11 place-items-center rounded-full bg-orange-400 text-xs font-black text-white" aria-label="Open account menu">{{ str(auth()->user()->name)->squish()->explode(' ')->map(fn ($part) => str($part)->substr(0, 1))->take(2)->join('') }}</button>
