@@ -118,6 +118,7 @@ window.bookingBrowser = function (initialFilters = {}) {
         to: initialFilters.to || '',
         status: initialFilters.status || '',
         sort: initialFilters.sort || 'newest',
+        rangeOpen: false,
         loading: false,
         error: '',
         async refresh(url = null) {
@@ -159,6 +160,23 @@ window.bookingBrowser = function (initialFilters = {}) {
 
             event.preventDefault();
             this.refresh(link.href);
+        },
+        rangeLabel() {
+            if (!this.from && !this.to) return 'Select dates';
+
+            const format = (value) => new Intl.DateTimeFormat('en-NG', {
+                day: 'numeric', month: 'short', year: 'numeric',
+            }).format(new Date(`${value}T00:00:00`));
+
+            return this.from && this.to
+                ? `${format(this.from)} – ${format(this.to)}`
+                : (this.from ? `From ${format(this.from)}` : `Until ${format(this.to)}`);
+        },
+        clearDateRange() {
+            this.from = '';
+            this.to = '';
+            this.rangeOpen = false;
+            this.refresh();
         },
     };
 };
