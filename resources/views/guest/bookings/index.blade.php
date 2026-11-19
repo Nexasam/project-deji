@@ -35,7 +35,7 @@
         </form>
 
         @if($upcoming->isNotEmpty())
-            <div class="mt-8 flex items-center justify-between"><h2 class="text-xl font-black">Upcoming stays <span class="ml-2 rounded-full bg-orange-600 px-2.5 py-1 text-xs text-white">{{ $upcoming->count() }}</span></h2><a href="{{ route('guest.calendar') }}" class="text-sm font-extrabold text-orange-600">▣ View calendar</a></div>
+            <div class="mt-8 flex items-center justify-between"><h2 class="text-xl font-black">Stays <span class="ml-2 rounded-full bg-orange-600 px-2.5 py-1 text-xs text-white">{{ $upcoming->count() }}</span></h2><a href="{{ route('guest.calendar') }}" class="text-sm font-extrabold text-orange-600">▣ View calendar</a></div>
             <div class="mt-4 grid gap-4 lg:grid-cols-3">
                 @foreach($upcoming as $booking)
                     @php
