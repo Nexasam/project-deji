@@ -37,7 +37,7 @@
     $pricingNote = $showsTotalPrice ? $dateRangeLabel : null;
     $savingsLabel = $discount > 0 ? 'Save ₦'.number_format($discount) : null;
     $basePriceLabel = $discount > 0 ? '₦'.number_format($subtotal) : null;
-    $valueBadge = $discount > 0 ? $discountPercent.'% long-stay discount' : null;
+    $valueBadge = $discount > 0 ? $discountPercent.'% off for this stay' : null;
     $hostSource = trim((string) ($property->business?->primary_contact_name ?: $property->owner_name ?: ''));
     $hostFirstName = filled($hostSource) ? Str::of($hostSource)->squish()->explode(' ')->first() : null;
     $hostDisplayName = $hostFirstName ?: 'Host';

@@ -105,16 +105,13 @@
         </div>
 
         {{-- Price + AI insights --}}
-        @if($valueBadge)
-            <div class="pricing-value-badge">{{ $valueBadge }}</div>
-        @endif
         <div class="card-footer">
             <div class="card-price">
-                <span class="card-price-amount">{{ $priceLabel ?: '₦'.number_format($price) }}</span>
-                <span class="card-price-unit">{{ $priceUnit }}</span>
                 @if($basePriceLabel)
                     <span class="card-base-price">{{ $basePriceLabel }}</span>
                 @endif
+                <span class="card-price-amount">{{ $priceLabel ?: '₦'.number_format($price) }}</span>
+                <span class="card-price-unit">{{ $priceUnit }}</span>
                 @if($pricingNote)
                     <span class="card-pricing-note">{{ $pricingNote }}</span>
                 @endif
@@ -129,6 +126,9 @@
                 <span>AI Insights</span>
             </button>
         </div>
+        @if($valueBadge)
+            <p class="card-value-note">{{ $valueBadge }}</p>
+        @endif
     </div>
 </article>
 
